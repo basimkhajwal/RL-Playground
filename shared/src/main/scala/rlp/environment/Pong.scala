@@ -137,7 +137,7 @@ class NaivePongAgent extends Agent[Pong.AgentState, Pong.Action] {
   import Pong._
 
   override def act(state: AgentState): Action = {
-    val y = state.currentPaddle
+    val y = state.currentPaddle + PADDLE_HEIGHT/2
     val by = state.ballPos.y
 
     if (by > y+5) Pong.UpAction
