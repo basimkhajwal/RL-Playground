@@ -1,8 +1,8 @@
 package rlp.environment
 
-import rlp.environment.Pong.NoAction
-
 import scala.util.Random
+
+import rlp.util.Point2D
 
 object Pong {
   val SCREEN_WIDTH = 800.0
@@ -75,7 +75,6 @@ class Pong(val leftAgent: Pong.PongAgent, val rightAgent: Pong.PongAgent) extend
     val leftS = AgentState.fromState(s, true)
     val rightS = AgentState.fromState(s, false)
 
-
     leftAgent.act(leftS) match {
       case NoAction =>
       case UpAction => leftPaddleY += PADDLE_SPEED
@@ -140,18 +139,9 @@ class NaivePongAgent extends Agent[Pong.AgentState, Pong.Action] {
     val y = state.currentPaddle + PADDLE_HEIGHT/2
     val by = state.ballPos.y
 
-    if (by > y+5) Pong.UpAction
-    else if (by < y-5) Pong.DownAction
+    if (by > y+5) UpAction
+    else if (by < y-5) DownAction
     else NoAction
   }
 
-}
-
-case class Point2D(x: Double, y: Double) {
-  def +(that: Point2D) = Point2D(x + that.x, y + that.y)
-  def -(that: Point2D) = Point2D(x - that.x, y - that.y)
-  def *(scale: Double) = Point2D(x * scale, y * scale)
-}
-object Point2D {
-  def fromPolar(theta: Double, m: Double): Point2D = Point2D(m*math.cos(theta), m*math.sin(theta))
 }
