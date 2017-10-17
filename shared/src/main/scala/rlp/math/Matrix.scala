@@ -10,18 +10,27 @@ class Matrix(private var rows: Int, private var cols: Int, private var data: Arr
     this(that.rows, that.cols, that.data.clone())
   }
 
-  @inline
   def getRows() = rows
-  @inline
   def getCols() = cols
+  def getData() = data
 
-  @inline
+  def fill(v: Double): Matrix = {
+    for (i <- data.indices) data(i) = v
+    this
+  }
+
+  def map(f: Double => Double): Matrix = new Matrix(this) each f
+
+  def each(f: Double => Double): Matrix = {
+    for (i <- data.indices) data(i) = f(data(i))
+    this
+  }
+
   def apply(row: Int, col: Int): Double = {
     assert(0 <= row && 0 <= col && row < rows && col < cols, s"Index $row $col does not exist")
     data(row*cols + col)
   }
 
-  @inline
   def update(row: Int, col: Int, value: Double): Unit = {
     assert(0 <= row && 0 <= col && row < rows && col < cols, s"Index $row $col does not exist")
     data(row*cols + col) = value
@@ -32,11 +41,7 @@ class Matrix(private var rows: Int, private var cols: Int, private var data: Arr
   def +=(that: Matrix): Matrix = {
     assert(rows == that.rows && cols == that.cols,
       s"Matrix addition not defined for ${rows}x$cols and ${that.rows}x${that.cols}")
-    var i = 0
-    while (i < data.length) {
-      data(i) += that.data(i)
-      i += 1
-    }
+    for (i <- data.indices) data(i) += that.data(i)
     this
   }
 
@@ -45,11 +50,7 @@ class Matrix(private var rows: Int, private var cols: Int, private var data: Arr
   def *(that: Matrix): Matrix = new Matrix(this) *= that
 
   def *=(sf: Double): Matrix = {
-    var i = 0
-    while (i < data.length) {
-      data(i) *= sf
-      i += 1
-    }
+    for (i <- data.indices) data(i) *= sf
     this
   }
 
@@ -58,23 +59,55 @@ class Matrix(private var rows: Int, private var cols: Int, private var data: Arr
       s"Matrix addition not defined for ${rows}x$cols and ${that.rows}x${that.cols}")
 
     val buffer = new Array[Double](rows * that.cols)
-    var i, j, k = 0
-
-    while (i < rows) {
-      j = 0
-      while (j < that.cols) {
-        k = 0
-        while (k < cols) {
+    for (i <- 0 until rows) {
+      for (j <- 0 until that.cols) {
+        for (k <- 0 until cols) {
           buffer(i*that.cols + j) += this(i, k) * that(k, j)
-          k += 1
         }
-        j += 1
       }
-      i += 1
     }
 
     cols = that.cols
     data = buffer
     this
+  }
+}
+
+object Matrix {
+
+  def concatRows(ms: Matrix*): Matrix = {
+    assert(ms.nonEmpty, "Cannot concat empty list of matrices!")
+    assert(ms.map(_.cols).distinct.length == 1,
+      s"Concatenating along rows requires the same size on cols")
+
+    val ret = new Matrix(ms.map(_.rows).sum, ms.head.cols)
+    var r = 0
+
+    for (m <- ms) {
+      Array.copy(m.data, 0, ret, r*ret.cols, m.data.size)
+      r += m.rows
+    }
+
+    ret
+  }
+
+  def concatCols(ms: Matrix*): Matrix = {
+    assert(ms.nonEmpty, "Cannot concat empty list of matrices!")
+    assert(ms.map(_.rows).distinct.length == 1,
+      s"Concatenating along cols requires the same size on rows")
+
+    val ret = new Matrix(ms.head.rows, ms.map(_.cols).sum)
+
+    var cTotal = 0
+    for (m <- ms) {
+      for (r <- 0 until m.rows) {
+        for (c <- 0 until m.cols) {
+          ret(r, cTotal+c) = m(r, c)
+        }
+      }
+      cTotal += m.cols
+    }
+
+    ret
   }
 }
