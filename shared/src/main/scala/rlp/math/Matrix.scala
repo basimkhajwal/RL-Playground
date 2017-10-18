@@ -45,6 +45,17 @@ class Matrix(private var rows: Int, private var cols: Int, private var data: Arr
     this
   }
 
+  def unary_-(): Matrix = new Matrix(this) *= (-1)
+
+  def -(that: Matrix): Matrix = new Matrix(this) -= that
+
+  def -=(that: Matrix): Matrix = {
+    assert(rows == that.rows && cols == that.cols,
+      s"Matrix subtraction not defined for ${rows}x$cols and ${that.rows}x${that.cols}")
+    for (i <- data.indices) data(i) -= that.data(i)
+    this
+  }
+
   def *(sf: Double): Matrix = new Matrix(this) *= sf
 
   def *(that: Matrix): Matrix = new Matrix(this) *= that
