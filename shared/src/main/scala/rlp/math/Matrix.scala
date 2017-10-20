@@ -19,6 +19,35 @@ class Matrix(private var rows: Int, private var cols: Int, private var data: Arr
     this
   }
 
+  def subMatrix(rowStart: Int = 0, rowEnd: Int = rows, colStart: Int = 0, colEnd: Int = cols): Matrix = {
+    val ret = new Matrix(rowEnd-rowStart, colEnd-colStart)
+    for (r <- rowStart until rowEnd) {
+      for (c <- colStart until colEnd) {
+        ret(r - rowStart, c - colStart) = this(r, c)
+      }
+    }
+    ret
+  }
+
+  def transpose(): Matrix = new Matrix(this) transposeSelf()
+
+  def transposeSelf(): Matrix = {
+
+    val buffer = new Array[Double](data.length)
+
+    for (r <- 0 until rows) {
+      for (c <- 0 until cols) {
+        buffer(c*rows+r) = data(r*cols+c)
+      }
+    }
+
+    data = buffer
+    val temp = rows
+    rows = cols
+    cols = temp
+    this
+  }
+
   def map(f: Double => Double): Matrix = new Matrix(this) each f
 
   def each(f: Double => Double): Matrix = {
@@ -34,6 +63,18 @@ class Matrix(private var rows: Int, private var cols: Int, private var data: Arr
   def update(row: Int, col: Int, value: Double): Unit = {
     assert(0 <= row && 0 <= col && row < rows && col < cols, s"Index $row $col does not exist")
     data(row*cols + col) = value
+  }
+
+  def elemProduct(that: Matrix): Matrix = new Matrix(this) *= that
+
+  def elemProductSelf(that: Matrix): Matrix = {
+    assert(rows == that.rows && cols == that.cols, "Element-wise matrix multiplication only defined for same sizes!")
+    for (r <- 0 until rows) {
+      for (c <- 0 until cols) {
+        this(r, c) *= that(r, c)
+      }
+    }
+    this
   }
 
   def +(that: Matrix): Matrix = new Matrix(this) += that
@@ -81,6 +122,18 @@ class Matrix(private var rows: Int, private var cols: Int, private var data: Arr
     cols = that.cols
     data = buffer
     this
+  }
+
+  override def toString: String = {
+    var str = "[ "
+    for (r <- 0 until rows) {
+      if (r != 0) str += ", "
+      for (c <- 0 until cols) {
+        if (c != 0) str += " "
+        str += this(r, c)
+      }
+    }
+    str + " ]"
   }
 }
 
