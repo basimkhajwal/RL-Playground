@@ -1,6 +1,17 @@
 package rlp.math
 
+/**
+  * Storing and applying matrix operations to the data supplied
+  *
+  * @param rows
+  * @param cols
+  * @param data The matrix values, in row-major order
+  */
 class Matrix(private var rows: Int, private var cols: Int, private var data: Array[Double]) {
+
+  require(rows > 0)
+  require(cols > 0)
+  require(data.length >= rows*cols, "Insufficient data supplied")
 
   def this(rows: Int, cols: Int) = {
     this(rows, cols, new Array[Double](rows * cols))
@@ -10,11 +21,12 @@ class Matrix(private var rows: Int, private var cols: Int, private var data: Arr
     this(that.rows, that.cols, that.data.clone())
   }
 
+  /* Getters */
   def getRows() = rows
   def getCols() = cols
   def getData() = data
 
-  def fill(v: Double): Matrix = {
+  def fillWith(v: Double): Matrix = {
     for (i <- data.indices) data(i) = v
     this
   }
@@ -48,7 +60,9 @@ class Matrix(private var rows: Int, private var cols: Int, private var data: Arr
     this
   }
 
-  def map(f: Double => Double): Matrix = new Matrix(this) each f
+  def map(f: Double => Double): Matrix = {
+    new Matrix(this) each f
+  }
 
   def each(f: Double => Double): Matrix = {
     for (i <- data.indices) data(i) = f(data(i))
@@ -56,19 +70,21 @@ class Matrix(private var rows: Int, private var cols: Int, private var data: Arr
   }
 
   def apply(row: Int, col: Int): Double = {
-    assert(0 <= row && 0 <= col && row < rows && col < cols, s"Index $row $col does not exist")
+    require(0 <= row && 0 <= col && row < rows && col < cols, s"Index $row $col does not exist")
     data(row*cols + col)
   }
 
   def update(row: Int, col: Int, value: Double): Unit = {
-    assert(0 <= row && 0 <= col && row < rows && col < cols, s"Index $row $col does not exist")
+    require(0 <= row && 0 <= col && row < rows && col < cols, s"Index $row $col does not exist")
     data(row*cols + col) = value
   }
 
-  def elemProduct(that: Matrix): Matrix = new Matrix(this) *= that
+  def elemProduct(that: Matrix): Matrix = {
+    new Matrix(this) *= that
+  }
 
   def elemProductSelf(that: Matrix): Matrix = {
-    assert(rows == that.rows && cols == that.cols, "Element-wise matrix multiplication only defined for same sizes!")
+    require(rows == that.rows && cols == that.cols, "Element-wise matrix multiplication only defined for same sizes!")
     for (r <- 0 until rows) {
       for (c <- 0 until cols) {
         this(r, c) *= that(r, c)
@@ -77,29 +93,33 @@ class Matrix(private var rows: Int, private var cols: Int, private var data: Arr
     this
   }
 
-  def +(that: Matrix): Matrix = new Matrix(this) += that
+  def +(that: Matrix): Matrix = {
+    new Matrix(this) += that
+  }
 
   def +=(that: Matrix): Matrix = {
-    assert(rows == that.rows && cols == that.cols,
+    require(rows == that.rows && cols == that.cols,
       s"Matrix addition not defined for ${rows}x$cols and ${that.rows}x${that.cols}")
     for (i <- data.indices) data(i) += that.data(i)
     this
   }
 
-  def unary_-(): Matrix = new Matrix(this) *= (-1)
-
   def -(that: Matrix): Matrix = new Matrix(this) -= that
 
   def -=(that: Matrix): Matrix = {
-    assert(rows == that.rows && cols == that.cols,
+    require(rows == that.rows && cols == that.cols,
       s"Matrix subtraction not defined for ${rows}x$cols and ${that.rows}x${that.cols}")
     for (i <- data.indices) data(i) -= that.data(i)
     this
   }
 
-  def *(sf: Double): Matrix = new Matrix(this) *= sf
+  def *(sf: Double): Matrix = {
+    new Matrix(this) *= sf
+  }
 
-  def *(that: Matrix): Matrix = new Matrix(this) *= that
+  def *(that: Matrix): Matrix = {
+    new Matrix(this) *= that
+  }
 
   def *=(sf: Double): Matrix = {
     for (i <- data.indices) data(i) *= sf
@@ -107,7 +127,7 @@ class Matrix(private var rows: Int, private var cols: Int, private var data: Arr
   }
 
   def *=(that: Matrix): Matrix = {
-    assert(cols == that.rows,
+    require(cols == that.rows,
       s"Matrix addition not defined for ${rows}x$cols and ${that.rows}x${that.cols}")
 
     val buffer = new Array[Double](rows * that.cols)
@@ -125,9 +145,9 @@ class Matrix(private var rows: Int, private var cols: Int, private var data: Arr
   }
 
   override def toString: String = {
-    var str = "[ "
+    var str = "["
     for (r <- 0 until rows) {
-      if (r != 0) str += ", "
+      if (r != 0) str += ",\n "
       for (c <- 0 until cols) {
         if (c != 0) str += " "
         str += this(r, c)
@@ -139,9 +159,14 @@ class Matrix(private var rows: Int, private var cols: Int, private var data: Arr
 
 object Matrix {
 
+  /**
+    * Concatenate matrices supplied along the row dimension
+    * @param ms
+    * @return
+    */
   def concatRows(ms: Matrix*): Matrix = {
-    assert(ms.nonEmpty, "Cannot concat empty list of matrices!")
-    assert(ms.map(_.cols).distinct.length == 1,
+    require(ms.nonEmpty, "Cannot concat empty list of matrices!")
+    require(ms.map(_.cols).distinct.length == 1,
       s"Concatenating along rows requires the same size on cols")
 
     val ret = new Matrix(ms.map(_.rows).sum, ms.head.cols)
@@ -155,9 +180,14 @@ object Matrix {
     ret
   }
 
+  /**
+    * Concatenate matrices supplied along the column dimension
+    * @param ms
+    * @return
+    */
   def concatCols(ms: Matrix*): Matrix = {
-    assert(ms.nonEmpty, "Cannot concat empty list of matrices!")
-    assert(ms.map(_.rows).distinct.length == 1,
+    require(ms.nonEmpty, "Cannot concat empty list of matrices!")
+    require(ms.map(_.rows).distinct.length == 1,
       s"Concatenating along cols requires the same size on rows")
 
     val ret = new Matrix(ms.head.rows, ms.map(_.cols).sum)

@@ -3,11 +3,12 @@ package rlp.ai
 import rlp.math.Matrix
 
 /**
+  * A dense, feed-forward neural network representation
+  * with N layers
   *
-  *
-  * @param layerSizes
-  * @param activationFunctions
-  * @param useSoftMax
+  * @param layerSizes N integers specifying nodes per layer
+  * @param activationFunctions N-1 activation functions
+  * @param useSoftMax Whether to use squared error or soft-max with cross entropy loss
   */
 class NeuralNetwork(
   val layerSizes: Array[Int],
@@ -17,8 +18,8 @@ class NeuralNetwork(
 
   val numLayers = layerSizes.size
 
-  assert(numLayers >= 2, "Neural network requires input and output layer")
-  assert(layerSizes.length-1 == activationFunctions.length, "Invalid number of activation functions provided")
+  require(numLayers >= 2, "Neural network requires input and output layer")
+  require(activationFunctions.length == numLayers-1, "Invalid number of activation functions provided")
 
   val weights: Array[Matrix] =
     for ((n1, n2) <- layerSizes.zip(layerSizes.tail)) yield new Matrix(n1+1, n2)
@@ -29,7 +30,7 @@ class NeuralNetwork(
 
   def forwardProp(inputActivations: Matrix): Matrix = {
     var alpha = inputActivations
-    val ones = new Matrix(inputActivations.getRows(), 1) fill 1
+    val ones = new Matrix(inputActivations.getRows(), 1) fillWith 1
 
     for ((w, phi) <- weights.zip(activationFunctions)) {
       alpha = (Matrix.concatCols(ones, alpha) *= w) each phi.apply
@@ -49,7 +50,7 @@ class NeuralNetwork(
             if (useSoftMax) {
               target(i, k) * -math.log(output(i, k))
             } else {
-              math.pow(target(i, k) - output(i, k), 2)
+              0.5 * math.pow(target(i, k) - output(i, k), 2)
             }
           }
 
@@ -78,7 +79,7 @@ class NeuralNetwork(
 
   def backProp(input: Matrix, target: Matrix): Array[Matrix] = {
     val m = input.getRows()
-    val ones = new Matrix(m, 1) fill 1
+    val ones = new Matrix(m, 1) fillWith 1
 
     val netInputs = new Array[Matrix](numLayers)
     val activations = new Array[Matrix](numLayers)
@@ -110,15 +111,15 @@ class NeuralNetwork(
 
   def numericalGradient(input: Matrix, target: Matrix, epsilon: Double = 1e-5): Array[Matrix] = {
 
-    val gradients = new Array[Matrix](numLayers-1)
+    val gradients = new Array[Matrix](weights.length)
     val initialLoss = loss(input, target).sum
 
-    for (i <- gradients.indices) {
+    for (i <- weights.indices) {
+      gradients(i) = new Matrix(weights(i).getRows(), weights(i).getCols())
       for (r <- 0 until weights(i).getRows()) {
         for (c <- 0 until weights(i).getCols()) {
           weights(i)(r, c) += epsilon
-          val newLoss = loss(input, target).sum
-          gradients(i)(r, c) = (newLoss - initialLoss) / epsilon
+          gradients(i)(r, c) = (loss(input, target).sum - initialLoss) / epsilon
           weights(i)(r, c) -= epsilon
         }
       }
@@ -126,33 +127,26 @@ class NeuralNetwork(
 
     gradients
   }
-}
 
-sealed trait ActivationFunction {
-  def apply(m: Matrix): Matrix = m map apply
-  def apply(x: Double): Double
-
-  def derivative(m: Matrix): Matrix = m map derivative
-  def derivative(x: Double): Double
-}
-
-object ActivationFunction {
-
-  object Linear extends ActivationFunction {
-    override def apply(x: Double): Double = x
-    override def derivative(x: Double): Double = 1
+  def randomiseWeights(min: Double = 0, max: Double = 1): Unit = {
+    for (w <- weights.indices) {
+      for (r <- 0 until weights(w).getRows()) {
+        for (c <- 0 until weights(w).getCols()) {
+          weights(w)(r,c) = math.random() * (max - min) + min
+        }
+      }
+    }
   }
 
-  object ReLU extends ActivationFunction {
-    override def apply(x: Double) = if (x < 0) 0 else x
-    override def derivative(x: Double) = if (x < 0) 0 else 1
-  }
-
-  object Sigmoid extends ActivationFunction {
-    override def apply(x: Double) = 1.0 / (1.0 + math.exp(-x))
-    override def derivative(x: Double) = {
-      val sigmoid = apply(x)
-      sigmoid * (1 - sigmoid)
+  // Very simple training method for now
+  // TODO: Implement RMSProp and proper batching
+  def train(inputs: Matrix, targets: Matrix, alpha: Double, numEpochs: Int): Unit ={
+    for (_ <- 0 until numEpochs) {
+      val grad = backProp(inputs, targets)
+      for (i <- grad.indices) {
+        weights(i) -= (grad(i) *= alpha)
+      }
     }
   }
 }
+
