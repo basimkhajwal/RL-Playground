@@ -8,6 +8,8 @@ import rlp.pages.PongPage
 object Client {
 
   def main(args: Array[String]): Unit = {
-    dom.render(document.getElementById("clientContainer"), new PongPage().content())
+    val page = new PongPage()
+    dom.render(document.getElementById("clientContainer"), page.content())
+    page.start()
   }
 }
