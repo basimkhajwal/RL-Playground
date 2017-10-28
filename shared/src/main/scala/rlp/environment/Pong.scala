@@ -32,12 +32,17 @@ object Pong {
     currentPaddle: Double, otherPaddle: Double
   )
   object AgentState {
-    def fromState(state: State, isLeft: Boolean): AgentState =
-      AgentState(
-        state.ballPos, state.ballDir,
-        if (isLeft) state.leftPaddleY else state.rightPaddleY,
-        if (isLeft) state.rightPaddleY else state.leftPaddleY
-      )
+    def fromState(state: State, isLeft: Boolean): AgentState = {
+      if (isLeft) {
+        AgentState(state.ballPos, state.ballDir, state.leftPaddleY, state.rightPaddleY)
+      } else {
+        AgentState(
+          state.ballPos.copy(x = SCREEN_WIDTH - state.ballPos.x),
+          state.ballDir.copy(x = -state.ballDir.x),
+          state.rightPaddleY, state.leftPaddleY
+        )
+      }
+    }
   }
 
   type PongAgent = Agent[AgentState, Action]
@@ -65,12 +70,12 @@ class Pong(val leftAgent: Pong.PongAgent, val rightAgent: Pong.PongAgent) extend
   override def reset(seed: Int): Unit = {
     val ran = new Random(seed)
     ballPos = Point2D((SCREEN_WIDTH - BALL_SIZE) / 2, (SCREEN_HEIGHT - BALL_SIZE) / 2)
-    ballDir = Point2D.fromPolar(ran.nextDouble()*math.Pi*2, 1)
+    ballDir = Point2D.fromPolar(ran.nextDouble() * 2 * math.Pi, 1)
     leftPaddleY = (SCREEN_HEIGHT - PADDLE_HEIGHT) / 2
     rightPaddleY = leftPaddleY
   }
 
-  def step(): Unit = {
+  override def step(): Boolean = {
     val s = getState()
     val leftS = AgentState.fromState(s, true)
     val rightS = AgentState.fromState(s, false)
@@ -107,12 +112,12 @@ class Pong(val leftAgent: Pong.PongAgent, val rightAgent: Pong.PongAgent) extend
     var rightWon = false
 
     if (ballPos.x < leftDist) {
-      rightWon = ballPos.y < leftPaddleY || ballPos.y > leftPaddleY + PADDLE_HEIGHT
+      rightWon = ballPos.y + BALL_SIZE < leftPaddleY || ballPos.y > leftPaddleY + PADDLE_HEIGHT
       ballPos = ballPos copy (x = leftDist + (leftDist - ballPos.x))
       ballDir = ballDir copy (x = -ballDir.x)
 
     } else if (ballPos.x > rightDist) {
-      leftWon = ballPos.y < leftPaddleY || ballPos.y > leftPaddleY + PADDLE_HEIGHT
+      leftWon = ballPos.y + BALL_SIZE < rightPaddleY || ballPos.y > rightPaddleY + PADDLE_HEIGHT
       ballPos = ballPos copy (x = rightDist - (ballPos.x - rightDist))
       ballDir = ballDir copy (x = -ballDir.x)
     }
@@ -128,6 +133,8 @@ class Pong(val leftAgent: Pong.PongAgent, val rightAgent: Pong.PongAgent) extend
 
     leftAgent.percept(leftS, leftS2, leftReward)
     rightAgent.percept(rightS, rightS2, rightReward)
+
+    leftWon || rightWon
   }
 }
 

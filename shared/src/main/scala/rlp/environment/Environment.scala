@@ -4,7 +4,7 @@ trait Environment[S] {
   def reset(seed: Int = (math.random()*10000000).toInt): Unit
   def setState(state: S): Unit
   def getState(): S
-  def step(): Unit
+  def step(): Boolean
 }
 
 object Environment {
