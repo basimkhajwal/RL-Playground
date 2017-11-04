@@ -27,7 +27,7 @@ class Matrix(private var rows: Int, private var cols: Int, private var data: Arr
   def getData() = data
 
   def fillWith(v: Double): Matrix = {
-    for (i <- data.indices) data(i) = v
+    for (i <- 0 until (rows*cols)) data(i) = v
     this
   }
 
@@ -65,7 +65,7 @@ class Matrix(private var rows: Int, private var cols: Int, private var data: Arr
   }
 
   def each(f: Double => Double): Matrix = {
-    for (i <- data.indices) data(i) = f(data(i))
+    for (i <- 0 until (rows*cols)) data(i) = f(data(i))
     this
   }
 
@@ -80,7 +80,7 @@ class Matrix(private var rows: Int, private var cols: Int, private var data: Arr
   }
 
   def elemProduct(that: Matrix): Matrix = {
-    new Matrix(this) *= that
+    new Matrix(this) elemProductSelf that
   }
 
   def elemProductSelf(that: Matrix): Matrix = {
@@ -99,8 +99,8 @@ class Matrix(private var rows: Int, private var cols: Int, private var data: Arr
 
   def +=(that: Matrix): Matrix = {
     require(rows == that.rows && cols == that.cols,
-      s"Matrix addition not defined for ${rows}x$cols and ${that.rows}x${that.cols}")
-    for (i <- data.indices) data(i) += that.data(i)
+      s"Matrix addition isn't defined for ${rows}x$cols and ${that.rows}x${that.cols} because ${rows == that.rows} ${cols == that.cols}")
+    for (i <- 0 until (rows*cols)) data(i) += that.data(i)
     this
   }
 
@@ -109,7 +109,7 @@ class Matrix(private var rows: Int, private var cols: Int, private var data: Arr
   def -=(that: Matrix): Matrix = {
     require(rows == that.rows && cols == that.cols,
       s"Matrix subtraction not defined for ${rows}x$cols and ${that.rows}x${that.cols}")
-    for (i <- data.indices) data(i) -= that.data(i)
+    for (i <- 0 until (rows*cols)) data(i) -= that.data(i)
     this
   }
 
@@ -122,13 +122,13 @@ class Matrix(private var rows: Int, private var cols: Int, private var data: Arr
   }
 
   def *=(sf: Double): Matrix = {
-    for (i <- data.indices) data(i) *= sf
+    for (i <- 0 until (rows*cols)) data(i) *= sf
     this
   }
 
   def *=(that: Matrix): Matrix = {
     require(cols == that.rows,
-      s"Matrix addition not defined for ${rows}x$cols and ${that.rows}x${that.cols}")
+      s"Matrix multiplication not defined for ${rows}x$cols and ${that.rows}x${that.cols}")
 
     val buffer = new Array[Double](rows * that.cols)
     for (i <- 0 until rows) {

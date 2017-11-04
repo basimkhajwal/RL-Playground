@@ -7,18 +7,23 @@ import org.scalatest.prop.PropertyChecks
 
 class MatrixSuite extends FlatSpec with PropertyChecks with Matchers {
 
-  val matrices = for {
+  val matrices: Gen[Matrix] = for {
     rows <- Gen.choose(1, 10)
     cols <- Gen.choose(1, 10)
     data <- Gen.listOfN(rows*cols, Gen.choose(-1e50, 1e50))
   } yield new Matrix(rows, cols, data.toArray)
+
+  val sameSizeMatrices: Gen[(Matrix, Matrix)] = for {
+    m1 <- matrices
+    d2 <- Gen.listOfN(m1.getRows() * m1.getCols(), Gen.choose(-1e50, 1e50))
+  } yield (m1, new Matrix(m1.getRows(), m1.getCols(), d2.toArray))
 
   implicit object MatrixEqualizer extends Equality[Matrix] {
     override def areEqual(a: Matrix, b: Any): Boolean = b match {
       case m: Matrix => {
         a.getRows() === m.getRows() &&
         a.getCols() === m.getCols() &&
-        (a.getData(), m.getData()).zipped.forall { (x, y) => Math.abs(x-y)/x <= 1e-5}
+        (a.getData(), m.getData()).zipped.forall { (x, y) => x == y || Math.abs(x-y)/x <= 1e-5}
       }
       case _ => false
     }
@@ -39,42 +44,40 @@ class MatrixSuite extends FlatSpec with PropertyChecks with Matchers {
   }
   
   it must "add and subtract correctly" in {
-    forAll((matrices, "m1"), (matrices, "m2"), (Gen.choose(1, 20), "c")) { (m1, m2, c) =>
-      whenever(m1.getRows() == m2.getRows() && m1.getCols() == m2.getCols()) {
-        val temp = new Matrix(m1)
+    forAll((sameSizeMatrices, "m1 & m2"), (Gen.choose(1, 20), "c")) { (ms, c) =>
+      val (m1, m2) = ms
+      val temp = new Matrix(m1)
 
-        for (_ <- 0 until c) temp += m2
-        temp shouldEqual (m1 + m2*c)
+      for (_ <- 0 until c) temp += m2
+      temp shouldEqual (m1 + m2*c)
 
-        for (_ <- 0 until c) temp -= m2
-        temp shouldEqual m1
+      for (_ <- 0 until c) temp -= m2
+      temp shouldEqual m1
 
-        for (_ <- 0 until c) temp -= m2
-        temp shouldEqual (m1 - m2*c)
-      }
+      for (_ <- 0 until c) temp -= m2
+      temp shouldEqual (m1 - m2*c)
     }
   }
   
-  it must "compute the BEST correct element-wise product" in {
-    forAll((matrices, "m"), (Gen.choose(-1e30, 1e30), "sf")) { (m, sf) =>
-      whenever(sf !== 0.0+-0.1) {
+  it must "compute the correct element-wise product" in {
+    forAll((matrices, "m"), (Gen.choose(-1e50, 1e50), "sf")) { (m, sf) =>
+      whenever(sf !== 0.0) {
         val s1 = new Matrix(m) fillWith sf
         val s2 = new Matrix(m) fillWith (1.0/sf)
         val zeros = new Matrix(m) fillWith 0
 
         m shouldEqual (m elemProduct s1 elemProduct s2)
-        s1 shouldEqual (zeros elemProduct m)
+        zeros shouldEqual (zeros elemProduct m)
       }
     }
   }
   
   it must "commute with all the operators required" in {
-    forAll((matrices, "m1"), (matrices, "m2")) { (m1, m2) =>
-      whenever(m1.getRows() == m2.getRows() && m1.getCols() == m2.getCols()) {
-        (m1 + m2) shouldEqual (m2 + m1)
-        (m1 - m2) shouldEqual (m2 - m1)
-        (m1 elemProduct m2) shouldEqual (m2 elemProduct m1)
-      }
+    forAll((sameSizeMatrices, "m1 & m2")) { ms =>
+      val (m1, m2) = ms
+      (m1 + m2) shouldEqual (m2 + m1)
+      (m1 - m2) shouldEqual (m2 - m1).each(_ * -1)
+      (m1 elemProduct m2) shouldEqual (m2 elemProduct m1)
     }
   }
   
