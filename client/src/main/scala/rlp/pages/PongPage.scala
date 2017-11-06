@@ -191,6 +191,61 @@ class PongPage {
     false
   }
 
+  sealed trait PlayState
+  object Stopped extends PlayState
+  object Paused extends PlayState
+  object Playing extends PlayState
+
+  private val playState = Var(Stopped)
+  private val gameSpeed = Var(0)
+
+  def stopClicked(): Unit = {
+
+  }
+
+  def playClicked(): Unit = {
+
+  }
+
+  def fastForwardClicked(): Unit = {
+
+  }
+
+  @dom
+  def taskBar(): Binding[Div] = {
+    <div class="col s6 offset-s3 card-panel">
+      <div class="row valign-wrapper">
+        <div class="col s4">
+          <a class="btn-floating btn-medium waves-effect waves-circle orange right"
+            onclick={ _:Event => stopClicked() }
+          >
+            <i class="material-icons">stop</i>
+          </a>
+        </div>
+
+        <div class="col s4">
+          <a class="btn-floating btn-large waves-effect waves-circle red"
+            onclick = { _:Event => playClicked() }
+          >
+            <i class="material-icons">play_arrow</i>
+          </a>
+        </div>
+
+        <div class="col s4">
+          <a class="btn-floating btn-medium waves-effect waves-circle orange left"
+            onclick = { _:Event => fastForwardClicked() }
+          >
+            <i class="material-icons">fast_forward</i>
+          </a>
+        </div>
+
+      </div>
+      <div class="row">
+        <h6 class="center-align col s4 offset-s4">x1</h6>
+      </div>
+    </div>
+  }
+
   @dom
   def content(): Binding[Div] = {
 
@@ -198,22 +253,32 @@ class PongPage {
     ctx = canvas.getContext("2d").asInstanceOf[CanvasRenderingContext2D]
 
     <div id="app">
-      <div class="row">
+
+      <nav class="orange z-depth-0">
+        <div class="nav-wrapper container">
+          <a href="#" class="brand-logo left">RL-Playground</a>
+          <p id="subtitle" class="right hide-on-med-and-down">
+            An interactive reinforcement learning demonstration
+          </p>
+        </div>
+      </nav>
+
+      <div class="row container">
 
         <div class="col s12">
-          <h5 class="white-text center-align">PONG</h5>
+          <h5 class="center-align">PONG</h5>
         </div>
 
         <div class="col s8">
-          <div class="card-panel orange lighten">
-            <h5 class="white-text center-align">Game Container</h5>
+          <div class="card-panel">
+            <h5 class="center-align">Game Container</h5>
             { canvas }
           </div>
         </div>
 
         <div class="col s4">
-          <div class="card-panel red lighten">
-            <h5 class="white-text">Controls Container</h5>
+          <div class="card-panel">
+            <h5 class="">Controls Container</h5>
             <form onsubmit={_:Event => false}>
               <h6>Updates Per Second</h6>
               <div>
@@ -247,6 +312,17 @@ class PongPage {
             </p>
           </div>
         </div>
+
+        { taskBar().bind }
+
+        <div class="col s12 card-panel">
+          <h5 class="center-align">Model Selection</h5>
+        </div>
+
+        <div class="col s12 card-panel">
+          <h5 class="center-align">Graphs &amp; Statistics</h5>
+        </div>
+
       </div>
     </div>
   }
