@@ -1,6 +1,5 @@
 package rlp.pages
 
-import javafx.scene.control.RadioButton
 
 import com.thoughtworks.binding.Binding.Var
 import rlp._
@@ -9,6 +8,7 @@ import com.thoughtworks.binding.{Binding, dom}
 import org.scalajs.dom.{CanvasRenderingContext2D, document, html}
 import org.scalajs.dom.html.{Canvas, Div}
 import org.scalajs.dom.raw.Event
+import rlp.ai.QTable
 
 import scala.scalajs.js.{Date, timers}
 
@@ -16,31 +16,11 @@ class PongPage {
 
   import Pong._
 
-  class QTable(val dimensions: Array[Int], val numActions: Int) {
-
-    val table = new Array[Double](dimensions.product * numActions)
-
-    def convertToIndex(indexes: Array[Int], act: Int): Int = {
-      var idx = 0
-      var dimSize = 1
-      for ((i, sz) <- indexes zip dimensions) {
-        idx += i * dimSize
-        dimSize *= sz
-      }
-      idx + act * dimSize
-    }
-
-    def apply(indexes: Array[Int], act: Int): Double = table(convertToIndex(indexes, act))
-    def update(indexes: Array[Int], act: Int,  value: Double): Unit = {
-      table(convertToIndex(indexes, act)) = value
-    }
-  }
-
-  val xSamples = 20
-  val ySamples = 10
-  val dirSamples = 1
-
   class LearningAgent(val table: QTable) extends PongAgent {
+
+    val xSamples = 20
+    val ySamples = 10
+    val dirSamples = 1
 
     val alpha = 0.05
     val lambda = 0.99
@@ -196,52 +176,69 @@ class PongPage {
   object Paused extends PlayState
   object Playing extends PlayState
 
-  private val playState = Var(Stopped)
+  private val playState: Var[PlayState] = Var(Stopped)
   private val gameSpeed = Var(0)
 
   def stopClicked(): Unit = {
-
+    playState := Stopped
   }
 
   def playClicked(): Unit = {
+    playState := Playing
+    gameSpeed := 1
+  }
 
+  def pauseClicked(): Unit = {
+    playState := Paused
   }
 
   def fastForwardClicked(): Unit = {
-
+    gameSpeed := gameSpeed.get + 1
   }
 
   @dom
   def taskBar(): Binding[Div] = {
+    val buttonStyle = "btn-floating waves-effect waves-circle "
+
     <div class="col s6 offset-s3 card-panel">
-      <div class="row valign-wrapper">
-        <div class="col s4">
-          <a class="btn-floating btn-medium waves-effect waves-circle orange right"
-            onclick={ _:Event => stopClicked() }
+       {
+        val currentState = playState.bind
+
+        <div class="row valign-wrapper">
+          <a class= {
+              buttonStyle + "btn-medium orange right " +
+              (if (currentState == Stopped) "disabled" else "")
+             }
+             onclick={ _:Event => stopClicked() }
           >
             <i class="material-icons">stop</i>
           </a>
-        </div>
 
-        <div class="col s4">
-          <a class="btn-floating btn-large waves-effect waves-circle red"
-            onclick = { _:Event => playClicked() }
+          <a class={buttonStyle + "btn-large red"}
+             onclick = { _:Event => if (currentState == Playing) pauseClicked() else playClicked() }
           >
-            <i class="material-icons">play_arrow</i>
+            <i class="material-icons">
+              { if (currentState == Playing) "pause" else "play_arrow" }
+            </i>
           </a>
-        </div>
 
-        <div class="col s4">
-          <a class="btn-floating btn-medium waves-effect waves-circle orange left"
-            onclick = { _:Event => fastForwardClicked() }
+          <a class= {
+               buttonStyle + "btn-medium orange left " +
+               (if (currentState != Playing) "disabled" else "")
+             }
+             onclick={ _:Event => fastForwardClicked() }
           >
             <i class="material-icons">fast_forward</i>
           </a>
         </div>
-
-      </div>
+      }
       <div class="row">
-        <h6 class="center-align col s4 offset-s4">x1</h6>
+        <div>
+          <input type="checkbox" checked={true} name="render" id="render"/>
+          <label for="render">Render?</label>
+        </div>
+        <h6>Speed: x{gameSpeed.bind.toString}</h6>
+        <h6>Games Played: {gamesPlayed.bind.toString}</h6>
       </div>
     </div>
   }
@@ -269,58 +266,21 @@ class PongPage {
           <h5 class="center-align">PONG</h5>
         </div>
 
-        <div class="col s8">
+        <div class="col s12">
           <div class="card-panel">
             <h5 class="center-align">Game Container</h5>
             { canvas }
           </div>
         </div>
 
-        <div class="col s4">
-          <div class="card-panel">
-            <h5 class="">Controls Container</h5>
-            <form onsubmit={_:Event => false}>
-              <h6>Updates Per Second</h6>
-              <div>
-                <input type="radio" id="r1" name="rate" value="30" checked={true} />
-                <label for="r1">Normal (30 fps)</label>
-
-                <input type="radio" id="r2" name="rate" value="100" />
-                <label for="r2">Fast (100 fps)</label>
-
-                <input type="radio" id="r3" name="rate" value="250" />
-                <label for="r3">Faster (250 fps)</label>
-
-                <input type="radio" id="r4" name="rate" value="-1" />
-                <label for="r4">Fastest (browser dependent)</label>
-              </div>
-              <div>
-                <input type="checkbox" checked={true} name="render" id="render"/>
-                <label for="render">Render?</label>
-              </div>
-              <div>
-                <button onclick={_:Event => updateRefreshRate() }>
-                  Update Changes
-                </button>
-                <button onclick={_:Event => environment.reset() }>
-                  New Game
-                </button>
-              </div>
-            </form>
-            <p>
-              Games played { gamesPlayed.bind.toString }
-            </p>
-          </div>
-        </div>
-
         { taskBar().bind }
 
         <div class="col s12 card-panel">
-          <h5 class="center-align">Model Selection</h5>
+          <h5 class="center-align">TODO: Model Selection</h5>
         </div>
 
         <div class="col s12 card-panel">
-          <h5 class="center-align">Graphs &amp; Statistics</h5>
+          <h5 class="center-align">TODO: Graphs &amp; Statistics</h5>
         </div>
 
       </div>
