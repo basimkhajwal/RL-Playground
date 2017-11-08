@@ -76,18 +76,16 @@ class Pong(val leftAgent: Pong.PongAgent, val rightAgent: Pong.PongAgent) extend
   }
 
   override def step(): Boolean = {
-    val s = getState()
-    val leftS = AgentState.fromState(s, true)
-    val rightS = AgentState.fromState(s, false)
+    val prevState = getState()
 
-    leftAgent.act(leftS) match {
+    leftAgent.act(AgentState.fromState(prevState, true)) match {
       case NoAction =>
       case UpAction => leftPaddleY += PADDLE_SPEED
       case DownAction => leftPaddleY -= PADDLE_SPEED
     }
     leftPaddleY = math.min(math.max(0, leftPaddleY), SCREEN_HEIGHT - PADDLE_HEIGHT)
 
-    rightAgent.act(rightS) match {
+    rightAgent.act(AgentState.fromState(prevState, false)) match {
       case NoAction =>
       case UpAction => rightPaddleY += PADDLE_SPEED
       case DownAction => rightPaddleY -= PADDLE_SPEED
@@ -122,17 +120,13 @@ class Pong(val leftAgent: Pong.PongAgent, val rightAgent: Pong.PongAgent) extend
       ballDir = ballDir copy (x = -ballDir.x)
     }
 
-    val s2 = getState()
-    val leftS2 = AgentState.fromState(s2, true)
-    val rightS2 = AgentState.fromState(s2, false)
-
     val (leftReward, rightReward) =
       if (leftWon) (1, -1)
       else if (rightWon) (-1, 1)
       else (0, 0)
 
-    leftAgent.percept(leftS, leftS2, leftReward)
-    rightAgent.percept(rightS, rightS2, rightReward)
+    leftAgent.percept(leftReward)
+    rightAgent.percept(rightReward)
 
     leftWon || rightWon
   }
