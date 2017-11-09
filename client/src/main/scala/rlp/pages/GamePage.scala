@@ -1,20 +1,34 @@
 package rlp.pages
 
-import com.thoughtworks.binding.Binding.Var
+import com.thoughtworks.binding.Binding.{Constants, Var}
 import com.thoughtworks.binding.{Binding, dom}
 import org.scalajs.dom.Event
 import org.scalajs.dom.html.{Canvas, Div}
+import org.scalajs.dom.raw.HTMLElement
+import rlp.controllers.ModelController
 import rlp.environment.Agent
 
-abstract class GamePage {
+import scala.xml.Elem
+
+object GamePage {
 
   sealed trait TrainState
   object Stopped extends TrainState
   object Paused extends TrainState
   object Playing extends TrainState
+}
+
+abstract class GamePage[S, O, A] {
+
+  import GamePage._
+
+  /* Abstract vars */
+  protected val modelControllers: List[ModelController[S, O, A]]
 
   protected val trainState: Var[TrainState] = Var(Stopped)
   protected val gameSpeed: Var[Int] = Var(0)
+  protected val modelIdx: Var[Int] = Var(0)
+  protected val renderTraining: Var[Boolean] = Var(true)
 
   protected def stopClicked(): Unit = {
     trainState := Stopped
@@ -33,13 +47,92 @@ abstract class GamePage {
     gameSpeed := gameSpeed.get + 1
   }
 
+  protected def modelChanged(): Unit = {
+
+  }
+
+  protected def toggleRenderTraining(): Unit = {
+    renderTraining := !renderTraining.get
+  }
+
+  @dom
+  final lazy val content: Binding[Div] = {
+
+    <div id="app">
+
+      <nav class="orange z-depth-0">
+        <div class="nav-wrapper container">
+          <a href="#" class="brand-logo left">RL-Playground</a>
+          <p id="subtitle" class="right hide-on-med-and-down">
+            An interactive reinforcement learning demonstration
+          </p>
+        </div>
+      </nav>
+
+      <div class="row container">
+
+        <div class="col s12">
+          <h5 class="center-align">PONG</h5>
+        </div>
+
+        <div class="col s9">
+          { gameContainer.bind }
+        </div>
+        <div class="col s3 card-panel">
+          { controlsSection.bind }
+        </div>
+
+        { taskBar.bind }
+
+        <div class="col s12 card-panel">
+          { modelControllers(modelIdx.bind).options.bind }
+        </div>
+
+        <div class="col s12 card-panel">
+          <h5 class="center-align">TODO: Graphs &amp; Statistics</h5>
+        </div>
+
+      </div>
+    </div>
+  }
+
+  @dom
+  protected lazy val taskBar: Binding[Div] = {
+
+    <div class="col s6 offset-s3 card-panel">
+      { trainingButtons.bind } <br />
+
+      <h6>Speed: x{gameSpeed.bind.toString}</h6> <br />
+
+      { modelSelection.bind }
+    </div>
+  }
+
+  @dom
+  protected lazy val controlsSection: Binding[Div] = {
+    <div>
+      <h5>Game Controls</h5>
+      <div class="switch">
+        <label>
+          Render Training?
+          <input type="checkbox" checked={renderTraining.bind}
+            onchange={ _:Event => toggleRenderTraining() }
+          />
+          <span class="lever"></span>
+        </label>
+      </div>
+
+      { gameOptions.bind }
+    </div>
+  }
+
   @dom
   protected lazy val gameOptions: Binding[Div] = {
     <div>
       Empty!
     </div>
   }
-  
+
   @dom
   protected lazy val trainingButtons: Binding[Div] = {
     val buttonStyle = "btn-floating waves-effect waves-circle "
@@ -75,20 +168,17 @@ abstract class GamePage {
   }
 
   @dom
-  protected lazy val taskBar: Binding[Div] = {
-
-    <div class="col s6 offset-s3 card-panel">
-      <div class="row">
-        { trainingButtons.bind }
-      </div>
-      <div class="row">
-        <div>
-          <input type="checkbox" checked={true} name="render" id="render"/>
-          <label for="render">Render?</label>
-        </div>
-        <h6>Speed: x{gameSpeed.bind.toString}</h6>
-        { gameOptions.bind }
-      </div>
+  protected lazy val modelSelection: Binding[Div] = {
+    <div class="input-field">
+      <select onchange={_:Event => modelChanged()} disabled={trainState.bind != Stopped}>
+        {
+          for ((model, idx) <- Constants(modelControllers.zipWithIndex: _*)) yield {
+            <option value={idx.toString} selected={idx == modelIdx.bind}
+              >{model.name}</option>
+          }
+        }
+      </select>
+      <label>Model Select</label>
     </div>
   }
 
@@ -100,41 +190,6 @@ abstract class GamePage {
       <div class="card-panel">
         <h5 class="center-align">Game Container</h5>
         { canvas }
-      </div>
-    </div>
-  }
-
-  @dom
-  final lazy val content: Binding[Div] = {
-
-    <div id="app">
-
-      <nav class="orange z-depth-0">
-        <div class="nav-wrapper container">
-          <a href="#" class="brand-logo left">RL-Playground</a>
-          <p id="subtitle" class="right hide-on-med-and-down">
-            An interactive reinforcement learning demonstration
-          </p>
-        </div>
-      </nav>
-
-      <div class="row container">
-
-        <div class="col s12">
-          <h5 class="center-align">PONG</h5>
-        </div>
-
-        { gameContainer.bind }
-        { taskBar.bind }
-
-        <div class="col s12 card-panel">
-          <h5 class="center-align">TODO: Model Selection</h5>
-        </div>
-
-        <div class="col s12 card-panel">
-          <h5 class="center-align">TODO: Graphs &amp; Statistics</h5>
-        </div>
-
       </div>
     </div>
   }
