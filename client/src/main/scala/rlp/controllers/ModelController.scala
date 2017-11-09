@@ -5,16 +5,16 @@ import org.scalajs.dom.html.Div
 import rlp.environment.Agent
 
 
-trait ModelController[E, S, A] {
+trait ModelController[S, O, A] {
 
   val name: String
 
   @dom
   lazy val options: Binding[Div] = { <div>Empty model options for { name }</div> }
 
-  def getTrainedAgent(): Agent[S, A]
+  def getTrainedAgent(): Agent[O, A]
 
-  def getTrainingState(): E
+  def getTrainingState(): S
   
   def trainStep(): Unit
 }
