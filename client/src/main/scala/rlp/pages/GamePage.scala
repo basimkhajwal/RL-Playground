@@ -4,9 +4,12 @@ import com.thoughtworks.binding.Binding.{Constants, Var}
 import com.thoughtworks.binding.{Binding, dom}
 import org.scalajs.dom.Event
 import org.scalajs.dom.html.{Canvas, Div}
-import org.scalajs.dom.raw.HTMLElement
+import org.scalajs.dom.raw.{CanvasRenderingContext2D, HTMLElement}
 import rlp.controllers.ModelController
-import rlp.environment.Agent
+import rlp.environment.{Agent, Environment}
+import rlp._
+
+import scala.scalajs.js.timers
 
 object GamePage {
 
@@ -14,6 +17,9 @@ object GamePage {
   object Stopped extends TrainState
   object Paused extends TrainState
   object Playing extends TrainState
+
+  val GAME_SPEEDS = List(1, 2, 5, 10, -1)
+  val GAME_SPEED_VALUES = GAME_SPEEDS.init.map("x"+_) ++ List("Max")
 }
 
 abstract class GamePage[A] {
@@ -23,26 +29,60 @@ abstract class GamePage[A] {
   /* Abstract vars */
   protected val modelControllers: List[ModelController[A]]
 
+  protected def initTraining(): Unit
+  protected def trainStep(): Unit
+  protected def render(ctx: CanvasRenderingContext2D): Unit
+
   protected val trainState: Var[TrainState] = Var(Stopped)
   protected val gameSpeed: Var[Int] = Var(0)
   protected val modelIdx: Var[Int] = Var(0)
   protected val renderTraining: Var[Boolean] = Var(true)
 
-  protected def stopClicked(): Unit = {
-    trainState := Stopped
+  private var ctx: CanvasRenderingContext2D = _
+
+  /* Timers */
+  private var trainingTimer: timers.SetIntervalHandle = _
+  private var renderTimer: timers.SetIntervalHandle = _
+
+  def start(): Unit = {
+    renderTimer = timers.setInterval(1000 * Environment.DELTA) { render(ctx) }
+  }
+
+  private def createTrainingTimer(): timers.SetIntervalHandle = {
+    val speed = GAME_SPEEDS(gameSpeed.get)
+
+    if (speed > 0) {
+      timers.setInterval(1000 * Environment.DELTA / speed) { trainStep() }
+    } else {
+      // TODO: Use measurements to create maximum speed
+      timers.setInterval(1000 * Environment.DELTA) { trainStep() }
+    }
   }
 
   protected def playClicked(): Unit = {
+    val wasStopped = trainState.get == Stopped
     trainState := Playing
     gameSpeed := 1
+
+    if (wasStopped) initTraining()
+    trainingTimer = createTrainingTimer()
+  }
+
+  protected def stopClicked(): Unit = {
+    trainState := Stopped
+
+    if (trainingTimer != null) timers.clearInterval(trainingTimer)
   }
 
   protected def pauseClicked(): Unit = {
     trainState := Paused
+    timers.clearInterval(trainingTimer)
   }
 
   protected def fastForwardClicked(): Unit = {
-    gameSpeed := gameSpeed.get + 1
+    gameSpeed := (gameSpeed.get + 1) % GAME_SPEEDS.length
+    timers.clearInterval(trainingTimer)
+    trainingTimer = createTrainingTimer()
   }
 
   protected def modelChanged(): Unit = {
@@ -100,7 +140,15 @@ abstract class GamePage[A] {
     <div class="col s6 offset-s3 card-panel">
       { trainingButtons.bind } <br />
 
-      <h6>Speed: x{gameSpeed.bind.toString}</h6> <br />
+      <h6>
+        {
+          if (trainState.bind == Playing) {
+            s"Speed: ${GAME_SPEED_VALUES(gameSpeed.bind)}"
+          } else {
+            "Stopped"
+          }
+        }
+      </h6> <br />
 
       { modelSelection.bind }
     </div>
@@ -182,13 +230,12 @@ abstract class GamePage[A] {
 
   @dom
   protected lazy val gameContainer: Binding[Div] = {
-    val canvas: Canvas = {<canvas width={800} height={600}></canvas>}
+    val canvas: Canvas = <canvas width={800} height={600}></canvas>
+    ctx = canvas.getContext("2d").asInstanceOf[CanvasRenderingContext2D]
 
-    <div class="col s12">
-      <div class="card-panel">
-        <h5 class="center-align">Game Container</h5>
-        { canvas }
-      </div>
+    <div class="card-panel">
+      <h5 class="center-align">Game Container</h5>
+      { canvas }
     </div>
   }
 }
