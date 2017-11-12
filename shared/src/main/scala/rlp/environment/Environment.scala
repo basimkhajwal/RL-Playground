@@ -14,6 +14,7 @@ object Environment {
 trait Agent[S, A] {
   def act(state: S): A
   def percept(reward: Double): Unit = {}
+  override def clone():Agent[S,A] = this
 }
 
 class MappedAgent[S1, A1, S2, A2](
@@ -44,5 +45,5 @@ trait SARSAAgent[S, A] extends Agent[S, A] {
 
   def sarsa(prevState: S, action: A, reward: Double, newState: S): A
 
-  def copy(): SARSAAgent[S, A] = sarsa
+  override def clone(): SARSAAgent[S, A] = sarsa
 }
