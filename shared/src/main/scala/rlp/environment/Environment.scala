@@ -16,6 +16,16 @@ trait Agent[S, A] {
   def percept(reward: Double): Unit = {}
 }
 
+class MappedAgent[S1, A1, S2, A2](
+  agent: Agent[S1, A1],
+  stateMap: S2 => S1, actionMap: A1 => A2
+) extends Agent[S2, A2] {
+
+  def act(state: S2): A2 = actionMap(agent.act(stateMap(state)))
+
+  override def percept(reward: Double): Unit = agent.percept(reward)
+}
+
 trait SARSAAgent[S, A] extends Agent[S, A] {
 
   private var lastReward: Double = 0
@@ -33,4 +43,6 @@ trait SARSAAgent[S, A] extends Agent[S, A] {
   }
 
   def sarsa(prevState: S, action: A, reward: Double, newState: S): A
+
+  def copy(): SARSAAgent[S, A] = sarsa
 }
