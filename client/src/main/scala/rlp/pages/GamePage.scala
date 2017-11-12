@@ -8,8 +8,6 @@ import org.scalajs.dom.raw.HTMLElement
 import rlp.controllers.ModelController
 import rlp.environment.Agent
 
-import scala.xml.Elem
-
 object GamePage {
 
   sealed trait TrainState
@@ -18,12 +16,12 @@ object GamePage {
   object Playing extends TrainState
 }
 
-abstract class GamePage[S, O, A] {
+abstract class GamePage[A] {
 
   import GamePage._
 
   /* Abstract vars */
-  protected val modelControllers: List[ModelController[S, O, A]]
+  protected val modelControllers: List[ModelController[A]]
 
   protected val trainState: Var[TrainState] = Var(Stopped)
   protected val gameSpeed: Var[Int] = Var(0)
@@ -85,7 +83,7 @@ abstract class GamePage[S, O, A] {
         { taskBar.bind }
 
         <div class="col s12 card-panel">
-          { modelControllers(modelIdx.bind).options.bind }
+          { modelControllers(modelIdx.bind).modelOptions.bind }
         </div>
 
         <div class="col s12 card-panel">
