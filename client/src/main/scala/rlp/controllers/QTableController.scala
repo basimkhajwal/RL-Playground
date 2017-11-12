@@ -12,7 +12,7 @@ class QTableController[O, A](
 
   override val name: String = "Tabular Q Learning"
 
-  val numStates = spaces.map(_.size).sum
+  val numStates = spaces.map(_.size).product
 
   private def stateMap(state: O): Int ={
     var stateSize = 1

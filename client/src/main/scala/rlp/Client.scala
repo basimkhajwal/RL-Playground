@@ -16,5 +16,7 @@ object Client {
     /* Run Jquery to initialise materialize */
     val $ = js.Dynamic.global.$
     $("select").material_select()
+
+    page.start()
   }
 }
