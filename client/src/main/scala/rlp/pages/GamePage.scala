@@ -5,11 +5,12 @@ import com.thoughtworks.binding.{Binding, dom}
 import org.scalajs.dom.Event
 import org.scalajs.dom.html.{Canvas, Div}
 import org.scalajs.dom.raw.{CanvasRenderingContext2D, HTMLElement}
+import org.scalajs.dom.window.performance
 import rlp.controllers.ModelController
 import rlp.environment.{Agent, Environment}
 import rlp._
 
-import scala.scalajs.js.timers
+import scala.scalajs.js.{Date, timers}
 
 object GamePage {
 
@@ -52,11 +53,27 @@ abstract class GamePage[A] {
     val speed = GAME_SPEEDS(gameSpeed.get)
 
     if (speed > 0) {
+      Logger.log(s"Began training at ${speed / Environment.DELTA}fps")
       timers.setInterval(1000 * Environment.DELTA / speed) { trainStep() }
     } else {
-      // TODO: Use measurements to create maximum speed
-      timers.setInterval(1000 * Environment.DELTA) { trainStep() }
+      val trainTime = benchmarkTraining()
+      val targetTimeStep = 7.0
+      val runsPerTimeStep = ((targetTimeStep-1)  / trainTime).toInt
+
+      Logger.log(s"Ran training time benchmark - ${trainTime}ms")
+      Logger.log(s"Began training at ${1000.0 * runsPerTimeStep / targetTimeStep}fps")
+
+      timers.setInterval(targetTimeStep) {
+        for (_ <- 0 until runsPerTimeStep) trainStep()
+      }
     }
+  }
+
+  private def benchmarkTraining(): Double = {
+    val numRuns = 1000
+    val startTime = performance.now()
+    for (_ <- 0 until numRuns) trainStep()
+    (performance.now() - startTime) / numRuns
   }
 
   protected def playClicked(): Unit = {
