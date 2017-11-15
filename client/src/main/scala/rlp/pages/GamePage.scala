@@ -77,12 +77,14 @@ abstract class GamePage[A] {
   }
 
   protected def playClicked(): Unit = {
-    val wasStopped = trainState.get == Stopped
-    trainState := Playing
-    gameSpeed := 1
-
-    if (wasStopped) initTraining()
+    if (trainState.get == Stopped) {
+      if (!modelControllers(modelIdx.get).validate()) return
+      initTraining()
+    }
     trainingTimer = createTrainingTimer()
+
+    trainState := Playing
+    gameSpeed := 0
   }
 
   protected def stopClicked(): Unit = {
@@ -116,7 +118,7 @@ abstract class GamePage[A] {
     <div id="app">
 
       <nav class="orange z-depth-0">
-        <div class="nav-wrapper container">
+        <div class="nav-wrapper page-container">
           <a href="#" class="brand-logo left">RL-Playground</a>
           <p id="subtitle" class="right hide-on-med-and-down">
             An interactive reinforcement learning demonstration
@@ -124,22 +126,21 @@ abstract class GamePage[A] {
         </div>
       </nav>
 
-      <div class="row container">
+      <div class="row page-container">
 
         <div class="col s12">
-          <h5 class="center-align">PONG</h5>
+          <h5 class="center-align">Pong</h5>
         </div>
 
         <div class="col s9">
           { gameContainer.bind }
         </div>
-        <div class="col s3 card-panel">
+        <div class="col s3">
           { controlsSection.bind }
         </div>
 
-        { taskBar.bind }
-
         <div class="col s12 card-panel">
+          <h5 class="center-align">Model Hyper Parameters</h5>
           { modelControllers(modelIdx.bind).modelOptions.bind }
         </div>
 
@@ -148,33 +149,28 @@ abstract class GamePage[A] {
         </div>
 
       </div>
-    </div>
-  }
 
-  @dom
-  protected lazy val taskBar: Binding[Div] = {
-
-    <div class="col s6 offset-s3 card-panel">
-      { trainingButtons.bind } <br />
-
-      <h6>
-        {
-          if (trainState.bind == Playing) {
-            s"Speed: ${GAME_SPEED_VALUES(gameSpeed.bind)}"
-          } else {
-            "Stopped"
-          }
-        }
-      </h6> <br />
-
-      { modelSelection.bind }
     </div>
   }
 
   @dom
   protected lazy val controlsSection: Binding[Div] = {
-    <div>
-      <h5>Game Controls</h5>
+    <div class="card-panel">
+      <h5 class="center-align">Controls</h5>
+      { trainingButtons.bind } <br />
+
+      <h6>
+        {
+        if (trainState.bind == Playing) {
+          s"Speed: ${GAME_SPEED_VALUES(gameSpeed.bind)}"
+        } else {
+          "Stopped"
+        }
+        }
+      </h6> <br />
+
+      { modelSelection.bind }
+
       <div class="switch">
         <label>
           Render Training?
@@ -251,7 +247,6 @@ abstract class GamePage[A] {
     ctx = canvas.getContext("2d").asInstanceOf[CanvasRenderingContext2D]
 
     <div class="card-panel">
-      <h5 class="center-align">Game Container</h5>
       { canvas }
     </div>
   }
