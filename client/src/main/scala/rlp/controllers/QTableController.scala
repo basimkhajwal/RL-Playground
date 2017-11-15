@@ -1,6 +1,8 @@
 package rlp.controllers
 
+import com.thoughtworks.binding.Binding.Var
 import com.thoughtworks.binding.{Binding, dom}
+import org.scalajs.dom.{Event, document, html}
 import org.scalajs.dom.html.Div
 import rlp.ai.agents.QTableAgent
 import rlp.environment.{Agent, MappedAgent}
@@ -13,6 +15,9 @@ class QTableController[O, A](
   override val name: String = "Tabular Q Learning"
 
   val numStates = spaces.map(_.size).product
+
+  val defaultLearningRate = 0.1
+  val defaultForgettingFactor = 0.9
 
   private def stateMap(state: O): Int ={
     var stateSize = 1
@@ -28,13 +33,39 @@ class QTableController[O, A](
 
   @dom
   override lazy val modelOptions: Binding[Div] = {
-    <div>
-      Q Table Options! (to do at a later date)
+    <div class="row">
+
+      <div class="input-field col s3 offset-s2">
+        <input id="learningRate" class="validate" type="number" min="0" step="any" value={defaultLearningRate.toString}
+          oninput={_:Event => validate()}/>
+        <label for="learningRate" data:data-error="Learning rate must be positive">Learning Rate</label>
+      </div>
+
+      <div class="input-field col s3 offset-s2">
+        <input id="forgettingFactor" class="validate" type="number" min="0" max="1" step="any" value={defaultForgettingFactor.toString}
+          oninput={_:Event => validate()}/>
+        <label for="forgettingFactor" data:data-error="Forgetting factor must be between 0 and 1">Forgetting Factor</label>
+      </div>
+
     </div>
   }
 
+  private def getElem[T](id: String): T = document.getElementById(id).asInstanceOf[T]
+
+  override def validate(): Boolean = {
+    val learningRate = getElem[html.Input]("learningRate")
+    val forgettingFactor = getElem[html.Input]("forgettingFactor")
+
+    learningRate.validity.valid && forgettingFactor.validity.valid
+  }
+
   override def buildAgent(): Agent[O, A] = {
-    new MappedAgent(new QTableAgent(numStates, numActions), stateMap, actionMap)
+    val qTable = new QTableAgent(numStates, numActions)
+
+    qTable.learningRate = getElem[html.Input]("learningRate").value.toDouble
+    qTable.forgettingFactor = getElem[html.Input]("forgettingFactor").value.toDouble
+
+    new MappedAgent(qTable, stateMap, actionMap)
   }
 }
 

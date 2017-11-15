@@ -12,5 +12,7 @@ trait ModelController[A] {
     <div>Empty model options for { name }</div>
   }
 
+  def validate(): Boolean = true
+
   def buildAgent(): A
 }
