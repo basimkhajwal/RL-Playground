@@ -3,6 +3,7 @@ package rlp.pages
 import com.thoughtworks.binding.Binding.{Constants, Var}
 import com.thoughtworks.binding.{Binding, dom}
 import org.scalajs.dom.Event
+import org.scalajs.dom.{window, document}
 import org.scalajs.dom.html.{Canvas, Div}
 import org.scalajs.dom.raw.{CanvasRenderingContext2D, HTMLElement}
 import org.scalajs.dom.window.performance
@@ -39,6 +40,7 @@ abstract class GamePage[A] {
   protected val modelIdx: Var[Int] = Var(0)
   protected val renderTraining: Var[Boolean] = Var(true)
 
+  private var canvas: Canvas = _
   private var ctx: CanvasRenderingContext2D = _
 
   /* Timers */
@@ -47,6 +49,8 @@ abstract class GamePage[A] {
 
   def start(): Unit = {
     renderTimer = timers.setInterval(1000 * Environment.DELTA) { render(ctx) }
+    window.onresize = { _:Event => pageResized() }
+    pageResized()
   }
 
   private def createTrainingTimer(): timers.SetIntervalHandle = {
@@ -112,6 +116,15 @@ abstract class GamePage[A] {
     renderTraining := !renderTraining.get
   }
 
+  protected def pageResized(): Unit = {
+    val container = document.getElementById("canvasContainer").asInstanceOf[Div]
+    val width = Math.min(800, container.offsetWidth - 50)
+    val aspectRatio = (canvas.height * 1.0) / canvas.width
+
+    canvas.width = width.toInt
+    canvas.height = (aspectRatio * width).toInt
+  }
+
   @dom
   final lazy val content: Binding[Div] = {
 
@@ -132,20 +145,24 @@ abstract class GamePage[A] {
           <h5 class="center-align">Pong</h5>
         </div>
 
-        <div class="col s9">
+        <div class="col s8 xl9">
           { gameContainer.bind }
         </div>
-        <div class="col s3">
+        <div class="col s4 xl3">
           { controlsSection.bind }
         </div>
 
-        <div class="col s12 card-panel">
-          <h5 class="center-align">Model Hyper Parameters</h5>
-          { modelControllers(modelIdx.bind).modelOptions.bind }
+        <div class="col s12">
+          <div class="card-panel">
+            <h5 class="center-align">Model Hyper Parameters</h5>
+            { modelControllers(modelIdx.bind).modelOptions.bind }
+          </div>
         </div>
 
-        <div class="col s12 card-panel">
-          <h5 class="center-align">TODO: Graphs &amp; Statistics</h5>
+        <div class="col s12">
+          <div class="card-panel">
+            <h5 class="center-align">TODO: Graphs &amp; Statistics</h5>
+          </div>
         </div>
 
       </div>
@@ -243,10 +260,10 @@ abstract class GamePage[A] {
 
   @dom
   protected lazy val gameContainer: Binding[Div] = {
-    val canvas: Canvas = <canvas width={800} height={600}></canvas>
+    canvas = <canvas class="center-align" width={800} height={600}></canvas>
     ctx = canvas.getContext("2d").asInstanceOf[CanvasRenderingContext2D]
 
-    <div class="card-panel">
+    <div class="card-panel" id="canvasContainer">
       { canvas }
     </div>
   }

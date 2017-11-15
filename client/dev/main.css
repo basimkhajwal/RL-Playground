@@ -3,11 +3,10 @@
     max-width: 90%;
 }
 
-@media (min-width: 1200px) {
+@media (min-width: 1300px) {
 
     .page-container {
-        max-width: 70%;
-        max-width: 1300px;
+        max-width: 1200px;
     }
 }
 
