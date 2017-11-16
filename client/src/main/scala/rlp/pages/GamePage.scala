@@ -114,6 +114,7 @@ abstract class GamePage[A] {
 
   protected def toggleRenderTraining(): Unit = {
     renderTraining := !renderTraining.get
+    println(renderTraining.get)
   }
 
   protected def pageResized(): Unit = {
@@ -188,12 +189,14 @@ abstract class GamePage[A] {
 
       { modelSelection.bind }
 
+      <br />
+      <h5>Game Options</h5>
+      <br />
+
       <div class="switch">
         <label>
           Render Training?
-          <input type="checkbox" checked={renderTraining.bind}
-            onchange={ _:Event => toggleRenderTraining() }
-          />
+          <input type="checkbox" checked={renderTraining.bind} onchange={ _:Event => toggleRenderTraining() } />
           <span class="lever"></span>
         </label>
       </div>
@@ -214,7 +217,7 @@ abstract class GamePage[A] {
     val buttonStyle = "btn-floating waves-effect waves-circle "
     val state = trainState.bind
 
-    <div class="valign-wrapper">
+    <div class="valign-wrapper center-align">
       <a class= {
          buttonStyle + "btn-medium orange right " +
            (if (state == Stopped) "disabled" else "")

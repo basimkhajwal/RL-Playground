@@ -72,6 +72,40 @@ class PongPage extends GamePage[Agent[Pong.AgentState, Pong.Action]] {
   @dom
   override lazy val gameOptions: Binding[Div] = {
     <div>
+
+      <br />
+
+      <div class="input-field">
+        <select disabled={renderTraining.bind}>
+          <option>Agent 1</option>
+          <option>Agent 2</option>
+          <option>Agent 3</option>
+        </select>
+        <label>Player 1</label>
+      </div>
+
+      <br />
+
+      <div class="input-field">
+        <select data:disabled={if (renderTraining.bind) "true" else null}>
+          <option>Agent 1</option>
+          <option>Agent 2</option>
+          <option>Agent 3</option>
+        </select>
+        <label>Player 2</label>
+      </div>
+
+      <br />
+
+      <div class="row valign-wrapper">
+        <div class="col s6">
+          <input id="autoReplay" type="checkbox" disabled={renderTraining.bind}/>
+          <label for="autoReplay">Auto Replay</label>
+        </div>
+        <div class="col s6">
+          <a class="waves-effect waves-light btn">Start Game</a>
+        </div>
+      </div>
     </div>
   }
 }
