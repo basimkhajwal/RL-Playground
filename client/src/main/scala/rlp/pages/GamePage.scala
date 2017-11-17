@@ -37,8 +37,15 @@ abstract class GamePage[A] {
 
   protected val trainState: Var[TrainState] = Var(Stopped)
   protected val gameSpeed: Var[Int] = Var(0)
-  protected val modelIdx: Var[Int] = Var(0)
   protected val renderTraining: Var[Boolean] = Var(true)
+  protected val gameCount: Var[Int] = Var(0)
+
+  protected lazy val modelSelectHandler =
+    new SelectHandler("Model Select",
+      modelControllers.map(_.name),
+      Binding { trainState.bind != Stopped })
+
+  protected lazy val modelIdx: Var[Int] = modelSelectHandler.selectedIndex
 
   private var canvas: Canvas = _
   private var ctx: CanvasRenderingContext2D = _
@@ -84,12 +91,15 @@ abstract class GamePage[A] {
   protected def playClicked(): Unit = {
     if (trainState.get == Stopped) {
       if (!modelControllers(modelIdx.get).validate()) return
-      initTraining()
-    }
-    trainingTimer = createTrainingTimer()
 
+      gameCount := 0
+      initTraining()
+    } else {
+      gameSpeed := 0
+    }
+
+    trainingTimer = createTrainingTimer()
     trainState := Playing
-    gameSpeed := 0
   }
 
   protected def stopClicked(): Unit = {
@@ -107,10 +117,6 @@ abstract class GamePage[A] {
     gameSpeed := (gameSpeed.get + 1) % GAME_SPEEDS.length
     timers.clearInterval(trainingTimer)
     trainingTimer = createTrainingTimer()
-  }
-
-  protected def modelChanged(): Unit = {
-
   }
 
   protected def toggleRenderTraining(): Unit = {
@@ -167,7 +173,7 @@ abstract class GamePage[A] {
                   <span class="card-title">Model</span>
                 </div>
                 <div class="col s4 offset-s1">
-                  { modelSelection.bind }
+                  { modelSelectHandler.handler.bind }
                 </div>
               </div>
             </div>
@@ -196,11 +202,16 @@ abstract class GamePage[A] {
 
       <h6 class="center-align">
         {
-        if (trainState.bind == Playing) {
-          s"Speed: ${GAME_SPEED_VALUES(gameSpeed.bind)}"
-        } else {
-          "Stopped"
+        if (trainState.bind == Playing) s"Training Speed: ${GAME_SPEED_VALUES(gameSpeed.bind)}"
+        else "Training Stopped"
         }
+      </h6> <br />
+
+      <h6 class="center-align">
+        {
+        if (trainState.bind == Playing && gameCount.bind >= 0)
+          s"Games Played: ${gameCount.bind.toString}"
+        else ""
         }
       </h6> <br />
 
@@ -262,21 +273,6 @@ abstract class GamePage[A] {
           <i class="material-icons">fast_forward</i>
         </a>
       </div>
-    </div>
-  }
-
-  @dom
-  protected lazy val modelSelection: Binding[Div] = {
-    <div class="input-field">
-      <select onchange={_:Event => modelChanged()} disabled={trainState.bind != Stopped}>
-        {
-          for ((model, idx) <- Constants(modelControllers.zipWithIndex: _*)) yield {
-            <option value={idx.toString} selected={idx == modelIdx.bind}
-              >{model.name}</option>
-          }
-        }
-      </select>
-      <label>Model Select</label>
     </div>
   }
 
