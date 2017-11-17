@@ -42,6 +42,7 @@ abstract class GamePage[A] {
 
   private var canvas: Canvas = _
   private var ctx: CanvasRenderingContext2D = _
+  protected val keyboardHandler = new KeyboardHandler()
 
   /* Timers */
   private var trainingTimer: timers.SetIntervalHandle = _
@@ -114,7 +115,6 @@ abstract class GamePage[A] {
 
   protected def toggleRenderTraining(): Unit = {
     renderTraining := !renderTraining.get
-    println(renderTraining.get)
   }
 
   protected def pageResized(): Unit = {
@@ -146,10 +146,10 @@ abstract class GamePage[A] {
           <h5 class="center-align">Pong</h5>
         </div>
 
-        <div class="col s8 xl9">
+        <div class="col s8">
           { gameContainer.bind }
         </div>
-        <div class="col s4 xl3">
+        <div class="col s4">
           { controlsSection.bind }
         </div>
 
@@ -195,9 +195,10 @@ abstract class GamePage[A] {
 
       <div class="switch">
         <label>
-          Render Training?
+          Play Game
           <input type="checkbox" checked={renderTraining.bind} onchange={ _:Event => toggleRenderTraining() } />
           <span class="lever"></span>
+          Render Training
         </label>
       </div>
 
@@ -264,6 +265,7 @@ abstract class GamePage[A] {
   @dom
   protected lazy val gameContainer: Binding[Div] = {
     canvas = <canvas class="center-align" width={800} height={600}></canvas>
+    keyboardHandler.register(canvas)
     ctx = canvas.getContext("2d").asInstanceOf[CanvasRenderingContext2D]
 
     <div class="card-panel" id="canvasContainer">
