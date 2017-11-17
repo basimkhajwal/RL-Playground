@@ -1,22 +1,32 @@
 package rlp.pages
 
-
-import com.thoughtworks.binding.Binding.Var
 import rlp._
-import rlp.environment.{Agent, Environment, NaivePongAgent, Pong}
+import rlp.environment.{Agent, NaivePongAgent, Pong}
 import com.thoughtworks.binding.{Binding, dom}
-import org.scalajs.dom.{CanvasRenderingContext2D, document, html}
-import org.scalajs.dom.html.{Canvas, Div}
-import org.scalajs.dom.raw.Event
-import rlp.controllers.{ModelController, QTableController, QStateSpace}
+import org.scalajs.dom.CanvasRenderingContext2D
+import org.scalajs.dom.html.Div
+import rlp.controllers.{QStateSpace, QTableController}
 
-import scala.scalajs.js.{Date, timers}
 
 class PongPage extends GamePage[Agent[Pong.AgentState, Pong.Action]] {
 
   import Pong._
 
-  private var environment: Pong = _
+  private var learningAgent: PongAgent = _
+  private var trainingEnvironment: Pong = _
+  private var gameEnvironment: Pong = _
+
+  private val agentNames = List("Rule-based computer", "Computer AI", "Player (WASD)", "Player (Up/Down)")
+
+  private val agentCreators: List[() => PongAgent] = List(
+    { () => new NaivePongAgent() },
+    { () => learningAgent.clone() },
+    { () => new PongUserAgent("W", "S") },
+    { () => new PongUserAgent("ArrowUp", "ArrowDown") }
+  )
+
+  val leftAgentSelect = new SelectHandler("Player 1", agentNames, renderTraining)
+  val rightAgentSelect = new SelectHandler("Player 2", agentNames, renderTraining)
 
   override val modelControllers = List(
     new QTableController(
@@ -29,26 +39,40 @@ class PongPage extends GamePage[Agent[Pong.AgentState, Pong.Action]] {
 
   override def initTraining(): Unit = {
     val modelController = modelControllers(modelIdx.get)
-    val learningAgent = modelController.buildAgent()
+    learningAgent = modelController.buildAgent()
 
-    environment = new Pong(learningAgent, learningAgent.clone())
+    trainingEnvironment = new Pong(learningAgent, learningAgent.clone())
   }
 
   override protected def trainStep(): Unit = {
-    if (environment.step()) {
-      environment.reset()
+    if (trainingEnvironment.step()) {
+      trainingEnvironment.reset()
     }
+  }
+
+  private def createGameEnvironment(leftAgentIdx: Int, rightAgentIdx: Int): Unit = {
+    val leftAgent = agentCreators(leftAgentIdx)()
+    val rightAgent = agentCreators(rightAgentIdx)()
+
+    gameEnvironment = new Pong(leftAgent, rightAgent)
   }
 
   override protected def render(ctx: CanvasRenderingContext2D): Unit = {
 
-    if (environment == null) {
+    if (trainingEnvironment == null) {
       ctx.clearRect(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT)
       return
     }
 
-    val state = environment.getState()
+    if (renderTraining.get) {
+      renderState(ctx, trainingEnvironment.getState())
+    } else {
+      if (gameEnvironment.step()) gameEnvironment.reset()
+      renderState(ctx, gameEnvironment.getState())
+    }
+  }
 
+  private def renderState(ctx: CanvasRenderingContext2D, state: State): Unit = {
     ctx.save()
     ctx.scale(ctx.canvas.width / Pong.SCREEN_WIDTH, ctx.canvas.height / Pong.SCREEN_HEIGHT)
 
@@ -72,41 +96,28 @@ class PongPage extends GamePage[Agent[Pong.AgentState, Pong.Action]] {
   @dom
   override lazy val gameOptions: Binding[Div] = {
     <div>
-
       <br />
-
-      <div class="input-field">
-        <select disabled={renderTraining.bind}>
-          <option>Agent 1</option>
-          <option>Agent 2</option>
-          <option>Agent 3</option>
-        </select>
-        <label>Player 1</label>
-      </div>
-
+      { leftAgentSelect.handler.bind }
       <br />
+      { rightAgentSelect.handler.bind }
 
-      <div class="input-field">
-        <select data:disabled={if (renderTraining.bind) "true" else null}>
-          <option>Agent 1</option>
-          <option>Agent 2</option>
-          <option>Agent 3</option>
-        </select>
-        <label>Player 2</label>
-      </div>
-
-      <br />
-
-      <div class="row valign-wrapper">
-        <div class="col s6">
-          <input id="autoReplay" type="checkbox" disabled={renderTraining.bind}/>
-          <label for="autoReplay">Auto Replay</label>
-        </div>
-        <div class="col s6">
-          <a class="waves-effect waves-light btn">Start Game</a>
-        </div>
-      </div>
+      {
+        createGameEnvironment(leftAgentSelect.selectedIndex.bind, rightAgentSelect.selectedIndex.bind)
+        ""
+      }
     </div>
+  }
+
+  class PongUserAgent(val upKey: String, val downKey: String) extends PongAgent {
+
+    override def act(state: AgentState): Action = {
+      val up = keyboardHandler.isKeyDown(upKey)
+      val down = keyboardHandler.isKeyDown(downKey)
+
+      if (up && !down) UpAction
+      else if (down && !up) DownAction
+      else NoAction
+    }
   }
 }
 
