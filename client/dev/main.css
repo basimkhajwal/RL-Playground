@@ -3,6 +3,29 @@
     max-width: 90%;
 }
 
+#buttonsContainer {
+    text-align: center;
+    margin-top: 20px;
+}
+
+#buttonsContainer > div {
+    display: block;
+    margin: 0 auto;
+}
+
+#canvas-container {
+    padding-top: 10px;
+}
+
+#canvas-container canvas {
+    display: block;
+    margin: 0 auto;
+}
+
+#control-section {
+    padding: 30px;
+}
+
 @media (min-width: 1300px) {
 
     .page-container {
