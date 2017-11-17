@@ -5,6 +5,7 @@ import org.scalajs.dom.document
 import rlp.pages.PongPage
 
 import scala.scalajs.js
+import scala.scalajs.js.Dynamic
 
 
 object Client {
@@ -13,9 +14,7 @@ object Client {
     val page = new PongPage()
     dom.render(document.getElementById("clientContainer"), page.content)
 
-    /* Run Jquery to initialise materialize */
-    val $ = js.Dynamic.global.$
-    $("select").material_select()
+    Dynamic.global.$("select").material_select()
 
     page.start()
   }
