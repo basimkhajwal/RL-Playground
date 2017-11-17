@@ -16,6 +16,9 @@ class PongPage extends GamePage[Agent[Pong.AgentState, Pong.Action]] {
   private var trainingEnvironment: Pong = _
   private var gameEnvironment: Pong = _
 
+  private val MAX_EPISODE_LENGTH = 1000
+  private var episodeLength = 0
+
   private val agentNames = List("Rule-based computer", "Computer AI", "Player (WASD)", "Player (Up/Down)")
 
   private val agentCreators: List[() => PongAgent] = List(
@@ -31,7 +34,7 @@ class PongPage extends GamePage[Agent[Pong.AgentState, Pong.Action]] {
   override val modelControllers = List(
     new QTableController(
       2, { a => if (a == 0) UpAction else DownAction },
-      QStateSpace.boxed[AgentState]("Ball X", 0, SCREEN_WIDTH, 10, _.ballPos.x),
+      QStateSpace.boxed[AgentState]("Ball X", 0, SCREEN_WIDTH, 20, _.ballPos.x),
       QStateSpace.boxed[AgentState]("Ball Y", 0, SCREEN_HEIGHT, 10, _.ballPos.y),
       QStateSpace.boxed[AgentState]("Paddle Y", 0, SCREEN_HEIGHT, 10, _.currentPaddle)
     )
@@ -45,8 +48,11 @@ class PongPage extends GamePage[Agent[Pong.AgentState, Pong.Action]] {
   }
 
   override protected def trainStep(): Unit = {
-    if (trainingEnvironment.step()) {
+    episodeLength += 1
+    if (trainingEnvironment.step() || episodeLength > MAX_EPISODE_LENGTH) {
+      gameCount := gameCount.get + 1
       trainingEnvironment.reset()
+      episodeLength = 0
     }
   }
 
