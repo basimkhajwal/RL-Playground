@@ -80,15 +80,15 @@ class Pong(val leftAgent: Pong.PongAgent, val rightAgent: Pong.PongAgent) extend
 
     leftAgent.act(AgentState.fromState(prevState, true)) match {
       case NoAction =>
-      case UpAction => leftPaddleY += PADDLE_SPEED
-      case DownAction => leftPaddleY -= PADDLE_SPEED
+      case DownAction => leftPaddleY += PADDLE_SPEED
+      case UpAction => leftPaddleY -= PADDLE_SPEED
     }
     leftPaddleY = math.min(math.max(0, leftPaddleY), SCREEN_HEIGHT - PADDLE_HEIGHT)
 
     rightAgent.act(AgentState.fromState(prevState, false)) match {
       case NoAction =>
-      case UpAction => rightPaddleY += PADDLE_SPEED
-      case DownAction => rightPaddleY -= PADDLE_SPEED
+      case DownAction => rightPaddleY += PADDLE_SPEED
+      case UpAction => rightPaddleY -= PADDLE_SPEED
     }
     rightPaddleY = math.min(math.max(0, rightPaddleY), SCREEN_HEIGHT - PADDLE_HEIGHT)
 
@@ -140,8 +140,8 @@ class NaivePongAgent extends Agent[Pong.AgentState, Pong.Action] {
     val y = state.currentPaddle + PADDLE_HEIGHT/2
     val by = state.ballPos.y
 
-    if (by > y+5) UpAction
-    else if (by < y-5) DownAction
+    if (by > y+5) DownAction
+    else if (by < y-5) UpAction
     else NoAction
   }
 
