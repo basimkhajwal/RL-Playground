@@ -178,7 +178,7 @@ abstract class GamePage[A] {
               </div>
             </div>
             <div class="card-content blue-grey lighten-5">
-              { modelControllers(modelIdx.bind).modelOptions.bind }
+              { modelControllers(modelIdx.bind).modelOptions(Binding { trainState.bind == Stopped}).bind }
             </div>
           </div>
         </div>

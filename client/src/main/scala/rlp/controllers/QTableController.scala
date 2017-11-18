@@ -1,11 +1,11 @@
 package rlp.controllers
 
-import com.thoughtworks.binding.Binding.Var
 import com.thoughtworks.binding.{Binding, dom}
 import org.scalajs.dom.{Event, document, html}
 import org.scalajs.dom.html.Div
 import rlp.ai.agents.QTableAgent
 import rlp.environment.{Agent, MappedAgent}
+import rlp._
 
 class QTableController[O, A](
   numActions: Int, actionMap: (Int) => A,
@@ -32,18 +32,18 @@ class QTableController[O, A](
   }
 
   @dom
-  override lazy val modelOptions: Binding[Div] = {
+  override def modelOptions(enabled: Binding[Boolean]): Binding[Div] = {
     <div class="row">
 
       <div class="input-field col s3 offset-s2">
         <input id="learningRate" class="validate" type="number" min="0" step="any" value={defaultLearningRate.toString}
-          oninput={_:Event => validate()}/>
+          oninput={_:Event => validate()} disabled={!enabled.bind}/>
         <label for="learningRate" data:data-error="Learning rate must be positive">Learning Rate</label>
       </div>
 
       <div class="input-field col s3 offset-s2">
         <input id="forgettingFactor" class="validate" type="number" min="0" max="1" step="any" value={defaultForgettingFactor.toString}
-          oninput={_:Event => validate()}/>
+          oninput={_:Event => validate()} disabled={!enabled.bind}/>
         <label for="forgettingFactor" data:data-error="Forgetting factor must be between 0 and 1">Forgetting Factor</label>
       </div>
 
