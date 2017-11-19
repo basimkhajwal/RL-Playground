@@ -24,7 +24,7 @@ class PongPage extends GamePage[Agent[Pong.AgentState, Pong.Action]] {
   private val agentCreators: List[() => PongAgent] = List(
     { () => new NaivePongAgent() },
     { () => learningAgent.clone() },
-    { () => new PongUserAgent("W", "S") },
+    { () => new PongUserAgent("w", "s") },
     { () => new PongUserAgent("ArrowUp", "ArrowDown") }
   )
 
@@ -50,7 +50,9 @@ class PongPage extends GamePage[Agent[Pong.AgentState, Pong.Action]] {
   override protected def trainStep(): Unit = {
     episodeLength += 1
     if (trainingEnvironment.step() || episodeLength > MAX_EPISODE_LENGTH) {
-      gameCount := gameCount.get + 1
+      if (episodeLength <= MAX_EPISODE_LENGTH) {
+        gameCount := gameCount.get + 1
+      }
       trainingEnvironment.reset()
       episodeLength = 0
     }

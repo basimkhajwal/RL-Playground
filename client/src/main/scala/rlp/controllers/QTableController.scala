@@ -1,5 +1,6 @@
 package rlp.controllers
 
+import com.thoughtworks.binding.Binding.{BindingSeq, Constants, Vars}
 import com.thoughtworks.binding.{Binding, dom}
 import org.scalajs.dom.{Event, document, html}
 import org.scalajs.dom.html.Div
@@ -14,7 +15,9 @@ class QTableController[O, A](
 
   override val name: String = "Tabular Q Learning"
 
-  val numStates = spaces.map(_.size).product
+  private val numStates = spaces.map(_.size).product
+
+  private val spacesEnabled: Vars[(QStateSpace[O], Boolean)] = Vars(spaces.map(s => (s, true)) :_ *)
 
   val defaultLearningRate = 0.1
   val defaultForgettingFactor = 0.9
@@ -31,9 +34,32 @@ class QTableController[O, A](
     currentIdx
   }
 
+  private def getCheckBoxID(space: QStateSpace[O]): String = "q-enable-" + space.name
+
+  private def checkBoxToggled(space: QStateSpace[O]): Unit = {
+    val idx = spaces.indexOf(space)
+    val checkBox = getElem[html.Input](getCheckBoxID(space))
+
+    spacesEnabled.get(idx) = (space, checkBox.checked)
+  }
+
   @dom
   override def modelOptions(enabled: Binding[Boolean]): Binding[Div] = {
     <div class="row">
+
+      <div class="col s12" id="q-checkbox-container">
+        {
+          for ((space, enabled) <- spacesEnabled) yield {
+            <div class="q-table-checkbox">
+              <input type="checkbox" id={getCheckBoxID(space)}
+                    onchange={ _:Event => checkBoxToggled(space)}
+                    checked={enabled}
+                    />
+              <label for={getCheckBoxID(space)}>{space.name}</label>
+            </div>
+          }
+        }
+      </div>
 
       <div class="input-field col s3 offset-s2">
         <input id="learningRate" class="validate" type="number" min="0" step="any" value={defaultLearningRate.toString}
