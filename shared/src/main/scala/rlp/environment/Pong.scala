@@ -15,7 +15,7 @@ object Pong {
   val BALL_SIZE = 20.0
 
   val BALL_SPEED = 200 * Environment.DELTA
-  val PADDLE_SPEED = 100 * Environment.DELTA
+  val PADDLE_SPEED = 200 * Environment.DELTA
 
   sealed trait Action
   object NoAction extends Action
