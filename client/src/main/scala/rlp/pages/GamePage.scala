@@ -169,8 +169,17 @@ abstract class GamePage[A] {
           <div class="card" id="model-select">
             <div class="card-content">
               <div class="row">
-                <div class="col s6">
+                <div class="col s3">
                   <span class="card-title">Model</span>
+                </div>
+                <div class="col s3 valign-wrapper">
+                  {
+                    if (trainState.bind != Stopped) {
+                      <h6><i class="tiny material-icons">lock</i> Model locked while training</h6>
+                    } else {
+                      <h6></h6>
+                    }
+                  }
                 </div>
                 <div class="col s4 offset-s1">
                   { modelSelectHandler.handler.bind }
