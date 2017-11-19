@@ -17,7 +17,7 @@ class QTableController[O, A](
 
   private val numStates = spaces.map(_.size).product
 
-  private val spacesEnabled: Vars[(QStateSpace[O], Boolean)] = Vars(spaces.map(s => (s, true)) :_ *)
+  private val spacesEnabled: Vars[(QStateSpace[O], Boolean)] = Vars(spaces.map(s => (s, s.defaultEnabled)) :_ *)
 
   val defaultLearningRate = 0.1
   val defaultForgettingFactor = 0.9
@@ -47,6 +47,7 @@ class QTableController[O, A](
   override def modelOptions(enabled: Binding[Boolean]): Binding[Div] = {
     <div class="row">
 
+      <h5 class="col offset-s1 s11 thin">Q Table Inputs</h5>
       <div class="col s12" id="q-checkbox-container">
         {
           for ((space, enabled) <- spacesEnabled) yield {
@@ -61,6 +62,7 @@ class QTableController[O, A](
         }
       </div>
 
+      <h5 class="col offset-s1 s11 thin">Q Table Parameters</h5>
       <div class="input-field col s3 offset-s2">
         <input id="learningRate" class="validate" type="number" min="0" step="any" value={defaultLearningRate.toString}
           oninput={_:Event => validate()} disabled={!enabled.bind}/>
@@ -95,19 +97,21 @@ class QTableController[O, A](
   }
 }
 
-class QStateSpace[T](val name: String, val size: Int, val map: T => Int) {
+class QStateSpace[T](val name: String, val size: Int, val map: T => Int, val defaultEnabled: Boolean) {
   def apply(s: T): Int = map(s)
 }
 
 object QStateSpace {
 
-  def discrete[T](name: String, n: Int, map: (T) => Int) = new QStateSpace(name, n, map)
+  def discrete[T](name: String, n: Int, map: (T) => Int, defaultEnabled: Boolean = true) = {
+    new QStateSpace(name, n, map, defaultEnabled)
+  }
 
   def boxed[T](
     name: String, low: Double, high: Double, divisions: Int = 10,
-    map: T => Double
+    map: T => Double, defaultEnabled: Boolean = true
   ) = {
-    discrete[T](name, divisions, { s => (divisions * (map(s) - low) / (high-low)).toInt })
+    discrete[T](name, divisions, { s => (divisions * (map(s) - low) / (high-low)).toInt }, defaultEnabled)
   }
 }
 

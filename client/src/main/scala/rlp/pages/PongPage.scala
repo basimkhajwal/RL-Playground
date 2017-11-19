@@ -36,7 +36,9 @@ class PongPage extends GamePage[Agent[Pong.AgentState, Pong.Action]] {
       2, { a => if (a == 0) UpAction else DownAction },
       QStateSpace.boxed[AgentState]("Ball X", 0, SCREEN_WIDTH, 20, _.ballPos.x),
       QStateSpace.boxed[AgentState]("Ball Y", 0, SCREEN_HEIGHT, 10, _.ballPos.y),
-      QStateSpace.boxed[AgentState]("Paddle Y", 0, SCREEN_HEIGHT, 10, _.currentPaddle)
+      QStateSpace.boxed[AgentState]("Paddle Y", 0, SCREEN_HEIGHT, 10, _.currentPaddle),
+      QStateSpace.boxed[AgentState]("Ball Angle", 0, 2 * Math.PI, 10, _.ballDir.angle(), false),
+      QStateSpace.boxed[AgentState]("Opponent Y", 0, SCREEN_HEIGHT, 10, _.otherPaddle, false),
     )
   )
 
