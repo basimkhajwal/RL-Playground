@@ -13,10 +13,6 @@
     margin: 0 auto;
 }
 
-#canvas-container {
-    padding-top: 10px;
-}
-
 #canvas-container canvas {
     display: block;
     margin: 0 auto;

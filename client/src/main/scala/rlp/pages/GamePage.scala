@@ -154,7 +154,7 @@ abstract class GamePage[A] {
 
         <div class="col s12">
           <div class="card">
-            <div class="row">
+            <div class="row valign-wrapper">
               <div class="col s8">
                 { gameContainer.bind }
               </div>
@@ -200,20 +200,22 @@ abstract class GamePage[A] {
       <span class="card-title">Training Controls</span>
       { trainingButtons.bind } <br />
 
-      <h6 class="center-align">
-        {
-        if (trainState.bind == Playing) s"Training Speed: ${GAME_SPEED_VALUES(gameSpeed.bind)}"
-        else "Training Stopped"
-        }
-      </h6> <br />
-
-      <h6 class="center-align">
-        {
-        if (trainState.bind == Playing && gameCount.bind >= 0)
-          s"Games Played: ${gameCount.bind.toString}"
-        else ""
-        }
-      </h6> <br />
+      <div class="row">
+        <div class="col s6">
+          <h6 class="center-align">
+            {
+            if (trainState.bind == Playing) s"Training Speed: ${GAME_SPEED_VALUES(gameSpeed.bind)}"
+            else "Training Stopped"
+            }
+          </h6>
+        </div>
+        <div class="col s6">
+          <h6 class="center-align">
+            { s"Games Played: ${gameCount.bind.toString}" }
+          </h6>
+        </div>
+      </div>
+      <br />
 
       <br />
       <span class="card-title">Game Options</span>
