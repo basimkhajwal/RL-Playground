@@ -1,11 +1,12 @@
 package rlp.math
 
 import org.scalacheck.Gen
-import org.scalactic.Equality
 import org.scalatest.{FlatSpec, Matchers}
 import org.scalatest.prop.PropertyChecks
 
 class MatrixSuite extends FlatSpec with PropertyChecks with Matchers {
+
+  import rlp._
 
   val matrices: Gen[Matrix] = for {
     rows <- Gen.choose(1, 10)
@@ -18,16 +19,6 @@ class MatrixSuite extends FlatSpec with PropertyChecks with Matchers {
     d2 <- Gen.listOfN(m1.getRows() * m1.getCols(), Gen.choose(-1e50, 1e50))
   } yield (m1, new Matrix(m1.getRows(), m1.getCols(), d2.toArray))
 
-  implicit object MatrixEqualizer extends Equality[Matrix] {
-    override def areEqual(a: Matrix, b: Any): Boolean = b match {
-      case m: Matrix => {
-        a.getRows() === m.getRows() &&
-        a.getCols() === m.getCols() &&
-        (a.getData(), m.getData()).zipped.forall { (x, y) => x == y || Math.abs(x-y)/x <= 1e-5}
-      }
-      case _ => false
-    }
-  }
 
   "A Matrix" must "remain the same after being transposed twice" in {
     forAll((matrices, "m")) { m =>
@@ -96,3 +87,4 @@ class MatrixSuite extends FlatSpec with PropertyChecks with Matchers {
     (m1 * m2) shouldEqual r4
   }
 }
+
