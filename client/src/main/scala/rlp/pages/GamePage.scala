@@ -214,6 +214,7 @@ abstract class GamePage[A] {
           <h6 class="center-align">
             {
             if (trainState.bind == Playing) s"Training Speed: ${GAME_SPEED_VALUES(gameSpeed.bind)}"
+            else if (trainState.bind == Paused) "Training Paused"
             else "Training Stopped"
             }
           </h6>
