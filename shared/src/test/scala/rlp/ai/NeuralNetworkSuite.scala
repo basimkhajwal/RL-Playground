@@ -13,40 +13,28 @@ class NeuralNetworkSuite extends FunSuite with PropertyChecks with Matchers {
     val nn = new NeuralNetwork(Array(1, 3, 3, 3, 3, 1), Array(ReLU, ReLU, ReLU, ReLU, Linear))
     nn.randomiseWeights(-0.4,0.4)
 
-    val input = new Matrix(100, 1, (0 until 100) map (_ / 100.0) toArray)
+    val input = new Matrix(50, 1, (0 until 50) map (_ / 50.0) toArray)
     val output = input map { 2*_ + 3}
 
-    nn.train(input, output, 5e-7, 10000)
+    nn.train(input, output, 1e-5, 10000)
 
-    nn.forwardProp(Array(0.5))(0) shouldEqual (4.0 +- 0.001)
+    nn.forwardProp(Array(0.5))(0) shouldEqual (4.0 +- 0.05)
   }
 
   test("Backprop works roughly correctly") {
     val nn = new NeuralNetwork(Array(10, 10, 4, 1), Array(ReLU, Sigmoid, Linear))
     nn.randomiseWeights(-0.4,0.4)
 
-    val input = new Matrix(1, 10) each { _ => Math.random() }
-    val output = new Matrix(1, 1) each { _ => Math.random() }
+    val input = new Matrix(20, 10) each { _ => Math.random() }
+    val output = new Matrix(20, 1) each { _ => Math.random() }
 
     val backPropGrad = nn.backProp(input, output)
     val numericalGrad = nn.numericalGradient(input, output)
-    val pairedGrad = (backPropGrad, numericalGrad).zipped
 
-    val a1 = pairedGrad.map((a,b) => (a - b).getData().map(x=>x*x).sum).sum
-    val a2 = pairedGrad.map((a,b) => (a + b).getData().map(x=>x*x).sum).sum
-
-    println(a1)
-    println(a2)
-
-    val f1 = backPropGrad(0)
-    val f2 = numericalGrad(0)
-
-    println(f1)
-    println(f2)
-    println(f2 elemProduct (f1 map (1.0 / _)))
-
-    require(pairedGrad.forall((a,b) => (a elemProduct b).getData().forall(_ >= 0)), "All gradients must have the same sign!")
-
-    require((a1/a2) < 1, "Backprop should match signs of numerical gradient")
+    for ((b, n) <- (backPropGrad, numericalGrad).zipped) {
+      for ((d1, d2) <- (b.getData(), n.getData()).zipped) {
+        require(d1 === (d2 +- Math.max(Math.abs(d2 * 1e-3), 1e-4)), "Backprop gradient does not match numerical gradient")
+      }
+    }
   }
 }

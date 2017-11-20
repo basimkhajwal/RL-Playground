@@ -99,7 +99,7 @@ class NeuralNetwork(
 
     for (i <- (numLayers-2) to 0 by (-1)) {
 
-      delta elemProductSelf activationFunctions(i)(netInputs(i+1)).transposeSelf()
+      delta elemProductSelf activationFunctions(i).derivative(netInputs(i+1)).transposeSelf()
 
       gradients(i) = (delta * Matrix.concatCols(ones, activations(i))) transposeSelf()
 
