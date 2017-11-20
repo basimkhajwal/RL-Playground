@@ -15,8 +15,6 @@ class QTableController[O, A](
 
   override val name: String = "Tabular Q Learning"
 
-  private val numStates = spaces.map(_.size).product
-
   private val spacesEnabled: Vars[(QStateSpace[O], Boolean)] = Vars(spaces.map(s => (s, s.defaultEnabled)) :_ *)
 
   val defaultLearningRate = 0.1
@@ -26,9 +24,11 @@ class QTableController[O, A](
     var stateSize = 1
     var currentIdx = 0
 
-    for (space <- spaces) {
-      currentIdx += stateSize * space(state)
-      stateSize *= space.size
+    for ((space, enabled) <- spacesEnabled.get) {
+      if (enabled) {
+        currentIdx += stateSize * space(state)
+        stateSize *= space.size
+      }
     }
 
     currentIdx
@@ -50,11 +50,11 @@ class QTableController[O, A](
       <h5 class="col offset-s1 s11 thin">Q Table Inputs</h5>
       <div class="col s12" id="q-checkbox-container">
         {
-          for ((space, enabled) <- spacesEnabled) yield {
+          for ((space, spaceEnabled) <- spacesEnabled) yield {
             <div class="q-table-checkbox">
               <input type="checkbox" id={getCheckBoxID(space)}
                     onchange={ _:Event => checkBoxToggled(space)}
-                    checked={enabled}
+                    checked={spaceEnabled} disabled={!enabled.bind}
                     />
               <label for={getCheckBoxID(space)}>{space.name}</label>
             </div>
@@ -88,6 +88,7 @@ class QTableController[O, A](
   }
 
   override def buildAgent(): Agent[O, A] = {
+    val numStates = spacesEnabled.get.filter(_._2).map(_._1.size).product
     val qTable = new QTableAgent(numStates, numActions)
 
     qTable.learningRate = getElem[html.Input]("learningRate").value.toDouble
