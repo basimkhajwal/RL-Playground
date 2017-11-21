@@ -29,7 +29,7 @@ abstract class GamePage[A] {
   import GamePage._
 
   /* Abstract vars */
-  protected val modelControllers: List[ModelController[A]]
+  protected val modelControllerBuilders: List[ModelController.Builder[A]]
 
   protected def initTraining(): Unit
   protected def trainStep(): Unit
@@ -42,7 +42,7 @@ abstract class GamePage[A] {
 
   protected lazy val modelSelectHandler =
     new SelectHandler("Model Select",
-      modelControllers.map(_.name),
+      modelControllerBuilders.map(_._1),
       Binding { trainState.bind != Stopped })
 
   protected lazy val modelIdx: Var[Int] = modelSelectHandler.selectedIndex
