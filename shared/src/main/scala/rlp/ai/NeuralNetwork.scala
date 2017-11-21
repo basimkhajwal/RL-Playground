@@ -13,7 +13,8 @@ import rlp.math.Matrix
 class NeuralNetwork(
   val layerSizes: Array[Int],
   val activationFunctions: Array[ActivationFunction],
-  val useSoftMax: Boolean = false
+  val useSoftMax: Boolean = false,
+  val lambda: Double = 0
 ) {
 
   val numLayers = layerSizes.size
@@ -43,6 +44,12 @@ class NeuralNetwork(
     val m = input.getRows()
     val output = forwardProp(input)
 
+    val reg: Double =
+      if (lambda == 0) 0
+      else {
+        0.5 * lambda * weights.map(W => W map (w => w*w) getData() sum).sum
+      }
+
     (0 until m)
       .map { i =>
         val losses =
@@ -54,7 +61,7 @@ class NeuralNetwork(
             }
           }
 
-        losses.sum
+        losses.sum + reg
       }
       .toArray
   }
@@ -101,7 +108,10 @@ class NeuralNetwork(
 
       delta elemProductSelf activationFunctions(i).derivative(netInputs(i+1)).transposeSelf()
 
-      gradients(i) = (delta * Matrix.concatCols(ones, activations(i))) transposeSelf()
+      gradients(i) = (delta * Matrix.concatCols(ones, activations(i))).transposeSelf() * (1.0 / m)
+      if (lambda != 0) {
+        gradients(i) += weights(i) * lambda
+      }
 
       delta = (weights(i) * delta) subMatrix (rowStart = 1)
     }
@@ -111,15 +121,16 @@ class NeuralNetwork(
 
   def numericalGradient(input: Matrix, target: Matrix, epsilon: Double = 1e-5): Array[Matrix] = {
 
+    val m = input.getRows()
     val gradients = new Array[Matrix](weights.length)
-    val initialLoss = loss(input, target).sum
+    val initialLoss = loss(input, target).sum / m
 
     for (i <- weights.indices) {
       gradients(i) = new Matrix(weights(i).getRows(), weights(i).getCols())
       for (r <- 0 until weights(i).getRows()) {
         for (c <- 0 until weights(i).getCols()) {
           weights(i)(r, c) += epsilon
-          gradients(i)(r, c) = (loss(input, target).sum - initialLoss) / epsilon
+          gradients(i)(r, c) = (loss(input, target).sum / m - initialLoss) / epsilon
           weights(i)(r, c) -= epsilon
         }
       }
@@ -149,4 +160,3 @@ class NeuralNetwork(
     }
   }
 }
-
