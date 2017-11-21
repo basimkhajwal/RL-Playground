@@ -1,6 +1,6 @@
 package rlp.ai.agents
 
-import rlp.environment.SARSAAgent
+import rlp.environment.{Agent, MappedAgent, SARSAAgent}
 
 class QTableAgent(
   val numStates: Int, val numActions: Int,
@@ -23,29 +23,6 @@ class QTableAgent(
     greedyAction
   }
 
-  private def actionProbabilities(state: Int): Array[Double] = {
-    val values = new Array[Double](numActions)
-    var total = 0.0
-    var maxValue = Double.NegativeInfinity
-
-    for (a <- 0 until numActions) {
-      values(a) = this(state,a)
-      if (values(a) > maxValue) maxValue = values(a)
-    }
-
-    for (a <- 0 until numActions) {
-      values(a) = math.exp(values(a) - maxValue)
-      total += values(a)
-    }
-
-    for (a <- 0 until numActions) {
-      values(a) /= total
-    }
-
-    values
-  }
-
-
   private def maximumAction(state: Int): (Int, Double) = {
     var maxAction = 0
     var maxActionValue = Double.NegativeInfinity
@@ -65,5 +42,47 @@ class QTableAgent(
   @inline
   def update(state: Int, action: Int, value: Double): Unit = {
     table(state + action * numStates) = value
+  }
+}
+
+object QTableAgent {
+
+  private def stateMap[S](spaces: Array[QStateSpace[S]])(state: S): Int = {
+    var stateSize = 1
+    var currentIdx = 0
+
+    for (space:QStateSpace[S] <- spaces) {
+      currentIdx += stateSize * space(state)
+      stateSize *= space.size
+    }
+
+    currentIdx
+  }
+
+  def build[S, A](numActions: Int, actionMap: (Int) => A, spaces: Seq[QStateSpace[S]]): (QTableAgent, Agent[S,A]) = {
+
+    val numStates = spaces.map(_.size).product
+    val agent = new QTableAgent(numStates, numActions)
+
+    agent -> new MappedAgent[Int,Int,S,A](agent, stateMap(spaces.toArray), actionMap)
+  }
+
+}
+
+class QStateSpace[T](val name: String, val size: Int, val map: T => Int, val defaultEnabled: Boolean) {
+  def apply(s: T): Int = map(s)
+}
+
+object QStateSpace {
+
+  def discrete[T](name: String, n: Int, map: (T) => Int, defaultEnabled: Boolean = true) = {
+    new QStateSpace(name, n, map, defaultEnabled)
+  }
+
+  def boxed[T](
+    name: String, low: Double, high: Double, divisions: Int = 10,
+    map: T => Double, defaultEnabled: Boolean = true
+  ) = {
+    discrete[T](name, divisions, { s => (divisions * (map(s) - low) / (high-low)).toInt }, defaultEnabled)
   }
 }

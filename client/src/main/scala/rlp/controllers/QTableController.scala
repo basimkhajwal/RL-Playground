@@ -4,13 +4,12 @@ import com.thoughtworks.binding.Binding.{BindingSeq, Constants, Vars}
 import com.thoughtworks.binding.{Binding, dom}
 import org.scalajs.dom.{Event, document, html}
 import org.scalajs.dom.html.Div
-import rlp.ai.agents.QTableAgent
+import rlp.ai.agents.{QStateSpace, QTableAgent}
 import rlp.environment.{Agent, MappedAgent}
 import rlp._
 
 class QTableController[O, A](
-  numActions: Int, actionMap: (Int) => A,
-  spaces: QStateSpace[O]*
+  numActions: Int, actionMap: (Int) => A, spaces: QStateSpace[O]*
 ) extends ModelController[Agent[O, A]] {
 
   override val name: String = "Tabular Q Learning"
@@ -19,20 +18,6 @@ class QTableController[O, A](
 
   val defaultLearningRate = 0.1
   val defaultForgettingFactor = 0.9
-
-  private def stateMap(state: O): Int ={
-    var stateSize = 1
-    var currentIdx = 0
-
-    for ((space, enabled) <- spacesEnabled.get) {
-      if (enabled) {
-        currentIdx += stateSize * space(state)
-        stateSize *= space.size
-      }
-    }
-
-    currentIdx
-  }
 
   private def getCheckBoxID(space: QStateSpace[O]): String = "q-enable-" + space.name
 
@@ -88,31 +73,12 @@ class QTableController[O, A](
   }
 
   override def buildAgent(): Agent[O, A] = {
-    val numStates = spacesEnabled.get.filter(_._2).map(_._1.size).product
-    val qTable = new QTableAgent(numStates, numActions)
+    val (qAgent, agent) = QTableAgent.build(numActions, actionMap, spacesEnabled.get.filter(_._2).map(_._1))
 
-    qTable.learningRate = getElem[html.Input]("learningRate").value.toDouble
-    qTable.forgettingFactor = getElem[html.Input]("forgettingFactor").value.toDouble
+    qAgent.learningRate = getElem[html.Input]("learningRate").value.toDouble
+    qAgent.forgettingFactor = getElem[html.Input]("forgettingFactor").value.toDouble
 
-    new MappedAgent(qTable, stateMap, actionMap)
-  }
-}
-
-class QStateSpace[T](val name: String, val size: Int, val map: T => Int, val defaultEnabled: Boolean) {
-  def apply(s: T): Int = map(s)
-}
-
-object QStateSpace {
-
-  def discrete[T](name: String, n: Int, map: (T) => Int, defaultEnabled: Boolean = true) = {
-    new QStateSpace(name, n, map, defaultEnabled)
-  }
-
-  def boxed[T](
-    name: String, low: Double, high: Double, divisions: Int = 10,
-    map: T => Double, defaultEnabled: Boolean = true
-  ) = {
-    discrete[T](name, divisions, { s => (divisions * (map(s) - low) / (high-low)).toInt }, defaultEnabled)
+    agent
   }
 }
 
