@@ -25,28 +25,28 @@ class NeuralNetworkSuite extends FunSuite with PropertyChecks with Matchers {
 
     val networks = List(
       new NeuralNetwork(Array(10, 11, 5), Array(Sigmoid, ReLU)),
-      new NeuralNetwork(Array(10, 10, 3, 5), Array(ReLU, Sigmoid, Linear)),
-      new NeuralNetwork(Array(10, 9, 3, 5), Array(ReLU, Sigmoid, Linear), true),
-      //new NeuralNetwork(Array(10, 8, 2, 5), Array(ReLU, Sigmoid, Linear), false, 10000),
-      //new NeuralNetwork(Array(10, 7, 5), Array(Sigmoid, Sigmoid), true, 100),
-      //new NeuralNetwork(Array(10, 6, 5), Array(ReLU, ReLU), false, 0.01),
+      new NeuralNetwork(Array(2, 10, 3, 5), Array(ReLU, Sigmoid, Linear)),
+      new NeuralNetwork(Array(5, 9, 3, 3), Array(ReLU, Sigmoid, Linear)),
+      new NeuralNetwork(Array(3, 8, 2, 7), Array(Sigmoid, ReLU, Linear), false, 10000),
+      new NeuralNetwork(Array(1, 7, 5), Array(Sigmoid, Sigmoid), true, 100),
+      new NeuralNetwork(Array(9, 6, 5), Array(ReLU, ReLU), false, 0.01),
     )
 
     for (_ <- 0 until 10) {
-
-      val input = new Matrix(20, 10) each { _ => Math.random() }
-      val output = new Matrix(20, 5) each { _ => Math.random() }
-
       for (n <- networks) {
+
+        val input = new Matrix(20, n.layerSizes(0)) each { _ => Math.random() }
+
+        val outputMat = new Matrix(20, n.layerSizes.last) each { _ => Math.random() }
+        val output = if (n.useSoftMax) n.softMax(outputMat) else outputMat
+
         n.randomiseWeights(-0.4,0.4)
 
-        val backPropGrad = n.backProp(input, output)
-        val numericalGrad = n.numericalGradient(input, output, 1e-9)
+        val backPropGrads = n.backProp(input, output)
+        val numericalGrads = n.numericalGradient(input, output, 1e-9)
 
-        for ((b, n) <- (backPropGrad, numericalGrad).zipped) {
-          for ((d1, d2) <- (b.getData(), n.getData()).zipped) {
-            d1 shouldEqual (d2 +- Math.max(Math.abs(d2 * 0.01), 0.1))
-          }
+        for ((a, b) <- (backPropGrads, numericalGrads).zipped) {
+          a shouldEqual b
         }
       }
 
