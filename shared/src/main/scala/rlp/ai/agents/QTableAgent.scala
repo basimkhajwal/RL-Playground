@@ -8,7 +8,7 @@ class QTableAgent(
 ) extends SARSAAgent[Int, Int] {
 
   var learningRate = 0.1
-  var forgettingFactor = 0.9
+  var discountFactor = 0.9
   var epsilon = 0.1
 
   def this(numStates: Int, numActions: Int) {
@@ -18,7 +18,7 @@ class QTableAgent(
   override def sarsa(prevState: Int, action: Int, reward: Double, newState: Int): Int = {
     val (greedyAction, expectedReward) = maximumAction(newState)
 
-    this(prevState, action) += learningRate * (reward + forgettingFactor * expectedReward - this(prevState, action))
+    this(prevState, action) += learningRate * (reward + discountFactor * expectedReward - this(prevState, action))
 
     greedyAction
   }
