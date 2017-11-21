@@ -1,23 +1,93 @@
 package rlp.controllers
 
-import com.thoughtworks.binding.Binding.{BindingSeq, Constants, Vars}
+import com.thoughtworks.binding.Binding.{BindingSeq, Constants, Var, Vars}
 import com.thoughtworks.binding.{Binding, dom}
 import org.scalajs.dom.{Event, document, html}
 import org.scalajs.dom.html.Div
+import org.scalajs.dom.raw.HTMLElement
 import rlp.ai.agents.{QStateSpace, QTableAgent}
 import rlp.environment.{Agent, MappedAgent}
 import rlp._
 
 class QTableController[O, A](
-  numActions: Int, actionMap: (Int) => A, spaces: QStateSpace[O]*
+  numActions: Int, actionMap: (Int) => A, spaces: Array[QStateSpace[O]]
 ) extends ModelController[Agent[O, A]] {
 
   override val name: String = "Tabular Q Learning"
 
   private val spacesEnabled: Vars[(QStateSpace[O], Boolean)] = Vars(spaces.map(s => (s, s.defaultEnabled)) :_ *)
 
-  val defaultLearningRate = 0.1
-  val defaultForgettingFactor = 0.9
+  private val learningRate = Var(0.1)
+  private val discountFactor = Var(0.9)
+
+  private var qTable: QTableAgent = _
+
+  @dom
+  override lazy val modelBuilder: Binding[HTMLElement] = {
+    <div class="row">
+
+      <h5 class="col offset-s1 s11 light">Q Table Inputs</h5>
+      <div class="col s12" id="q-checkbox-container">
+        {
+        for ((space, enabled) <- spacesEnabled) yield {
+          <div class="q-table-checkbox">
+            <input type="checkbox" id={getCheckBoxID(space)}
+                   onchange={ _:Event => checkBoxToggled(space)}
+                   checked={enabled}
+            />
+            <label for={getCheckBoxID(space)}>{space.name}</label>
+          </div>
+        }
+        }
+      </div>
+    </div>
+  }
+
+
+  override def buildModel(): Agent[O, A] = {
+    val (qAgent, agent) = QTableAgent.build(numActions, actionMap, spacesEnabled.get.filter(_._2).map(_._1))
+
+    learningRate := qAgent.learningRate
+    discountFactor := qAgent.discountFactor
+    qTable = qAgent
+
+    agent
+  }
+
+  @dom
+  override lazy val modelViewer: Binding[HTMLElement] = {
+    <div>
+      <h5 class="col offset-s1 s11 light">Q Table Parameters</h5>
+
+      <div class="input-field col s3 offset-s2">
+        <input id="learning-rate" class="validate" type="number" min="0" max="1" step="any" value={learningRate.bind.toString}
+               oninput={_:Event => dataChanged()} />
+        <label for="learning-rate" data:data-error="Learning rate must be between 0 and 1">Learning Rate</label>
+      </div>
+
+      <div class="input-field col s3 offset-s2">
+        <input id="discount-factor" class="validate" type="number" min="0" max="1" step="any" value={discountFactor.bind.toString}
+               oninput={_:Event => dataChanged()} />
+        <label for="discount-factor" data:data-error="Discount factor must be between 0 and 1">Forgetting Factor</label>
+      </div>
+
+    </div>
+  }
+
+  private def dataChanged(): Unit = {
+    val learningRateElem = getElem[html.Input]("learning-rate")
+    val discountFactorElem = getElem[html.Input]("discount-factor")
+
+    if (learningRateElem.validity.valid) {
+      learningRate := learningRateElem.value.toDouble
+      qTable.learningRate = learningRate.get
+    }
+
+    if (discountFactorElem.validity.valid) {
+      discountFactor := discountFactorElem.value.toDouble
+      qTable.discountFactor = discountFactor.get
+    }
+  }
 
   private def getCheckBoxID(space: QStateSpace[O]): String = "q-enable-" + space.name
 
@@ -27,59 +97,15 @@ class QTableController[O, A](
 
     spacesEnabled.get(idx) = (space, checkBox.checked)
   }
-
-  @dom
-  override def modelOptions(enabled: Binding[Boolean]): Binding[Div] = {
-    <div class="row">
-
-      <h5 class="col offset-s1 s11 thin">Q Table Inputs</h5>
-      <div class="col s12" id="q-checkbox-container">
-        {
-          for ((space, spaceEnabled) <- spacesEnabled) yield {
-            <div class="q-table-checkbox">
-              <input type="checkbox" id={getCheckBoxID(space)}
-                    onchange={ _:Event => checkBoxToggled(space)}
-                    checked={spaceEnabled} disabled={!enabled.bind}
-                    />
-              <label for={getCheckBoxID(space)}>{space.name}</label>
-            </div>
-          }
-        }
-      </div>
-
-      <h5 class="col offset-s1 s11 thin">Q Table Parameters</h5>
-      <div class="input-field col s3 offset-s2">
-        <input id="learningRate" class="validate" type="number" min="0" step="any" value={defaultLearningRate.toString}
-          oninput={_:Event => validate()} disabled={!enabled.bind}/>
-        <label for="learningRate" data:data-error="Learning rate must be positive">Learning Rate</label>
-      </div>
-
-      <div class="input-field col s3 offset-s2">
-        <input id="forgettingFactor" class="validate" type="number" min="0" max="1" step="any" value={defaultForgettingFactor.toString}
-          oninput={_:Event => validate()} disabled={!enabled.bind}/>
-        <label for="forgettingFactor" data:data-error="Forgetting factor must be between 0 and 1">Forgetting Factor</label>
-      </div>
-
-    </div>
-  }
-
-  private def getElem[T](id: String): T = document.getElementById(id).asInstanceOf[T]
-
-  override def validate(): Boolean = {
-    val learningRate = getElem[html.Input]("learningRate")
-    val forgettingFactor = getElem[html.Input]("forgettingFactor")
-
-    learningRate.validity.valid && forgettingFactor.validity.valid
-  }
-
-  override def buildAgent(): Agent[O, A] = {
-    val (qAgent, agent) = QTableAgent.build(numActions, actionMap, spacesEnabled.get.filter(_._2).map(_._1))
-
-    qAgent.learningRate = getElem[html.Input]("learningRate").value.toDouble
-    qAgent.forgettingFactor = getElem[html.Input]("forgettingFactor").value.toDouble
-
-    agent
-  }
 }
 
+object QTableController {
 
+  def builder[O,A](
+    numActions: Int, actionMap: (Int) => A,
+    spaces: QStateSpace[O]*
+  ): ModelController.Builder[Agent[O,A]] = {
+
+    "Tabular Q Learning" -> (() => new QTableController(numActions, actionMap, spaces.toArray))
+  }
+}

@@ -1,15 +1,25 @@
 package rlp.controllers
 
 import com.thoughtworks.binding.Binding
-import org.scalajs.dom.html.Div
+import com.thoughtworks.binding.Binding.Var
+import org.scalajs.dom.raw.HTMLElement
+import rlp._
 
 trait ModelController[A] {
 
   val name: String
 
-  def modelOptions(buildEnabled: Binding[Boolean]): Binding[Div]
+  lazy val modelBuilder: Binding[HTMLElement] = Binding { <div></div> }
 
-  def validate(): Boolean = true
+  lazy val modelViewer: Binding[HTMLElement] = Binding { <div></div> }
 
-  def buildAgent(): A
+  lazy val buildValid: Binding[Boolean] = Var(true)
+
+  def buildModel(): A
+
 }
+
+object ModelController {
+  type Builder[A] = (String, (() => ModelController[A]))
+}
+
