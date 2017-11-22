@@ -11,4 +11,6 @@ package object rlp {
     throw new AssertionError("This should never execute.")
 
   def getElem[T](id: String): T = document.getElementById(id).asInstanceOf[T]
+
+  def querySelector[T](query: String): T = document.querySelector(query).asInstanceOf[T]
 }
