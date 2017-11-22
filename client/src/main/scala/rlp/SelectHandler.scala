@@ -18,7 +18,7 @@ object SelectHandler {
   }
 }
 
-class SelectHandler(val name: String, val items: List[String], val disabledCondition: Binding[Boolean]) {
+class SelectHandler(val name: String, val items: Seq[String], val disabledCondition: Binding[Boolean]) {
 
   val selectID = SelectHandler.generateUID()
   val selectedIndex = Var(0)
