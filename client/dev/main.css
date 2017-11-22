@@ -3,12 +3,12 @@
     max-width: 90%;
 }
 
-#buttonsContainer {
+#buttons-container {
     text-align: center;
     margin-top: 20px;
 }
 
-#buttonsContainer > div {
+#buttons-container > div {
     display: block;
     margin: 0 auto;
 }
@@ -20,6 +20,22 @@
 
 #control-section {
     padding: 30px;
+}
+
+#q-checkbox-container {
+    padding: 20px 10%;
+    display: flex;
+    justify-content: space-evenly;
+}
+
+.q-table-checkbox {
+    display: inline-block;
+    margin: 0 auto;
+}
+
+#game-row {
+    display: flex;
+    align-items: stretch;
 }
 
 @media (min-width: 1300px) {
