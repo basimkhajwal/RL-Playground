@@ -1,9 +1,8 @@
 package rlp.pages
 
-import com.thoughtworks.binding.Binding.{Constants, Var}
+import com.thoughtworks.binding.Binding.{Constant, Constants, Var}
 import com.thoughtworks.binding.{Binding, dom}
-import org.scalajs.dom.Event
-import org.scalajs.dom.{window, document}
+import org.scalajs.dom.{Event, document, html, window}
 import org.scalajs.dom.html.{Canvas, Div}
 import org.scalajs.dom.raw.{CanvasRenderingContext2D, HTMLElement}
 import org.scalajs.dom.window.performance
@@ -11,6 +10,7 @@ import rlp.controllers.ModelController
 import rlp.environment.{Agent, Environment}
 import rlp._
 
+import scala.collection.mutable
 import scala.scalajs.js.{Date, timers}
 
 object GamePage {
@@ -40,12 +40,8 @@ abstract class GamePage[A] {
   protected val renderTraining: Var[Boolean] = Var(true)
   protected val gameCount: Var[Int] = Var(0)
 
-  protected lazy val modelSelectHandler =
-    new SelectHandler("Model Select",
-      modelControllerBuilders.map(_._1),
-      Binding { trainState.bind != Stopped })
-
-  protected lazy val modelIdx: Var[Int] = modelSelectHandler.selectedIndex
+  protected val models: mutable.Map[String, ModelController[A]] = mutable.Map()
+  protected val selectedModelBinding: Var[Option[ModelController[A]]] = Var(None)
 
   private var canvas: Canvas = _
   private var ctx: CanvasRenderingContext2D = _
@@ -90,8 +86,6 @@ abstract class GamePage[A] {
 
   protected def playClicked(): Unit = {
     if (trainState.get == Stopped) {
-      if (!modelControllers(modelIdx.get).validate()) return
-
       gameCount := 0
       initTraining()
     } else {
@@ -154,7 +148,7 @@ abstract class GamePage[A] {
 
         <div class="col s12">
           <div class="card">
-            <div class="row valign-wrapper">
+            <div class="row" id="game-row">
               <div class="col s8">
                 { gameContainer.bind }
               </div>
@@ -168,26 +162,11 @@ abstract class GamePage[A] {
         <div class="col s12">
           <div class="card" id="model-select">
             <div class="card-content">
-              <div class="row">
-                <div class="col s3">
-                  <span class="card-title">Model</span>
-                </div>
-                <div class="col s3 valign-wrapper">
-                  {
-                    if (trainState.bind != Stopped) {
-                      <h6><i class="tiny material-icons">lock</i> Model locked while training</h6>
-                    } else {
-                      <h6></h6>
-                    }
-                  }
-                </div>
-                <div class="col s4 offset-s1">
-                  { modelSelectHandler.handler.bind }
-                </div>
-              </div>
+              { modelViewSection.bind }
             </div>
-            <div class="card-content blue-grey lighten-5">
-              { modelControllers(modelIdx.bind).modelOptions(Binding { trainState.bind == Stopped}).bind }
+
+            <div class="card-reveal">
+              { modelBuildSection.bind }
             </div>
           </div>
         </div>
@@ -204,9 +183,128 @@ abstract class GamePage[A] {
   }
 
   @dom
+  protected lazy val modelBuildSection: Binding[Div] = {
+
+    def initialName(idx: Int): String = {
+      if (!models.contains("Model"+idx)) "Model"+idx else initialName(idx+1)
+    }
+
+    val newModelControllerSelect = new SelectHandler("Model Type", modelControllerBuilders.map(_._1), Constant(false))
+    val newModelController = Binding {
+      modelControllerBuilders(newModelControllerSelect.selectedIndex.bind)._2()
+    }
+    val valid: Var[Boolean] = Var(true)
+    val modelName: Var[String] = Var(initialName(1))
+
+    def onNameChange(): Unit = {
+      val modelNameElem = getElem[html.Input]("model-name")
+
+      if (models.contains(modelNameElem.value)) {
+        modelNameElem.setCustomValidity("Invalid")
+      } else {
+        modelNameElem.setCustomValidity("")
+        modelName := modelNameElem.value
+      }
+    }
+
+    def onCreate(): Unit = {
+
+    }
+
+    def onClose(): Unit = {
+      getElem[html.Span]("close-button").click()
+    }
+
+    <div class="row">
+
+      <div class="col s3">
+        <span class="card-title">Model</span>
+      </div>
+
+      <div class="col s5">
+        <span class="card-title center-align">Create New</span>
+      </div>
+
+      <div class="col s3">
+        <span class="card-title right" id="close-button"><i class="material-icons">close</i></span>
+      </div>
+
+      <div class="col s3 offset-s2">
+        { newModelControllerSelect.handler.bind }
+      </div>
+
+      <div class="col s3 offset-s2 input-field">
+        <input id="model-name" class="validate" type="text" value={modelName.bind} onchange={_:Event => onNameChange()}/>
+        <label for="model-name" data:data-error="Model name already exists">Model Name</label>
+        <!-- Add some sort of automated validation for model name -->
+      </div>
+
+      <div class="col s12">
+        { newModelController.bind.modelBuilder.bind }
+      </div>
+
+      <div class="col s2 offset-s4">
+        <a class="waves-effect waves-light btn" onclick={_:Event => onClose()}>Cancel</a>
+      </div>
+
+      <div class="col s2">
+        <a class="waves-effect waves-light btn" onclick={_:Event => onCreate()}>Create</a>
+        <!-- TODO: Only enable when valid -->
+      </div>
+
+    </div>
+  }
+
+  @dom
+  protected lazy val modelViewSection: Binding[Div] = {
+    <div class="row">
+      <div class="col s3">
+        <span class="card-title">Model</span>
+      </div>
+
+      <div class="col s5">
+        <!-- TODO: Add some model select code here -->
+      </div>
+
+      <div class="col s3">
+        <a class="btn-floating btn waves-effect waves-light red activator right"><i class="material-icons">add</i></a>
+      </div>
+
+      <div class="col s12">
+        <!-- TODO: Only enable when a model is bound -->
+        { trainingControls.bind }
+      </div>
+
+      <div class="col s12">
+        <!-- TODO: Bind into the bound model's model viewer stuff -->
+      </div>
+
+    </div>
+  }
+
+  @dom
   protected lazy val controlsSection: Binding[Div] = {
     <div id="control-section">
-      <span class="card-title">Training Controls</span>
+      <br />
+      <span class="card-title">Game Options</span>
+      <br />
+
+      <div class="switch center-align">
+        <label>
+          Play Game
+          <input type="checkbox" checked={renderTraining.bind} onchange={ _:Event => toggleRenderTraining() } />
+          <span class="lever"></span>
+          Render Training
+        </label>
+      </div>
+
+      { gameOptions.bind }
+    </div>
+  }
+
+  @dom
+  protected lazy val trainingControls: Binding[Div] = {
+    <div>
       { trainingButtons.bind } <br />
 
       <div class="row">
@@ -226,22 +324,6 @@ abstract class GamePage[A] {
         </div>
       </div>
       <br />
-
-      <br />
-      <span class="card-title">Game Options</span>
-      <br />
-      <br />
-
-      <div class="switch center-align">
-        <label>
-          Play Game
-          <input type="checkbox" checked={renderTraining.bind} onchange={ _:Event => toggleRenderTraining() } />
-          <span class="lever"></span>
-          Render Training
-        </label>
-      </div>
-
-      { gameOptions.bind }
     </div>
   }
 
@@ -257,7 +339,7 @@ abstract class GamePage[A] {
     val buttonStyle = "center-align btn-floating waves-effect waves-circle "
     val state = trainState.bind
 
-    <div class="center-align" id="buttonsContainer">
+    <div class="center-align" id="buttons-container">
       <div class="valign-wrapper">
         <a class= {
            buttonStyle + "btn-medium orange " +
