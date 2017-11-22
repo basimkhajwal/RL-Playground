@@ -5,7 +5,8 @@ import rlp.environment.{Agent, NaivePongAgent, Pong}
 import com.thoughtworks.binding.{Binding, dom}
 import org.scalajs.dom.CanvasRenderingContext2D
 import org.scalajs.dom.html.Div
-import rlp.controllers.{QStateSpace, QTableController}
+import rlp.ai.agents.QStateSpace
+import rlp.controllers.QTableController
 
 
 class PongPage extends GamePage[Agent[Pong.AgentState, Pong.Action]] {
@@ -31,8 +32,8 @@ class PongPage extends GamePage[Agent[Pong.AgentState, Pong.Action]] {
   val leftAgentSelect = new SelectHandler("Player 1", agentNames, renderTraining)
   val rightAgentSelect = new SelectHandler("Player 2", agentNames, renderTraining)
 
-  override val modelControllers = List(
-    new QTableController(
+  override val modelControllerBuilders = List(
+    QTableController.builder(
       2, { a => if (a == 0) UpAction else DownAction },
       QStateSpace.boxed[AgentState]("Ball X", 0, SCREEN_WIDTH, 20, _.ballPos.x),
       QStateSpace.boxed[AgentState]("Ball Y", 0, SCREEN_HEIGHT, 10, _.ballPos.y),
@@ -43,10 +44,10 @@ class PongPage extends GamePage[Agent[Pong.AgentState, Pong.Action]] {
   )
 
   override def initTraining(): Unit = {
+    /*
     val modelController = modelControllers(modelIdx.get)
     learningAgent = modelController.buildAgent()
-
-    trainingEnvironment = new Pong(learningAgent, learningAgent.clone())
+    trainingEnvironment = new Pong(learningAgent, learningAgent.clone())*/
   }
 
   override protected def trainStep(): Unit = {
