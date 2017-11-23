@@ -1,6 +1,6 @@
 package rlp.pages
 
-import com.thoughtworks.binding.Binding.{Constant, Constants, Var}
+import com.thoughtworks.binding.Binding.{BindingSeq, Constant, Constants, Var, Vars}
 import com.thoughtworks.binding.{Binding, dom}
 import org.scalajs.dom.{Event, document, html, window}
 import org.scalajs.dom.html.{Canvas, Div}
@@ -40,8 +40,21 @@ abstract class GamePage[A] {
   protected val renderTraining: Var[Boolean] = Var(true)
   protected val gameCount: Var[Int] = Var(0)
 
-  protected val models: mutable.Map[String, ModelController[A]] = mutable.Map()
-  protected val selectedModelBinding: Var[Option[ModelController[A]]] = Var(None)
+  protected val models: Vars[(String, ModelController[A])] = Vars()
+
+  val modelSelect = new SelectHandler(
+    "Model Select",
+    models.map { case (name, controller) => controller.name + " - " + name },
+    Constant(false)
+  )
+  val modelExists = Binding { models.bind.nonEmpty }
+  val selectedModel: Binding[Option[(String, ModelController[A])]] = Binding {
+    if (modelExists.bind) {
+      Some(models.bind(modelSelect.selectedIndex.bind))
+    } else {
+      None
+    }
+  }
 
   private var canvas: Canvas = _
   private var ctx: CanvasRenderingContext2D = _
@@ -185,30 +198,66 @@ abstract class GamePage[A] {
   @dom
   protected lazy val modelBuildSection: Binding[Div] = {
 
-    def initialName(idx: Int): String = {
-      if (!models.contains("Model"+idx)) "Model"+idx else initialName(idx+1)
+    def findUnusedName(): String = {
+      val names = models.get.map(_._1)
+      var idx = 1
+      while (names contains ("Model"+idx)) idx += 1
+      "Model"+idx
     }
 
-    val newModelControllerSelect = new SelectHandler("Model Type", modelControllerBuilders.map(_._1), Constant(false))
-    val newModelController = Binding {
-      modelControllerBuilders(newModelControllerSelect.selectedIndex.bind)._2()
-    }
-    val valid: Var[Boolean] = Var(true)
-    val modelName: Var[String] = Var(initialName(1))
+    val newModelSelect = new SelectHandler("Model Type", modelControllerBuilders.map(_._1), Constant(false))
 
-    def onNameChange(): Unit = {
-      val modelNameElem = getElem[html.Input]("model-name")
+    val modelCache: Vars[(Int, ModelController[A])] = Vars()
 
-      if (models.contains(modelNameElem.value)) {
-        modelNameElem.setCustomValidity("Invalid")
-      } else {
-        modelNameElem.setCustomValidity("")
-        modelName := modelNameElem.value
+    val modelController = Binding {
+      val idx = newModelSelect.selectedIndex.bind
+      val builder = modelControllerBuilders(idx)._2
+      val cache = modelCache.bind
+
+      cache.find(c => c._1 == idx) match {
+        case Some((_, model)) => model
+        case None => {
+          val model = builder()
+          modelCache.get += ((idx, model))
+          model
+        }
       }
     }
 
-    def onCreate(): Unit = {
+    val modelName: Var[String] = Var(findUnusedName())
 
+    val validName: Var[Boolean] = Var(true)
+    val valid: Binding[Boolean] = Binding {
+      validName.bind && modelController.bind.buildValid.bind
+    }
+
+    @dom
+    def onNameChange(): Unit = {
+      val modelNames = models.bind.map(_._1)
+      val modelNameElem = getElem[html.Input]("model-name")
+
+      if (modelNames contains modelNameElem.value) {
+        modelNameElem.setCustomValidity("Invalid")
+        validName := false
+      } else {
+        modelNameElem.setCustomValidity("")
+        modelName := modelNameElem.value
+        validName := true
+      }
+    }
+
+    @dom
+    def onCreate(): Unit = {
+      modelController.bind.model // Call build model
+      models.get += ((modelName.get, modelController.bind))
+
+      // Reset builder
+      modelCache.get.clear()
+      newModelSelect.selectedIndex := 0
+      modelName := findUnusedName()
+      validName := true
+
+      onClose()
     }
 
     def onClose(): Unit = {
@@ -230,17 +279,17 @@ abstract class GamePage[A] {
       </div>
 
       <div class="col s3 offset-s2">
-        { newModelControllerSelect.handler.bind }
+        { newModelSelect.handler.bind }
       </div>
 
       <div class="col s3 offset-s2 input-field">
-        <input id="model-name" class="validate" type="text" value={modelName.bind} onchange={_:Event => onNameChange()}/>
+        <input id="model-name" class="validate" type="text"
+          value={modelName.bind} onchange={_:Event => onNameChange()} required={true}/>
         <label for="model-name" data:data-error="Model name already exists">Model Name</label>
-        <!-- Add some sort of automated validation for model name -->
       </div>
 
       <div class="col s12">
-        { newModelController.bind.modelBuilder.bind }
+        { modelController.bind.modelBuilder.bind }
       </div>
 
       <div class="col s2 offset-s4">
@@ -248,8 +297,10 @@ abstract class GamePage[A] {
       </div>
 
       <div class="col s2">
-        <a class="waves-effect waves-light btn" onclick={_:Event => onCreate()}>Create</a>
-        <!-- TODO: Only enable when valid -->
+        <a class={
+           "waves-effect waves-light btn" + (if (valid.bind) "" else " disabled")
+           }
+          onclick={_:Event => onCreate() }>Create</a>
       </div>
 
     </div>
@@ -257,13 +308,15 @@ abstract class GamePage[A] {
 
   @dom
   protected lazy val modelViewSection: Binding[Div] = {
+
+
     <div class="row">
       <div class="col s3">
         <span class="card-title">Model</span>
       </div>
 
       <div class="col s5">
-        <!-- TODO: Add some model select code here -->
+        { modelSelect.handler.bind }
       </div>
 
       <div class="col s3">
@@ -271,12 +324,16 @@ abstract class GamePage[A] {
       </div>
 
       <div class="col s12">
-        <!-- TODO: Only enable when a model is bound -->
-        { trainingControls.bind }
+        { if (modelExists.bind) trainingControls.bind else <!-- --> }
       </div>
 
       <div class="col s12">
-        <!-- TODO: Bind into the bound model's model viewer stuff -->
+        {
+          selectedModel.bind match {
+            case None => <!-- -->
+            case Some((_, controller)) => controller.modelViewer.bind
+          }
+        }
       </div>
 
     </div>
