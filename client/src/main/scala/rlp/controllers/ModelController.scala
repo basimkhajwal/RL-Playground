@@ -15,8 +15,9 @@ trait ModelController[A] {
 
   lazy val buildValid: Binding[Boolean] = Constant(true)
 
-  def buildModel(): A
+  lazy val model: A = buildModel()
 
+  def buildModel(): A
 }
 
 object ModelController {
