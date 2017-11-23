@@ -1,6 +1,6 @@
 package rlp
 
-import com.thoughtworks.binding.Binding.{Constants, Var}
+import com.thoughtworks.binding.Binding.{BindingSeq, Constants, Var}
 import com.thoughtworks.binding.{Binding, dom}
 import org.scalajs.dom.Event
 import org.scalajs.dom.document
@@ -18,7 +18,11 @@ object SelectHandler {
   }
 }
 
-class SelectHandler(val name: String, val items: Seq[String], val disabledCondition: Binding[Boolean]) {
+class SelectHandler(val name: String, val items: BindingSeq[String], val disabledCondition: Binding[Boolean]) {
+
+  def this(name: String, items: Seq[String], disabledCondition: Binding[Boolean]) = {
+    this(name, Constants(items :_ *), disabledCondition)
+  }
 
   val selectID = SelectHandler.generateUID()
   val selectedIndex = Var(0)
@@ -28,7 +32,7 @@ class SelectHandler(val name: String, val items: Seq[String], val disabledCondit
     selectedIndex := select.selectedIndex
   }
 
-  private def conditionToggled(condition: Boolean): Unit = {
+  private def contentChanged(condition: Boolean, innerItems: Seq[String]): Unit = {
     Dynamic.global.$("#" + selectID).material_select()
   }
 
@@ -37,7 +41,8 @@ class SelectHandler(val name: String, val items: Seq[String], val disabledCondit
     <div class="input-field">
       <select id={selectID} onchange={_:Event => selectionChanged()} disabled={disabledCondition.bind}>
         {
-          for ((item, idx) <- Constants(items.zipWithIndex: _*)) yield {
+          val indexedItems = Constants(items.bind.zipWithIndex: _*)
+          for ((item, idx) <- indexedItems) yield {
             <option value={idx.toString}
                 selected={idx == selectedIndex.bind}
             >{item}</option>
@@ -46,7 +51,7 @@ class SelectHandler(val name: String, val items: Seq[String], val disabledCondit
       </select>
       <label>{name}</label>
 
-      { conditionToggled(disabledCondition.bind); "" }
+      { contentChanged(disabledCondition.bind, items.bind); "" }
     </div>
   }
 }
