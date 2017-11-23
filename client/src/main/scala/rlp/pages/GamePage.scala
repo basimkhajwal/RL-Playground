@@ -11,6 +11,7 @@ import rlp.environment.{Agent, Environment}
 import rlp._
 
 import scala.collection.mutable
+import scala.scalajs.js
 import scala.scalajs.js.{Date, timers}
 
 object GamePage {
@@ -137,6 +138,10 @@ abstract class GamePage[A] {
 
     canvas.width = width.toInt
     canvas.height = (aspectRatio * width).toInt
+  }
+
+  protected def updateTextFields(params: Any*): Unit = {
+    // TODO: Find a way to call Materialize.updateTextFields()
   }
 
   @dom
@@ -266,6 +271,8 @@ abstract class GamePage[A] {
 
     <div class="row">
 
+      { updateTextFields(newModelSelect.handler.bind); "" }
+
       <div class="col s3">
         <span class="card-title">Model</span>
       </div>
@@ -309,7 +316,6 @@ abstract class GamePage[A] {
   @dom
   protected lazy val modelViewSection: Binding[Div] = {
 
-
     <div class="row">
       <div class="col s3">
         <span class="card-title">Model</span>
@@ -331,7 +337,10 @@ abstract class GamePage[A] {
         {
           selectedModel.bind match {
             case None => <!-- -->
-            case Some((_, controller)) => controller.modelViewer.bind
+            case Some((_, controller)) => {
+              updateTextFields()
+              controller.modelViewer.bind
+            }
           }
         }
       </div>
