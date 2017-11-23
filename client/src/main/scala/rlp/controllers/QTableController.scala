@@ -61,13 +61,13 @@ class QTableController[O, A](
 
       <div class="input-field col s3 offset-s2">
         <input id="learning-rate" class="validate" type="number" min="0" max="1" step="any" value={learningRate.bind.toString}
-               oninput={_:Event => dataChanged()} />
+               oninput={_:Event => dataChanged()} required={true} />
         <label for="learning-rate" data:data-error="Learning rate must be between 0 and 1">Learning Rate</label>
       </div>
 
       <div class="input-field col s3 offset-s2">
         <input id="discount-factor" class="validate" type="number" min="0" max="1" step="any" value={discountFactor.bind.toString}
-               oninput={_:Event => dataChanged()} />
+               oninput={_:Event => dataChanged()} required={true} />
         <label for="discount-factor" data:data-error="Discount factor must be between 0 and 1">Forgetting Factor</label>
       </div>
 

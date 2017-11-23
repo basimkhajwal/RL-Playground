@@ -43,11 +43,11 @@ class PongPage extends GamePage[Agent[Pong.AgentState, Pong.Action]] {
     )
   )
 
+  @dom
   override def initTraining(): Unit = {
-    /*
-    val modelController = modelControllers(modelIdx.get)
-    learningAgent = modelController.buildAgent()
-    trainingEnvironment = new Pong(learningAgent, learningAgent.clone())*/
+    val modelController = selectedModel.bind.get._2
+    learningAgent = modelController.model
+    trainingEnvironment = new Pong(learningAgent, learningAgent.clone())
   }
 
   override protected def trainStep(): Unit = {
