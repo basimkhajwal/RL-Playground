@@ -11,7 +11,7 @@ class Matrix(private var rows: Int, private var cols: Int, private var data: Arr
 
   require(rows > 0)
   require(cols > 0)
-  require(data.length >= rows*cols, "Insufficient data supplied")
+  require(data.length == rows*cols, "Incorrect data supplied")
 
   def this(rows: Int, cols: Int) = {
     this(rows, cols, new Array[Double](rows * cols))
@@ -69,9 +69,19 @@ class Matrix(private var rows: Int, private var cols: Int, private var data: Arr
     this
   }
 
+  def apply(index: Int): Double = {
+    require(index < data.length, "Invalid index")
+    data(index)
+  }
+
   def apply(row: Int, col: Int): Double = {
     require(0 <= row && 0 <= col && row < rows && col < cols, s"Index $row $col does not exist")
     data(row*cols + col)
+  }
+
+  def update(index: Int, value: Double): Unit = {
+    require(index < data.length, "Invalid index")
+    data(index) = value
   }
 
   def update(row: Int, col: Int, value: Double): Unit = {
