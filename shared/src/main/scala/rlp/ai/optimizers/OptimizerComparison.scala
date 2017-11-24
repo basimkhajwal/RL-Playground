@@ -1,45 +1,64 @@
 package rlp.ai.optimizers
 
+import rlp.ai.ActivationFunction.{Linear, ReLU, Sigmoid}
 import rlp.ai.NeuralNetwork
 import rlp.math.Matrix
 
 object OptimizerComparison {
 
   def main(args: Array[String]): Unit = {
-    val networkA, networkB, networkC = new NeuralNetwork(Array(2, 5, 5, 3, 1), Array(Sigmoid, Sigmoid, Sigmoid, ReLU))
 
-    networkA.randomiseWeights()
-    for (i <- networkA.weights.indices) {
-      networkB.weights(i) = new Matrix(networkA.weights(i))
-      networkC.weights(i) = new Matrix(networkA.weights(i))
-    }
+    val epochs = 15000
+    val dataSamples = 100
+    val displayEpochs: List[Int] =
+      (0 until 10).toList ++
+      (10 until 100 by 10).toList ++
+      (100 until 1000 by 100).toList ++
+      (1000 until epochs by 1000)
 
-    val learningRate = 0.1
-    val momentumRate = 0.7
+    val network = new NeuralNetwork(Array(2, 5, 1), Array(Sigmoid, Linear))
 
-    val sgd = new SGDMomentum(networkA, learningRate, 0)
-    val sgdMomentum = new SGDMomentum(networkB, learningRate, momentumRate)
-    val rmsProp = new RMSProp(networkC, 0.9, 0.005)
+    val testFunction = (x: Double, y: Double) => y + math.sin(10*x) + 4
 
-    val dataSamples = 200
-    val function = (x:Double, y:Double) => 4*x+2*y
+    network.randomiseWeights(-3, 3)
 
-    val inputData = new Matrix(dataSamples, 2) each (_ => math.random())
-    val targets = new Matrix(dataSamples, 1,
-      (0 until dataSamples) map (i => function(inputData(i,0),inputData(i,1))) toArray)
+    val optimizers: Map[String, NetworkOptimizer] = Map(
+      "SGD" -> new SGDMomentum(network.clone()),
+      "SGD+Momentum" -> new SGDMomentum(network.clone(), 0.01, 0.9),
+      "RMSProp" -> new RMSProp(network.clone()),
+      "ADAM" -> new Adam(network.clone())
+    )
 
-    println("Epoch\t\tSGD\t\t\t\tSGD+Momentum\t\t\t\tRMS Prop")
-    for (i <- 0 until 2000) {
-      sgd.step(inputData, targets)
-      sgdMomentum.step(inputData, targets)
-      rmsProp.step(inputData, targets)
+    val input = new Matrix(dataSamples, 2) each (_ => math.random())
 
-      if (i % 20 == 0) {
-        val lossA = networkA.loss(inputData, targets).sum
-        val lossB = networkB.loss(inputData, targets).sum
-        val lossC = networkC.loss(inputData, targets).sum
-        println(s"$i\t\t$lossA\t\t$lossB\t\t$lossC")
+    val target = new Matrix(
+      dataSamples, 1,
+      (0 until dataSamples) map (i => testFunction(input(i,0), input(i,1))) toArray
+    )
+
+    printf("%-10s", "Name")
+    for (name <- optimizers.keys) printf("%-25s", name)
+    println()
+
+    var displayIdx = 0
+    for (e <- 0 until epochs) {
+
+      for (opt <- optimizers.values) opt.step(input, target)
+
+      if (displayIdx < displayEpochs.length && e == displayEpochs(displayIdx)) {
+
+        printf("%-10d", e)
+
+        for ((name, opt) <- optimizers) {
+          val loss: Double = opt.network.loss(input, target).sum
+          printf("%-25f", loss)
+        }
+
+        println()
+
+        displayIdx += 1
       }
     }
+
   }
 }
