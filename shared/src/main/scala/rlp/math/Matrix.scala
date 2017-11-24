@@ -7,7 +7,7 @@ package rlp.math
   * @param cols
   * @param data The matrix values, in row-major order
   */
-class Matrix(private var rows: Int, private var cols: Int, private var data: Array[Double]) {
+class Matrix(var rows: Int, var cols: Int, var data: Array[Double]) {
 
   require(rows > 0)
   require(cols > 0)
@@ -20,11 +20,6 @@ class Matrix(private var rows: Int, private var cols: Int, private var data: Arr
   def this(that: Matrix) = {
     this(that.rows, that.cols, that.data.clone())
   }
-
-  /* Getters */
-  def getRows() = rows
-  def getCols() = cols
-  def getData() = data
 
   def fillWith(v: Double): Matrix = {
     for (i <- 0 until (rows*cols)) data(i) = v
@@ -213,5 +208,31 @@ object Matrix {
     }
 
     ret
+  }
+
+  /**
+    * Apply softmax across the rows of this matrix
+    *
+    * @param m
+    * @return Softmax matrix
+    */
+  def softMax(m: Matrix): Matrix = {
+    val res = new Matrix(m.rows, m.cols)
+
+    for (r <- 0 until m.rows) {
+
+      // Extract the maximum element before using math.exp for better numerical stability
+      var maxElem = 0.0
+      for (c <- 0 until m.cols) maxElem = math.max(maxElem, m(r,c))
+
+      var total = 0.0
+      for (c <- 0 until m.cols) total += math.exp(m(r, c) - maxElem)
+
+      for (c <- 0 until m.cols) {
+        res(r,c) = math.exp(m(r, c) - maxElem) / total
+      }
+    }
+
+    res
   }
 }

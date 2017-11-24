@@ -16,8 +16,8 @@ class MatrixSuite extends FlatSpec with PropertyChecks with Matchers {
 
   val sameSizeMatrices: Gen[(Matrix, Matrix)] = for {
     m1 <- matrices
-    d2 <- Gen.listOfN(m1.getRows() * m1.getCols(), Gen.choose(-1e50, 1e50))
-  } yield (m1, new Matrix(m1.getRows(), m1.getCols(), d2.toArray))
+    d2 <- Gen.listOfN(m1.rows * m1.cols, Gen.choose(-1e50, 1e50))
+  } yield (m1, new Matrix(m1.rows, m1.cols, d2.toArray))
 
 
   "A Matrix" must "remain the same after being transposed twice" in {

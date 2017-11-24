@@ -38,7 +38,7 @@ class NeuralNetworkSuite extends FunSuite with PropertyChecks with Matchers {
         val input = new Matrix(20, n.layerSizes(0)) each { _ => Math.random() }
 
         val outputMat = new Matrix(20, n.layerSizes.last) each { _ => Math.random() }
-        val output = if (n.useSoftMax) n.softMax(outputMat) else outputMat
+        val output = if (n.useSoftMax) Matrix.softMax(outputMat) else outputMat
 
         n.randomiseWeights(-0.4,0.4)
 

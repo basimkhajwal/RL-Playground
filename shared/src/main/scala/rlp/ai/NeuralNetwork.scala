@@ -28,8 +28,18 @@ class NeuralNetwork(
   val weights: Array[Matrix] =
     for ((n1, n2) <- layerSizes.zip(layerSizes.tail)) yield new Matrix(n1+1, n2)
 
+  /**
+    * Clone the Neural Network, keeping the same architecture
+    * but new set of weights
+    *
+    * @return The cloned network
+    */
+  override def clone(): NeuralNetwork = {
+    new NeuralNetwork(layerSizes, activationFunctions, useSoftMax, lambda)
+  }
+
   def forwardProp(activations: Array[Double]): Array[Double] = {
-    forwardProp(new Matrix(1, activations.length, activations)).getData()
+    forwardProp(new Matrix(1, activations.length, activations)).data
   }
 
   /**
@@ -39,7 +49,7 @@ class NeuralNetwork(
     */
   def forwardProp(inputActivations: Matrix): Matrix = {
     var alpha = inputActivations
-    val ones = new Matrix(inputActivations.getRows(), 1) fillWith 1
+    val ones = new Matrix(inputActivations.rows, 1) fillWith 1
 
     // Iterate, keeping track of current activations by applying each consecutive
     // weight then the corresponding activation function
@@ -47,7 +57,7 @@ class NeuralNetwork(
       alpha = (Matrix.concatCols(ones, alpha) *= w) each phi.apply
     }
 
-    if (useSoftMax) softMax(alpha) else alpha
+    if (useSoftMax) Matrix.softMax(alpha) else alpha
   }
 
   /**
@@ -59,19 +69,19 @@ class NeuralNetwork(
     * @return
     */
   def loss(input: Matrix, target: Matrix): Array[Double] = {
-    val m = input.getRows()
+    val m = input.rows
     val output = forwardProp(input)
 
     val reg: Double =
       if (lambda == 0) 0
       else {
-        0.5 * lambda * weights.map(W => W map (w => w*w) getData() sum).sum
+        0.5 * lambda * weights.map(W => W.map(w => w*w).data.sum).sum
       }
 
     (0 until m)
       .map { i =>
         val losses =
-          for (k <- 0 until output.getCols()) yield {
+          for (k <- 0 until output.cols) yield {
             if (useSoftMax) {
               -(target(i, k)*math.log(output(i, k)) + (1-target(i,k))*math.log(1-output(i,k)) )
             } else {
@@ -82,27 +92,6 @@ class NeuralNetwork(
         losses.sum + reg
       }
       .toArray
-  }
-
-  // Utility function to apply the  softMax activation function
-  def softMax(activations: Matrix): Matrix = {
-    val res = new Matrix(activations.getRows(), activations.getCols())
-
-    for (r <- 0 until activations.getRows()) {
-
-      // Extract the maximum element before using math.exp for better numerical stability
-      var maxElem = 0.0
-      for (c <- 0 until activations.getCols()) maxElem = math.max(maxElem, activations(r,c))
-
-      var total = 0.0
-      for (c <- 0 until activations.getCols()) total += math.exp(activations(r, c) - maxElem)
-
-      for (c <- 0 until activations.getCols()) {
-        res(r,c) = math.exp(activations(r, c) - maxElem) / total
-      }
-    }
-
-    res
   }
 
   /**
@@ -116,7 +105,7 @@ class NeuralNetwork(
   def backProp(input: Matrix, target: Matrix): Array[Matrix] = {
 
     // Number of data samples
-    val m = input.getRows()
+    val m = input.rows
     val ones = new Matrix(m, 1) fillWith 1
 
     val netInputs = new Array[Matrix](numLayers)
@@ -130,7 +119,7 @@ class NeuralNetwork(
       activations(i) = activationFunctions(i-1)(netInputs(i))
     }
 
-    if (useSoftMax) activations(numLayers-1) = softMax(activations(numLayers-1))
+    if (useSoftMax) activations(numLayers-1) = Matrix.softMax(activations(numLayers-1))
 
     // Delta represents the partial derivatives of the current layer's total input
     // with respect to the losses across all input data
@@ -165,14 +154,14 @@ class NeuralNetwork(
     */
   def numericalGradient(input: Matrix, target: Matrix, epsilon: Double = 1e-5): Array[Matrix] = {
 
-    val m = input.getRows()
+    val m = input.rows
     val gradients = new Array[Matrix](weights.length)
     val initialLoss = loss(input, target).sum / m
 
     for (i <- weights.indices) {
-      gradients(i) = new Matrix(weights(i).getRows(), weights(i).getCols())
+      gradients(i) = new Matrix(weights(i).rows, weights(i).cols)
       // Iterate over each single weight
-      for (r <- 0 until weights(i).getRows(); c <- 0 until weights(i).getCols()) {
+      for (r <- 0 until weights(i).rows; c <- 0 until weights(i).cols) {
 
         // Deviate weight, and thus estimate how the loss changes with respect to current weight
         weights(i)(r, c) += epsilon
@@ -186,8 +175,8 @@ class NeuralNetwork(
 
   def randomiseWeights(min: Double = 0, max: Double = 1): Unit = {
     for (w <- weights.indices) {
-      for (r <- 0 until weights(w).getRows()) {
-        for (c <- 0 until weights(w).getCols()) {
+      for (r <- 0 until weights(w).rows) {
+        for (c <- 0 until weights(w).cols) {
           weights(w)(r,c) = math.random() * (max - min) + min
         }
       }
