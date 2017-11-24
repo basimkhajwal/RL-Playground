@@ -149,6 +149,10 @@ class Matrix(var rows: Int, var cols: Int, var data: Array[Double]) {
     this
   }
 
+  override def clone(): Matrix = {
+    new Matrix(this)
+  }
+
   override def toString: String = {
     var str = "["
     for (r <- 0 until rows) {

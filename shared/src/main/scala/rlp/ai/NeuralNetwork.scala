@@ -32,11 +32,21 @@ class NeuralNetwork(
     * Clone the Neural Network, keeping the same architecture
     * but new set of weights
     *
+    * @param cloneWeights Whether to copy weights across or reset to zero (default)
+    *
     * @return The cloned network
     */
-  override def clone(): NeuralNetwork = {
-    new NeuralNetwork(layerSizes, activationFunctions, useSoftMax, lambda)
+  def clone(cloneWeights: Boolean): NeuralNetwork = {
+    val cloned = new NeuralNetwork(layerSizes, activationFunctions, useSoftMax, lambda)
+
+    if (cloneWeights) {
+      for (i <- weights.indices) cloned.weights(i) = weights(i).clone()
+    }
+
+    cloned
   }
+
+  override def clone(): NeuralNetwork = clone(false)
 
   def forwardProp(activations: Array[Double]): Array[Double] = {
     forwardProp(new Matrix(1, activations.length, activations)).data

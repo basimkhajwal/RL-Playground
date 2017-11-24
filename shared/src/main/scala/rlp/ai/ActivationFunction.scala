@@ -2,6 +2,10 @@ package rlp.ai
 
 import rlp.math.Matrix
 
+/**
+  * Represents a the activation function and it's derivative
+  * applied to each neuron's summed input in a layer
+  */
 sealed trait ActivationFunction {
   def apply(m: Matrix): Matrix = m map apply
   def apply(x: Double): Double
