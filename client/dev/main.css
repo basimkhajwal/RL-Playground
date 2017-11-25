@@ -42,6 +42,22 @@
     min-height: 400px;
 }
 
+#model-select > .card-content{
+    padding: 0;
+}
+
+#model-training {
+    padding: 24px;
+    display: flex;
+    align-items: stretch;
+}
+
+#model-training-btns {
+    display: flex;
+    align-items: center;
+    justify-content: space-evenly;
+}
+
 @media (min-width: 1300px) {
 
     .page-container {

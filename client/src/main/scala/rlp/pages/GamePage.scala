@@ -89,8 +89,10 @@ abstract class GamePage[A] {
 
   @dom
   protected def resetTraining(): Unit = {
-    val controller = selectedModel.bind.get.controller
-    controller.resetAgent()
+    val model = selectedModel.bind.get
+
+    model.controller.resetAgent()
+    model.gamesPlayed := 0
   }
 
   protected def fastForwardTraining(): Unit = {
@@ -218,30 +220,26 @@ abstract class GamePage[A] {
       modelController.bind.agent // Call build model
       models.get += Model(modelName.get, modelController.bind)
 
+      onClose()
+    }
+
+    def onClose(): Unit = {
       // Reset builder
       controllerCache.get.clear()
       newModelSelect.selectedIndex := 0
       modelName := findUnusedName()
       validName := true
 
-      onClose()
-    }
-
-    def onClose(): Unit = {
       getElem[html.Span]("close-button").click()
     }
 
     <div class="row">
 
-      <div class="col s3">
-        <span class="card-title">Model</span>
-      </div>
-
-      <div class="col s5">
+      <div class="col s5 offset-s3">
         <span class="card-title center-align">Create New</span>
       </div>
 
-      <div class="col s3">
+      <div class="col s4">
         <span class="card-title right" id="close-button"><i class="material-icons">close</i></span>
       </div>
 
@@ -252,7 +250,7 @@ abstract class GamePage[A] {
       <div class="col s3 offset-s2 input-field">
         <input id="model-name" class="validate" type="text"
           value={modelName.bind} onchange={_:Event => onNameChange()} required={true}/>
-        <label for="model-name" data:data-error="Model name already exists">Model Name</label>
+        <label for="model-name" data:data-error="Model name empty or already exists">Model Name</label>
       </div>
 
       <div class="col s12">
@@ -277,16 +275,27 @@ abstract class GamePage[A] {
   protected lazy val modelViewSection: Binding[Div] = {
 
     <div class="row">
-      <div class="col s3">
-        <span class="card-title">Model</span>
-      </div>
 
-      <div class="col s5">
-        { modelSelect.handler.bind }
-      </div>
+      <div class="row grey col s12 lighten-3" id="model-training">
+        <div class="col s3">
+          <span class="card-title">Model Training</span>
+        </div>
 
-      <div class="col s3">
-        <a class="btn-floating btn waves-effect waves-light red activator right"><i class="material-icons">add</i></a>
+        <div class="col s3">
+          { modelSelect.handler.bind }
+        </div>
+
+        <div class="col s6" id="model-training-btns">
+          {
+            val btnStyle = "btn waves-effect waves-light"
+
+            <!-- TODO: IMPLEMENT FUNCTIONALITY FOR THESE  -->
+            <a class={btnStyle + " disabled"}>Clone</a>
+            <a class={btnStyle + " disabled"}>Duplicate</a>
+            <a class={btnStyle + " activator"}>New</a>
+          }
+          <!--<a class="btn-floating btn waves-effect waves-light red activator right"><i class="material-icons">add</i></a>-->
+        </div>
       </div>
 
       <div class="col s12">
