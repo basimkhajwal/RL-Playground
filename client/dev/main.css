@@ -38,6 +38,10 @@
     align-items: stretch;
 }
 
+#model-select {
+    min-height: 400px;
+}
+
 @media (min-width: 1300px) {
 
     .page-container {
