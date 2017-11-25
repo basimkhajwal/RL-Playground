@@ -36,5 +36,6 @@ trait Environment[S] {
 
 object Environment {
   /* Default time period in seconds between environment steps */
-  val DELTA = 1.0/30
+  val FPS = 30
+  val DELTA = 1.0/FPS
 }
