@@ -39,15 +39,15 @@ abstract class GamePage[A] {
   protected val renderTraining: Var[Boolean] = Var(true)
   protected val gameCount: Var[Int] = Var(0)
 
-  protected val models: Vars[(String, ModelController[A])] = Vars()
+  protected val models: Vars[Model[A]] = Vars()
 
   val modelSelect = new SelectHandler(
     "Model Select",
-    models.map { case (name, controller) => controller.name + " - " + name },
+    models.map(m => m.controller.name + " - " + m.name),
     Constant(false)
   )
   val modelExists = Binding { models.bind.nonEmpty }
-  val selectedModel: Binding[Option[(String, ModelController[A])]] = Binding {
+  val selectedModel: Binding[Option[Model[A]]] = Binding {
     if (modelExists.bind) {
       Some(models.bind(modelSelect.selectedIndex.bind))
     } else {
@@ -160,7 +160,7 @@ abstract class GamePage[A] {
   protected lazy val modelBuildSection: Binding[Div] = {
 
     def findUnusedName(): String = {
-      val names = models.get.map(_._1)
+      val names = models.get.map(_.name)
       var idx = 1
       while (names contains ("Model"+idx)) idx += 1
       "Model"+idx
@@ -168,19 +168,19 @@ abstract class GamePage[A] {
 
     val newModelSelect = new SelectHandler("Model Type", modelControllerBuilders.map(_._1), Constant(false))
 
-    val modelCache: Vars[(Int, ModelController[A])] = Vars()
+    val controllerCache: Vars[(Int, ModelController[A])] = Vars()
 
     val modelController = Binding {
       val idx = newModelSelect.selectedIndex.bind
       val builder = modelControllerBuilders(idx)._2
-      val cache = modelCache.bind
+      val cache = controllerCache.bind
 
       cache.find(c => c._1 == idx) match {
-        case Some((_, model)) => model
+        case Some((_, controller)) => controller
         case None => {
-          val model = builder()
-          modelCache.get += ((idx, model))
-          model
+          val controller = builder()
+          controllerCache.get += ((idx, controller))
+          controller
         }
       }
     }
@@ -194,7 +194,7 @@ abstract class GamePage[A] {
 
     @dom
     def onNameChange(): Unit = {
-      val modelNames = models.bind.map(_._1)
+      val modelNames = models.bind.map(_.name)
       val modelNameElem = getElem[html.Input]("model-name")
 
       if (modelNames contains modelNameElem.value) {
@@ -210,10 +210,10 @@ abstract class GamePage[A] {
     @dom
     def onCreate(): Unit = {
       modelController.bind.model // Call build model
-      models.get += ((modelName.get, modelController.bind))
+      models.get += Model(modelName.get, modelController.bind)
 
       // Reset builder
-      modelCache.get.clear()
+      controllerCache.get.clear()
       newModelSelect.selectedIndex := 0
       modelName := findUnusedName()
       validName := true
@@ -291,9 +291,7 @@ abstract class GamePage[A] {
         {
           selectedModel.bind match {
             case None => <!-- -->
-            case Some((_, controller)) => {
-              controller.modelViewer.bind
-            }
+            case Some(model) => model.controller.modelViewer.bind
           }
         }
       </div>

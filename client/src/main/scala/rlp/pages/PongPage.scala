@@ -45,7 +45,7 @@ class PongPage extends GamePage[Agent[Pong.AgentState, Pong.Action]] {
 
   @dom
   override def initTraining(): Unit = {
-    val modelController = selectedModel.bind.get._2
+    val modelController = selectedModel.bind.get.controller
     learningAgent = modelController.model
     trainingEnvironment = new Pong(learningAgent, learningAgent.clone())
   }
