@@ -5,19 +5,13 @@ import com.thoughtworks.binding.{Binding, dom}
 import org.scalajs.dom.{Event, document, html, window}
 import org.scalajs.dom.html.{Canvas, Div}
 import org.scalajs.dom.raw.{CanvasRenderingContext2D, HTMLElement}
-import org.scalajs.dom.window.performance
 import rlp.controllers.ModelController
 import rlp.environment.Environment
 import rlp._
 
-import scala.scalajs.js.{Date, timers}
+import scala.scalajs.js
 
 object GamePage {
-
-  sealed trait TrainState
-  object Stopped extends TrainState
-  object Paused extends TrainState
-  object Playing extends TrainState
 
   val GAME_SPEEDS = List(1, 2, 5, 10, -1)
   val GAME_SPEED_VALUES = GAME_SPEEDS.init.map("x"+_) ++ List("Max")
@@ -30,14 +24,13 @@ abstract class GamePage[A] {
   /* Abstract vars */
   protected val modelControllerBuilders: List[ModelController.Builder[A]]
 
-  protected def initTraining(): Unit
+  protected def initModel(model: Model[A]): Unit
   protected def trainStep(): Unit
   protected def render(ctx: CanvasRenderingContext2D): Unit
 
-  protected val trainState: Var[TrainState] = Var(Stopped)
+  protected val isTraining: Var[Boolean] = Var(false)
   protected val gameSpeed: Var[Int] = Var(0)
   protected val renderTraining: Var[Boolean] = Var(true)
-  protected val gameCount: Var[Int] = Var(0)
 
   protected val models: Vars[Model[A]] = Vars()
 
@@ -46,10 +39,15 @@ abstract class GamePage[A] {
     models.map(m => m.controller.name + " - " + m.name),
     Constant(false)
   )
+
   val modelExists = Binding { models.bind.nonEmpty }
+
   val selectedModel: Binding[Option[Model[A]]] = Binding {
     if (modelExists.bind) {
-      Some(models.bind(modelSelect.selectedIndex.bind))
+      val model = models.bind(modelSelect.selectedIndex.bind)
+      modelChanged(model)
+
+      Some(model)
     } else {
       None
     }
@@ -68,26 +66,32 @@ abstract class GamePage[A] {
     pageResized()
   }
 
-  protected def playClicked(): Unit = {
-    if (trainState.get == Stopped) initTraining()
-    gameCount := 0
+  protected def modelChanged(model: Model[A]): Unit = {
+    if (isTraining.get) pauseTraining()
+    initModel(model)
+
+    js.timers.setTimeout(100) { js.Dynamic.global.Materialize.updateTextFields() }
+  }
+
+  @dom
+  protected def startTraining(): Unit = {
+    val model = selectedModel.bind.get
+    model.gamesPlayed := 0
 
     trainingProcess.start(Environment.FPS * GAME_SPEEDS(gameSpeed.get))
-    trainState := Playing
+    isTraining := true
   }
 
-  protected def stopClicked(): Unit = {
-    trainState := Stopped
-
-    if (trainingProcess.running) trainingProcess.stop()
-  }
-
-  protected def pauseClicked(): Unit = {
-    trainState := Paused
+  protected def pauseTraining(): Unit = {
     trainingProcess.stop()
+    isTraining := false
   }
 
-  protected def fastForwardClicked(): Unit = {
+  protected def resetTraining(): Unit = {
+
+  }
+
+  protected def fastForwardTraining(): Unit = {
     gameSpeed := (gameSpeed.get + 1) % GAME_SPEEDS.length
     trainingProcess.stop()
     trainingProcess.start(Environment.FPS * GAME_SPEEDS(gameSpeed.get))
@@ -209,7 +213,7 @@ abstract class GamePage[A] {
 
     @dom
     def onCreate(): Unit = {
-      modelController.bind.model // Call build model
+      modelController.bind.agent // Call build model
       models.get += Model(modelName.get, modelController.bind)
 
       // Reset builder
@@ -328,15 +332,19 @@ abstract class GamePage[A] {
         <div class="col s6">
           <h6 class="center-align">
             {
-            if (trainState.bind == Playing) s"Training Speed: ${GAME_SPEED_VALUES(gameSpeed.bind)}"
-            else if (trainState.bind == Paused) "Training Paused"
-            else "Training Stopped"
+            if (isTraining.bind) s"Training Speed: ${GAME_SPEED_VALUES(gameSpeed.bind)}"
+            else "Training Paused"
             }
           </h6>
         </div>
         <div class="col s6">
           <h6 class="center-align">
-            { s"Games Played: ${gameCount.bind.toString}" }
+            {
+              selectedModel.bind match {
+                case Some(model) => s"Games Played: ${model.gamesPlayed.bind}"
+                case None => ""
+              }
+            }
           </h6>
         </div>
       </div>
@@ -354,32 +362,28 @@ abstract class GamePage[A] {
   @dom
   protected lazy val trainingButtons: Binding[Div] = {
     val buttonStyle = "center-align btn-floating waves-effect waves-circle "
-    val state = trainState.bind
+    val training = isTraining.bind
 
     <div class="center-align" id="buttons-container">
       <div class="valign-wrapper">
-        <a class= {
-           buttonStyle + "btn-medium orange " +
-             (if (state == Stopped) "disabled" else "")
-           }
-           onclick={ _:Event => stopClicked() }
+        <a class= {buttonStyle + "btn-medium orange"}
+           onclick={ _:Event => resetTraining() }
         >
-          <i class="material-icons">stop</i>
+          <i class="material-icons">delete</i>
         </a>
 
         <a class={buttonStyle + "btn-large red"}
-           onclick = { _:Event => if (state == Playing) pauseClicked() else playClicked() }
+           onclick = { _:Event => if (training) pauseTraining() else startTraining() }
         >
           <i class="material-icons">
-            { if (state == Playing) "pause" else "play_arrow" }
+            { if (training) "pause" else "play_arrow" }
           </i>
         </a>
 
         <a class= {
-           buttonStyle + "btn-medium orange " +
-             (if (state != Playing) "disabled" else "")
+             buttonStyle + "btn-medium orange " + (if (training) "" else "disabled")
            }
-           onclick={ _:Event => fastForwardClicked() }
+           onclick={ _:Event => fastForwardTraining() }
         >
           <i class="material-icons">fast_forward</i>
         </a>

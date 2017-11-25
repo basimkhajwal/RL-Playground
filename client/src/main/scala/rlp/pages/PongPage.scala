@@ -13,6 +13,7 @@ class PongPage extends GamePage[Agent[Pong.AgentState, Pong.Action]] {
 
   import Pong._
 
+  private var model: Model[PongAgent] = _
   private var learningAgent: PongAgent = _
   private var trainingEnvironment: Pong = _
   private var gameEnvironment: Pong = _
@@ -43,10 +44,9 @@ class PongPage extends GamePage[Agent[Pong.AgentState, Pong.Action]] {
     )
   )
 
-  @dom
-  override def initTraining(): Unit = {
-    val modelController = selectedModel.bind.get.controller
-    learningAgent = modelController.model
+  override def initModel(model: Model[PongAgent]): Unit = {
+    this.model = model
+    learningAgent = model.controller.agent
     trainingEnvironment = new Pong(learningAgent, learningAgent.clone())
   }
 
@@ -54,7 +54,7 @@ class PongPage extends GamePage[Agent[Pong.AgentState, Pong.Action]] {
     episodeLength += 1
     if (trainingEnvironment.step() || episodeLength > MAX_EPISODE_LENGTH) {
       if (episodeLength <= MAX_EPISODE_LENGTH) {
-        gameCount := gameCount.get + 1
+        model.gamesPlayed := model.gamesPlayed.get + 1
       }
       trainingEnvironment.reset()
       episodeLength = 0
