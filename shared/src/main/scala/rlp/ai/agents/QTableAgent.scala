@@ -1,11 +1,11 @@
 package rlp.ai.agents
 
-import rlp.environment.{Agent, MappedAgent, SARSAAgent}
+import rlp.environment.{Agent, MappedAgent, SteppedAgent}
 
 class QTableAgent(
   val numStates: Int, val numActions: Int,
   val table: Array[Double]
-) extends SARSAAgent[Int, Int] {
+) extends SteppedAgent[Int, Int] {
 
   var learningRate = 0.1
   var discountFactor = 0.9
@@ -15,7 +15,7 @@ class QTableAgent(
     this(numStates, numActions, new Array[Double](numStates * numActions))
   }
 
-  override def sarsa(prevState: Int, action: Int, reward: Double, newState: Int): Int = {
+  override def step(prevState: Int, action: Int, reward: Double, newState: Int): Int = {
     val (greedyAction, expectedReward) = maximumAction(newState)
 
     this(prevState, action) += learningRate * (reward + discountFactor * expectedReward - this(prevState, action))

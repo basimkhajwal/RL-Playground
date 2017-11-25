@@ -1,12 +1,12 @@
 package rlp.ai.agents
 
-import rlp.environment.SARSAAgent
+import rlp.environment.SteppedAgent
 
-class QNetworkAgent() extends SARSAAgent[Array[Double], Array[Double]]{
+class QNetworkAgent() extends SteppedAgent[Array[Double], Array[Double]]{
 
 
 
-  override def sarsa(prevState: Array[Double], action: Array[Double], reward: Double, newState: Array[Double]): Array[Double] = {
+  override def step(prevState: Array[Double], action: Array[Double], reward: Double, newState: Array[Double]): Array[Double] = {
     ???
   }
 }

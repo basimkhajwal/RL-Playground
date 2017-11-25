@@ -49,7 +49,7 @@ object OptimizerComparison {
 
         printf("%-10d", e)
 
-        for ((name, opt) <- optimizers) {
+        for (opt <- optimizers.values) {
           val loss: Double = opt.network.loss(input, target).sum
           printf("%-25f", loss)
         }
