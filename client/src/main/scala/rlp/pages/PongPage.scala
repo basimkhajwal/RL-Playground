@@ -1,11 +1,11 @@
 package rlp.pages
 
 import rlp._
-import rlp.environment.{Agent, NaivePongAgent, Pong}
+import rlp.environment.{NaivePongAgent, Pong}
 import com.thoughtworks.binding.{Binding, dom}
 import org.scalajs.dom.CanvasRenderingContext2D
 import org.scalajs.dom.html.Div
-import rlp.ai.agents.QStateSpace
+import rlp.agent.{Agent, QStateSpace}
 import rlp.controllers.QTableController
 
 

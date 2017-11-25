@@ -1,4 +1,4 @@
-package rlp.ai.agents
+package rlp.agent
 
 import rlp.environment.{Agent, MappedAgent, SteppedAgent}
 

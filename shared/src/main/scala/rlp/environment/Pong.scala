@@ -1,7 +1,8 @@
 package rlp.environment
 
-import scala.util.Random
+import rlp.agent.Agent
 
+import scala.util.Random
 import rlp.util.Point2D
 
 object Pong {

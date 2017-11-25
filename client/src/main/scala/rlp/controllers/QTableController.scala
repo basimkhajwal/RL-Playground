@@ -5,9 +5,8 @@ import com.thoughtworks.binding.{Binding, dom}
 import org.scalajs.dom.{Event, document, html}
 import org.scalajs.dom.html.Div
 import org.scalajs.dom.raw.HTMLElement
-import rlp.ai.agents.{QStateSpace, QTableAgent}
-import rlp.environment.{Agent, MappedAgent}
 import rlp._
+import rlp.agent.{Agent, QStateSpace, QTableAgent}
 
 class QTableController[O, A](
   numActions: Int, actionMap: (Int) => A, spaces: Array[QStateSpace[O]]
