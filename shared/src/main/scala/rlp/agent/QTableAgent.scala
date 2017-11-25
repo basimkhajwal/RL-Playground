@@ -1,7 +1,5 @@
 package rlp.agent
 
-import rlp.environment.{Agent, MappedAgent, SteppedAgent}
-
 class QTableAgent(
   val numStates: Int, val numActions: Int,
   val table: Array[Double]
