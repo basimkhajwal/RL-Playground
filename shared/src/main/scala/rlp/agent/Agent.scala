@@ -23,6 +23,13 @@ trait Agent[S, A] {
     */
   def percept(reward: Double): Unit = {}
 
+  /**
+    * Reset the agent to it's default state before
+    * it learnt anything
+    * @return
+    */
+  def reset(): Unit = {}
+
   override def clone():Agent[S,A] = this
 }
 

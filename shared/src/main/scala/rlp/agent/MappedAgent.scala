@@ -24,5 +24,7 @@ class MappedAgent[S1, A1, S2, A2](
   override def percept(reward: Double): Unit = agent.percept(reward)
 
   override def clone(): MappedAgent[S1,A1,S2,A2] = new MappedAgent(agent.clone(), stateMap, actionMap)
+
+  override def reset(): Unit = agent.reset()
 }
 

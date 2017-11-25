@@ -34,6 +34,10 @@ class QTableAgent(
     (maxAction, maxActionValue)
   }
 
+  override def reset(): Unit = {
+    for (i <- table.indices) table(i) = 0
+  }
+
   @inline
   def apply(state: Int, action: Int): Double = table(state + action * numStates)
 
