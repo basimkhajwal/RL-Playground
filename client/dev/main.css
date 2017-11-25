@@ -58,6 +58,15 @@
     justify-content: space-evenly;
 }
 
+#training-speed {
+    display: inline-block;
+    width: 40px;
+    margin-left: -20px;
+    padding-left: 20px;
+    font-weight: 300;
+    transform: translateY(10%);
+}
+
 @media (min-width: 1300px) {
 
     .page-container {

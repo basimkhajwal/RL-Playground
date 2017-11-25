@@ -334,30 +334,21 @@ abstract class GamePage[A] {
 
   @dom
   protected lazy val trainingControls: Binding[Div] = {
-    <div>
-      { trainingButtons.bind } <br />
-
-      <div class="row">
-        <div class="col s6">
-          <h6 class="center-align">
-            {
-            if (isTraining.bind) s"Training Speed: ${gameSpeedToString(gameSpeed.bind)}"
-            else "Training Paused"
-            }
-          </h6>
-        </div>
-        <div class="col s6">
-          <h6 class="center-align">
-            {
-              selectedModel.bind match {
-                case Some(model) => s"Games Played: ${model.gamesPlayed.bind}"
-                case None => ""
-              }
-            }
-          </h6>
-        </div>
+    <div class="row">
+      <div class="col s6">
+        { trainingButtons.bind }
       </div>
-      <br />
+
+      <div class="col s6 valign-wrapper">
+        <h6 class="center-align">
+          {
+          selectedModel.bind match {
+            case Some(model) => s"Games Played: ${model.gamesPlayed.bind}"
+            case None => ""
+          }
+          }
+        </h6>
+      </div>
     </div>
   }
 
@@ -396,6 +387,7 @@ abstract class GamePage[A] {
         >
           <i class="material-icons">fast_forward</i>
         </a>
+        <span id="training-speed"> { if (isTraining.bind) gameSpeedToString(gameSpeed.bind) else "" } </span>
       </div>
     </div>
   }
