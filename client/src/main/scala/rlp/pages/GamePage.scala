@@ -7,11 +7,9 @@ import org.scalajs.dom.html.{Canvas, Div}
 import org.scalajs.dom.raw.{CanvasRenderingContext2D, HTMLElement}
 import org.scalajs.dom.window.performance
 import rlp.controllers.ModelController
-import rlp.environment.{Agent, Environment}
+import rlp.environment.Environment
 import rlp._
 
-import scala.collection.mutable
-import scala.scalajs.js
 import scala.scalajs.js.{Date, timers}
 
 object GamePage {
@@ -61,70 +59,38 @@ abstract class GamePage[A] {
   private var ctx: CanvasRenderingContext2D = _
   protected val keyboardHandler = new KeyboardHandler()
 
-  /* Timers */
-  private var trainingTimer: timers.SetIntervalHandle = _
-  private var renderTimer: timers.SetIntervalHandle = _
+  private val trainingProcess = new BackgroundProcess(trainStep)
+  private val renderProcess = new BackgroundProcess(() => render(ctx))
 
   def start(): Unit = {
-    renderTimer = timers.setInterval(1000 * Environment.DELTA) { render(ctx) }
+    renderProcess.start(Environment.FPS)
     window.onresize = { _:Event => pageResized() }
     pageResized()
   }
 
-  private def createTrainingTimer(): timers.SetIntervalHandle = {
-    val speed = GAME_SPEEDS(gameSpeed.get)
-
-    if (speed > 0) {
-      Logger.log(s"Began training at ${speed / Environment.DELTA}fps")
-      timers.setInterval(1000 * Environment.DELTA / speed) { trainStep() }
-    } else {
-      val trainTime = benchmarkTraining()
-      val targetTimeStep = 7.0
-      val runsPerTimeStep = ((targetTimeStep-1)  / trainTime).toInt
-
-      Logger.log(s"Ran training time benchmark - ${trainTime}ms")
-      Logger.log(s"Began training at ${1000.0 * runsPerTimeStep / targetTimeStep}fps")
-
-      timers.setInterval(targetTimeStep) {
-        for (_ <- 0 until runsPerTimeStep) trainStep()
-      }
-    }
-  }
-
-  private def benchmarkTraining(): Double = {
-    val numRuns = 1000
-    val startTime = performance.now()
-    for (_ <- 0 until numRuns) trainStep()
-    (performance.now() - startTime) / numRuns
-  }
-
   protected def playClicked(): Unit = {
-    if (trainState.get == Stopped) {
-      gameCount := 0
-      initTraining()
-    } else {
-      gameSpeed := 0
-    }
+    if (trainState.get == Stopped) initTraining()
+    gameCount := 0
 
-    trainingTimer = createTrainingTimer()
+    trainingProcess.start(Environment.FPS * GAME_SPEEDS(gameSpeed.get))
     trainState := Playing
   }
 
   protected def stopClicked(): Unit = {
     trainState := Stopped
 
-    if (trainingTimer != null) timers.clearInterval(trainingTimer)
+    if (trainingProcess.running) trainingProcess.stop()
   }
 
   protected def pauseClicked(): Unit = {
     trainState := Paused
-    timers.clearInterval(trainingTimer)
+    trainingProcess.stop()
   }
 
   protected def fastForwardClicked(): Unit = {
     gameSpeed := (gameSpeed.get + 1) % GAME_SPEEDS.length
-    timers.clearInterval(trainingTimer)
-    trainingTimer = createTrainingTimer()
+    trainingProcess.stop()
+    trainingProcess.start(Environment.FPS * GAME_SPEEDS(gameSpeed.get))
   }
 
   protected def toggleRenderTraining(): Unit = {
@@ -138,10 +104,6 @@ abstract class GamePage[A] {
 
     canvas.width = width.toInt
     canvas.height = (aspectRatio * width).toInt
-  }
-
-  protected def updateTextFields(params: Any*): Unit = {
-    // TODO: Find a way to call Materialize.updateTextFields()
   }
 
   @dom
@@ -186,12 +148,6 @@ abstract class GamePage[A] {
             <div class="card-reveal">
               { modelBuildSection.bind }
             </div>
-          </div>
-        </div>
-
-        <div class="col s12">
-          <div class="card-panel">
-            <h5 class="center-align">TODO: Graphs &amp; Statistics</h5>
           </div>
         </div>
 
@@ -271,8 +227,6 @@ abstract class GamePage[A] {
 
     <div class="row">
 
-      { updateTextFields(newModelSelect.handler.bind); "" }
-
       <div class="col s3">
         <span class="card-title">Model</span>
       </div>
@@ -338,7 +292,6 @@ abstract class GamePage[A] {
           selectedModel.bind match {
             case None => <!-- -->
             case Some((_, controller)) => {
-              updateTextFields()
               controller.modelViewer.bind
             }
           }
