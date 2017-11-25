@@ -43,7 +43,7 @@ class QTableController[O, A](
   }
 
 
-  override def buildModel(): Agent[O, A] = {
+  override def buildAgent(): Agent[O, A] = {
     val (qAgent, agent) = QTableAgent.build(numActions, actionMap, spacesEnabled.get.filter(_._2).map(_._1))
 
     learningRate := qAgent.learningRate
