@@ -18,6 +18,8 @@ trait ModelController[A] {
   lazy val agent: A = buildAgent()
 
   def buildAgent(): A
+
+  def resetAgent(): Unit
 }
 
 object ModelController {

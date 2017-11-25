@@ -96,6 +96,10 @@ class QTableController[O, A](
 
     spacesEnabled.get(idx) = (space, checkBox.checked)
   }
+
+  override def resetAgent(): Unit = {
+    agent.reset()
+  }
 }
 
 object QTableController {

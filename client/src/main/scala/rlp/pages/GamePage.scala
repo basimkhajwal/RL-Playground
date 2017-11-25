@@ -87,8 +87,10 @@ abstract class GamePage[A] {
     isTraining := false
   }
 
+  @dom
   protected def resetTraining(): Unit = {
-
+    val controller = selectedModel.bind.get.controller
+    controller.resetAgent()
   }
 
   protected def fastForwardTraining(): Unit = {
@@ -369,7 +371,7 @@ abstract class GamePage[A] {
         <a class= {buttonStyle + "btn-medium orange"}
            onclick={ _:Event => resetTraining() }
         >
-          <i class="material-icons">delete</i>
+          <i class="material-icons">replay</i>
         </a>
 
         <a class={buttonStyle + "btn-large red"}
