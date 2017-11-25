@@ -11,18 +11,17 @@ import rlp._
 
 import scala.scalajs.js
 
-object GamePage {
-
-  val GAME_SPEEDS = List(1, 2, 5, 10, -1)
-  val GAME_SPEED_VALUES = GAME_SPEEDS.init.map("x"+_) ++ List("Max")
-}
-
 abstract class GamePage[A] {
 
-  import GamePage._
+  protected val targetGameWidth = 800
+
+  protected val gameSpeedMultiplier = List(1, 2, 5, 10, -1)
+  protected val gameSpeedToString = gameSpeedMultiplier.init.map("x"+_) ++ List("Max")
 
   /* Abstract vars */
   protected val modelControllerBuilders: List[ModelController.Builder[A]]
+
+  protected val aspectRatio: Double = 3.0/4
 
   protected def initModel(model: Model[A]): Unit
   protected def trainStep(): Unit
@@ -78,7 +77,7 @@ abstract class GamePage[A] {
     val model = selectedModel.bind.get
     model.gamesPlayed := 0
 
-    trainingProcess.start(Environment.FPS * GAME_SPEEDS(gameSpeed.get))
+    trainingProcess.start(Environment.FPS * gameSpeedMultiplier(gameSpeed.get))
     isTraining := true
   }
 
@@ -96,9 +95,9 @@ abstract class GamePage[A] {
   }
 
   protected def fastForwardTraining(): Unit = {
-    gameSpeed := (gameSpeed.get + 1) % GAME_SPEEDS.length
+    gameSpeed := (gameSpeed.get + 1) % gameSpeedMultiplier.length
     trainingProcess.stop()
-    trainingProcess.start(Environment.FPS * GAME_SPEEDS(gameSpeed.get))
+    trainingProcess.start(Environment.FPS * gameSpeedMultiplier(gameSpeed.get))
   }
 
   protected def toggleRenderTraining(): Unit = {
@@ -107,8 +106,7 @@ abstract class GamePage[A] {
 
   protected def pageResized(): Unit = {
     val container = document.getElementById("canvas-container").asInstanceOf[Div]
-    val width = Math.min(800, container.offsetWidth - 50)
-    val aspectRatio = (canvas.height * 1.0) / canvas.width
+    val width = Math.min(targetGameWidth, container.offsetWidth - 50)
 
     canvas.width = width.toInt
     canvas.height = (aspectRatio * width).toInt
@@ -343,7 +341,7 @@ abstract class GamePage[A] {
         <div class="col s6">
           <h6 class="center-align">
             {
-            if (isTraining.bind) s"Training Speed: ${GAME_SPEED_VALUES(gameSpeed.bind)}"
+            if (isTraining.bind) s"Training Speed: ${gameSpeedToString(gameSpeed.bind)}"
             else "Training Paused"
             }
           </h6>
@@ -404,7 +402,7 @@ abstract class GamePage[A] {
 
   @dom
   protected lazy val gameContainer: Binding[Div] = {
-    canvas = <canvas class="center-align" width={800} height={600}></canvas>
+    canvas = <canvas class="center-align" width={targetGameWidth} height={(targetGameWidth * aspectRatio).toInt}></canvas>
     ctx = canvas.getContext("2d").asInstanceOf[CanvasRenderingContext2D]
 
     <div id="canvas-container" class="center-align valign-wrapper"> { canvas } </div>
