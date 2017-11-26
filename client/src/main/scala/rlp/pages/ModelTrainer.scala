@@ -39,7 +39,7 @@ class ModelTrainer[A](
     }
   }
 
-  private val trainingProcess = new BackgroundProcess(trainStep)
+  private val trainingProcess = new BackgroundProcess(trainStep, "Training")
 
   private def startTraining(): Unit = {
     trainingProcess.start(Environment.FPS * gameSpeedMultiplier(gameSpeed.get))

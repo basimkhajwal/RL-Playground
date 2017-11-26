@@ -35,7 +35,7 @@ abstract class GamePage[A] {
   private var ctx: CanvasRenderingContext2D = _
   protected val keyboardHandler = new KeyboardHandler()
 
-  private val renderProcess = new BackgroundProcess(() => render(ctx))
+  private val renderProcess = new BackgroundProcess(() => render(ctx), "Rendering")
 
   def start(): Unit = {
     renderProcess.start(Environment.FPS)
