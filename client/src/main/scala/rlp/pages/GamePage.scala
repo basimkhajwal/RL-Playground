@@ -41,6 +41,10 @@ abstract class GamePage[A] {
     renderProcess.start(Environment.FPS)
     window.onresize = { _:Event => pageResized() }
     pageResized()
+
+    val game = getElem[Div]("game-row")
+    game.tabIndex = 0
+    keyboardHandler.register(game)
   }
 
   protected def toggleRenderTraining(): Unit = {

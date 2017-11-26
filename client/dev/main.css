@@ -67,6 +67,10 @@
     transform: translateY(10%);
 }
 
+#game-row:focus {
+    outline: none;
+}
+
 @media (min-width: 1300px) {
 
     .page-container {
