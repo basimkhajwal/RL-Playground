@@ -1,36 +1,31 @@
 package rlp.pages
 
+import com.thoughtworks.binding.Binding.{BindingSeq, Constants}
 import rlp._
 import rlp.environment.{NaivePongAgent, Pong}
 import com.thoughtworks.binding.{Binding, dom}
 import org.scalajs.dom.CanvasRenderingContext2D
 import org.scalajs.dom.html.Div
-import rlp.agent.{Agent, QStateSpace}
+import rlp.agent.QStateSpace
 import rlp.controllers.QTableController
 
 
-class PongPage extends GamePage[Agent[Pong.AgentState, Pong.Action]] {
+class PongPage extends GamePage[Pong.State, Pong.PongAgent] {
 
   import Pong._
 
-  private var model: Model[PongAgent] = _
-  private var learningAgent: PongAgent = _
-  private var trainingEnvironment: Pong = _
   private var gameEnvironment: Pong = _
 
-  private val MAX_EPISODE_LENGTH = 1000
-  private var episodeLength = 0
-
-  private val agentNames = List("Rule-based computer", "Computer AI", "Player (WASD)", "Player (Up/Down)")
-
-  private val agentCreators: List[() => PongAgent] = List(
-    { () => new NaivePongAgent() },
-    { () => learningAgent.clone() },
-    { () => new PongUserAgent("w", "s") },
-    { () => new PongUserAgent("ArrowUp", "ArrowDown") }
-  )
+  private val agentNames: BindingSeq[String] = {
+    val defaultNames = Constants("Rule-based computer", "Player (W/S)", "Player (Up/Down)")
+    for {
+      seq <- Constants(defaultNames, models.map(_.toString))
+      x <- seq
+    } yield x
+  }
 
   val leftAgentSelect = new SelectHandler("Player 1", agentNames, renderTraining)
+
   val rightAgentSelect = new SelectHandler("Player 2", agentNames, renderTraining)
 
   override val modelControllerBuilders = List(
@@ -44,26 +39,21 @@ class PongPage extends GamePage[Agent[Pong.AgentState, Pong.Action]] {
     )
   )
 
-  override def initModel(model: Model[PongAgent]): Unit = {
-    this.model = model
-    learningAgent = model.controller.agent
-    trainingEnvironment = new Pong(learningAgent, learningAgent.clone())
+  override def initModel(model: Model[PongAgent]): Pong = {
+    val agent = model.controller.agent
+    new Pong(agent, agent.clone())
   }
 
-  override protected def trainStep(): Unit = {
-    episodeLength += 1
-    if (trainingEnvironment.step() || episodeLength > MAX_EPISODE_LENGTH) {
-      if (episodeLength <= MAX_EPISODE_LENGTH) {
-        model.gamesPlayed := model.gamesPlayed.get + 1
-      }
-      trainingEnvironment.reset()
-      episodeLength = 0
-    }
+  private def createAgent(idx: Int): PongAgent = idx match {
+    case 0 => new NaivePongAgent
+    case 1 => new PongUserAgent("w", "s")
+    case 2 => new PongUserAgent("ArrowUp", "ArrowDown")
+    case _ => models.get(idx-3).controller.agent.clone()
   }
 
   private def createGameEnvironment(leftAgentIdx: Int, rightAgentIdx: Int): Unit = {
-    val leftAgent = agentCreators(leftAgentIdx)()
-    val rightAgent = agentCreators(rightAgentIdx)()
+    val leftAgent = createAgent(leftAgentIdx)
+    val rightAgent = createAgent(rightAgentIdx)
 
     gameEnvironment = new Pong(leftAgent, rightAgent)
   }

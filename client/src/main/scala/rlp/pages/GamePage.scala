@@ -1,17 +1,15 @@
 package rlp.pages
 
-import com.thoughtworks.binding.Binding.{BindingSeq, Constant, Constants, Var, Vars}
+import com.thoughtworks.binding.Binding.{Var, Vars}
 import com.thoughtworks.binding.{Binding, dom}
-import org.scalajs.dom.{Event, document, html, window}
+import org.scalajs.dom.{Event, window}
 import org.scalajs.dom.html.{Canvas, Div}
-import org.scalajs.dom.raw.{CanvasRenderingContext2D, HTMLElement}
+import org.scalajs.dom.raw.{CanvasRenderingContext2D}
 import rlp.controllers.ModelController
 import rlp.environment.Environment
 import rlp._
 
-import scala.scalajs.js
-
-abstract class GamePage[A] {
+abstract class GamePage[S, A] {
 
   protected val targetGameWidth = 800
 
@@ -20,13 +18,15 @@ abstract class GamePage[A] {
 
   protected val aspectRatio: Double = 3.0/4
 
-  protected def initModel(model: Model[A]): Unit
-  protected def trainStep(): Unit
+  protected val MAX_EPISODE_LENGTH = 1000
+
+  protected def initModel(model: Model[A]): Environment[S]
   protected def render(ctx: CanvasRenderingContext2D): Unit
 
   protected val renderTraining: Var[Boolean] = Var(true)
 
   protected val models: Vars[Model[A]] = Vars()
+  private var model: Model[A] = _
 
   lazy val modelBuilder = new ModelBuilder(modelControllerBuilders, models)
   lazy val modelTrainer = new ModelTrainer(models, modelBuilder, trainStep)
@@ -36,6 +36,9 @@ abstract class GamePage[A] {
   protected val keyboardHandler = new KeyboardHandler()
 
   private val renderProcess = new BackgroundProcess(() => render(ctx), "Rendering")
+
+  private var episodeLength = 0
+  protected var trainingEnvironment: Environment[S] = _
 
   def start(): Unit = {
     renderProcess.start(Environment.FPS)
@@ -57,6 +60,17 @@ abstract class GamePage[A] {
 
     canvas.width = width.toInt
     canvas.height = (aspectRatio * width).toInt
+  }
+
+  protected def trainStep(): Unit = {
+    episodeLength += 1
+    if (trainingEnvironment.step() || episodeLength > MAX_EPISODE_LENGTH) {
+      if (episodeLength <= MAX_EPISODE_LENGTH) {
+        model.gamesPlayed := model.gamesPlayed.get + 1
+      }
+      trainingEnvironment.reset()
+      episodeLength = 0
+    }
   }
 
   @dom
@@ -97,7 +111,10 @@ abstract class GamePage[A] {
             <div class="card-content">
               {
                 modelTrainer.selectedModel.bind match {
-                  case Some(model) => initModel(model)
+                  case Some(model) => {
+                    this.model = model
+                    trainingEnvironment = initModel(model)
+                  }
                   case None => /* Do nothing */
                 }
                 modelTrainer.content.bind
