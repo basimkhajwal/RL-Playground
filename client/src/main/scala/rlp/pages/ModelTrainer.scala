@@ -70,72 +70,69 @@ class ModelTrainer[A](
     trainingProcess.start(Environment.FPS * gameSpeedMultiplier(gameSpeed.get))
   }
 
+  private def duplicateModel(model: Model[A]): Unit = {
+    val newModel = model.duplicate()
+    models.get += newModel
+    modelSelect.selectedIndex := models.get.indexOf(newModel)
+  }
+
   @dom
   lazy val content: Binding[Div] = {
 
     <div class="row">
 
       <div class="row grey col s12 lighten-3" id="model-training">
-        <div class="col s3">
+        <div class="col s2">
           <span class="card-title">Model Training</span>
         </div>
 
-        <div class="col s3">
-          { modelSelect.handler.bind }
-        </div>
+        <div class="col s3"> { modelSelect.handler.bind } </div>
 
-        <div class="col s6" id="model-training-btns">
+        <div class="col s3"> { trainingButtons.bind } </div>
+
+        <div class="col s4" id="model-training-btns">
           {
           val btnStyle = "btn waves-effect waves-light"
+          val model = selectedModel.bind
 
-          <!-- TODO: IMPLEMENT FUNCTIONALITY FOR THESE  -->
-            <a class={btnStyle + " disabled"}>Clone</a>
-            <a class={btnStyle + " disabled"}>Duplicate</a>
-            <a class={btnStyle + " activator"}>New</a>
+          <a class={btnStyle + (if (modelExists.bind) "" else " disabled")}
+            onclick={_:Event => duplicateModel(model.get)}>
+            Duplicate
+          </a>
+
+          <a class={btnStyle + " activator"}>New</a>
           }
-          <!--<a class="btn-floating btn waves-effect waves-light red activator right"><i class="material-icons">add</i></a>-->
         </div>
       </div>
 
       <div class="col s12">
-        { if (modelExists.bind) trainingControls.bind else <!-- --> }
+        <h6 class="center-align">
+          {
+          selectedModel.bind match {
+            case Some(m) => s"Games Played: ${m.gamesPlayed.bind}"
+            case None => ""
+          }
+          }
+        </h6>
       </div>
 
       <div class="col s12">
         {
         selectedModel.bind match {
-          case None => <!-- -->
           case Some(model) => model.controller.modelViewer.bind
+          case None => <!-- -->
         }
         }
       </div>
 
-    </div>
-  }
-
-  @dom
-  private lazy val trainingControls: Binding[Div] = {
-    <div class="row">
-      <div class="col s6">
-        { trainingButtons.bind }
-      </div>
-
-      <div class="col s6 valign-wrapper">
-        <h6 class="center-align">
-          {
-            selectedModel.bind match {
-              case Some(m) => s"Games Played: ${m.gamesPlayed.bind}"
-              case None => ""
-            }
-          }
-        </h6>
-      </div>
     </div>
   }
 
   @dom
   private lazy val trainingButtons: Binding[Div] = {
-    val buttonStyle = "center-align btn-floating waves-effect waves-circle "
+    val buttonStyle =
+      "center-align btn-floating waves-effect waves-circle " +
+      (if (modelExists.bind) "" else "disabled ")
     val training = isTraining.bind
 
     <div class="center-align" id="buttons-container">
