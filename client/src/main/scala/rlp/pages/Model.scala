@@ -13,4 +13,6 @@ case class Model[A](
   def duplicate(): Model[A] = {
     Model(name + " copy", controller.duplicate(), Var(gamesPlayed.get))
   }
+
+  override def toString: String = controller.name + " - " + name
 }

@@ -114,9 +114,7 @@ class ModelBuilder[A](
           {
             for (model <- models) yield {
               <li>
-                <a href="#" onclick={_:Event => cloneModel(model)}>
-                  {model.controller.name + " - " + model.name}
-                </a>
+                <a href="#" onclick={_:Event => cloneModel(model)}>{model.toString}</a>
               </li>
             }
           }

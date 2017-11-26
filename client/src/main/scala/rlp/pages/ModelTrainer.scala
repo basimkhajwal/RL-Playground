@@ -21,11 +21,7 @@ class ModelTrainer[A](
   val isTraining: Var[Boolean] = Var(false)
   val gameSpeed: Var[Int] = Var(0)
 
-  val modelSelect = new SelectHandler(
-    "Model Select",
-    models.map(m => m.controller.name + " - " + m.name),
-    Constant(false)
-  )
+  val modelSelect = new SelectHandler("Model Select", models.map(_.toString), Constant(false))
 
   val modelExists = Binding { models.bind.nonEmpty }
 
