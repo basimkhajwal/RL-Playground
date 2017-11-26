@@ -30,6 +30,19 @@ trait Agent[S, A] {
     */
   def reset(): Unit = {}
 
+  /**
+    * Replicate this agent so that the duplicated agent
+    * has a copy of but a different shared state so it's
+    * learning diverges from the parent
+    * @return
+    */
+  def duplicate(): Agent[S,A] = clone()
+
+  /**
+    * Replicate this agent, keeping a shared learnt state
+    * so the agent and it's clone both learn the same representation
+    * @return
+    */
   override def clone():Agent[S,A] = this
 }
 

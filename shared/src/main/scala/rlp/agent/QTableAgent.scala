@@ -38,6 +38,8 @@ class QTableAgent(
     for (i <- table.indices) table(i) = 0
   }
 
+  override def duplicate(): QTableAgent = new QTableAgent(numStates, numActions, table.clone())
+
   @inline
   def apply(state: Int, action: Int): Double = table(state + action * numStates)
 
