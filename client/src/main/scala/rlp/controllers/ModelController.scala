@@ -17,6 +17,10 @@ trait ModelController[A] {
 
   lazy val agent: A = buildAgent()
 
+  def cloneBuild(): ModelController[A]
+
+  def duplicate(): ModelController[A]
+
   def buildAgent(): A
 
   def resetAgent(): Unit

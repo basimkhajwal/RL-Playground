@@ -1,9 +1,8 @@
 package rlp.controllers
 
-import com.thoughtworks.binding.Binding.{BindingSeq, Constants, Var, Vars}
+import com.thoughtworks.binding.Binding.{Var, Vars}
 import com.thoughtworks.binding.{Binding, dom}
-import org.scalajs.dom.{Event, document, html}
-import org.scalajs.dom.html.Div
+import org.scalajs.dom.{Event, html}
 import org.scalajs.dom.raw.HTMLElement
 import rlp._
 import rlp.agent.{Agent, QStateSpace, QTableAgent}
@@ -99,6 +98,27 @@ class QTableController[O, A](
 
   override def resetAgent(): Unit = {
     agent.reset()
+  }
+
+  override def cloneBuild(): QTableController[O,A] = {
+    val clone = new QTableController(numActions, actionMap, spaces)
+
+    clone.spacesEnabled.get.clear()
+    clone.spacesEnabled.get ++= spacesEnabled.get
+
+    clone
+  }
+
+  override def duplicate(): QTableController[O,A] = {
+    val clone = cloneBuild()
+    clone.agent // Force build agent
+
+    // Copy across learnt q values
+    for (i <- qTable.table.indices) {
+      clone.qTable.table(i) = qTable.table(i)
+    }
+
+    clone
   }
 }
 

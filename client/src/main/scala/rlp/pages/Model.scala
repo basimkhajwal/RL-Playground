@@ -9,4 +9,8 @@ case class Model[A](
   gamesPlayed: Var[Int] = Var(0),
   id: Long = System.currentTimeMillis()
 ) {
+
+  def duplicate(): Model[A] = {
+    Model(name + " copy", controller.duplicate(), Var(gamesPlayed.get))
+  }
 }
