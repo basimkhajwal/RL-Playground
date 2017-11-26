@@ -74,11 +74,7 @@ abstract class GamePage[A] {
     js.timers.setTimeout(100) { js.Dynamic.global.Materialize.updateTextFields() }
   }
 
-  @dom
   protected def startTraining(): Unit = {
-    val model = selectedModel.bind.get
-    model.gamesPlayed := 0
-
     trainingProcess.start(Environment.FPS * gameSpeedMultiplier(gameSpeed.get))
     isTraining := true
   }

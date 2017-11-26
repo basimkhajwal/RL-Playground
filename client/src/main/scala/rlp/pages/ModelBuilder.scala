@@ -39,7 +39,7 @@ class ModelBuilder[A](
     validName.bind && modelController.bind.buildValid.bind
   }
 
-  def findUnusedName(): String = {
+  private def findUnusedName(): String = {
     val names = models.get.map(_.name)
     var idx = 1
     while (names contains ("Model"+idx)) idx += 1
@@ -69,13 +69,15 @@ class ModelBuilder[A](
     onClose()
   }
 
-  private def onClose(): Unit = {
-    // Reset builder
+  private def reset(): Unit = {
     controllerCache.get.clear()
     newModelSelect.selectedIndex := 0
     modelName := findUnusedName()
     validName := true
+  }
 
+  private def onClose(): Unit = {
+    reset()
     getElem[html.Span]("close-button").click()
   }
 
