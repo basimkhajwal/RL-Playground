@@ -4,41 +4,38 @@ import com.thoughtworks.binding.Binding.{Var, Vars}
 import com.thoughtworks.binding.{Binding, dom}
 import org.scalajs.dom.{Event, window}
 import org.scalajs.dom.html.{Canvas, Div}
-import org.scalajs.dom.raw.{CanvasRenderingContext2D}
-import rlp.controllers.ModelController
+import org.scalajs.dom.raw.CanvasRenderingContext2D
 import rlp.environment.Environment
 import rlp._
+import rlp.models.Model
 
 abstract class GamePage[S, A] {
 
-  protected val targetGameWidth = 800
+  protected val modelBuilders: List[Model.Builder[A]]
 
-  /* Abstract vars */
-  protected val modelControllerBuilders: List[ModelController.Builder[A]]
-
-  protected val aspectRatio: Double = 3.0/4
-
-  protected val MAX_EPISODE_LENGTH = 1000
-
-  protected def initModel(model: ModelController[A]): Environment[S]
+  protected def createEnvironment(model: Model[A]): Environment[S]
   protected def render(ctx: CanvasRenderingContext2D): Unit
 
   protected val renderTraining: Var[Boolean] = Var(true)
 
-  protected val models: Vars[ModelController[A]] = Vars()
-  private var model: ModelController[A] = _
+  protected val models: Vars[Model[A]] = Vars()
+  private var model: Model[A] = _
 
-  lazy val modelBuilder = new ModelBuilder(modelControllerBuilders, models)
-  lazy val modelTrainer = new ModelTrainer(models, modelBuilder, trainStep)
+  lazy val modelBuilder = new ModelBuilder(modelBuilders, models)
+  lazy val modelTrainer = new ModelTrainer(models, trainStep)
+
+  protected val aspectRatio: Double = 3.0/4
+  protected val targetGameWidth = 800
 
   private var canvas: Canvas = _
   private var ctx: CanvasRenderingContext2D = _
   protected val keyboardHandler = new KeyboardHandler()
 
-  private val renderProcess = new BackgroundProcess(() => render(ctx), "Rendering")
-
+  protected val MAX_EPISODE_LENGTH = 1000
   private var episodeLength = 0
   protected var trainingEnvironment: Environment[S] = _
+
+  private val renderProcess = new BackgroundProcess(() => render(ctx), "Rendering")
 
   def start(): Unit = {
     renderProcess.start(Environment.FPS)
@@ -113,7 +110,7 @@ abstract class GamePage[S, A] {
                 modelTrainer.selectedModel.bind match {
                   case Some(model) => {
                     this.model = model
-                    trainingEnvironment = initModel(model)
+                    trainingEnvironment = createEnvironment(model)
                   }
                   case None => /* Do nothing */
                 }

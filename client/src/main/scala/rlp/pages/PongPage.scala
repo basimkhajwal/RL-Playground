@@ -7,7 +7,7 @@ import com.thoughtworks.binding.{Binding, dom}
 import org.scalajs.dom.CanvasRenderingContext2D
 import org.scalajs.dom.html.Div
 import rlp.agent.QStateSpace
-import rlp.controllers.{ModelController, QTableController}
+import rlp.models.{Model, QTableModel}
 
 
 class PongPage extends GamePage[Pong.State, Pong.PongAgent] {
@@ -28,8 +28,8 @@ class PongPage extends GamePage[Pong.State, Pong.PongAgent] {
 
   val rightAgentSelect = new SelectHandler("Player 2", agentNames, renderTraining)
 
-  override val modelControllerBuilders = List(
-    QTableController.builder(
+  override val modelBuilders = List(
+    QTableModel.builder(
       2, { a => if (a == 0) UpAction else DownAction },
       QStateSpace.boxed[AgentState]("Ball X", 0, SCREEN_WIDTH, 20, _.ballPos.x),
       QStateSpace.boxed[AgentState]("Ball Y", 0, SCREEN_HEIGHT, 10, _.ballPos.y),
@@ -39,7 +39,7 @@ class PongPage extends GamePage[Pong.State, Pong.PongAgent] {
     )
   )
 
-  override def initModel(model: ModelController[PongAgent]): Pong = {
+  override def createEnvironment(model: Model[PongAgent]): Pong = {
     new Pong(model.agent, model.agent.clone())
   }
 

@@ -1,4 +1,4 @@
-package rlp.controllers
+package rlp.models
 
 import com.thoughtworks.binding.Binding.{Var, Vars}
 import com.thoughtworks.binding.{Binding, dom}
@@ -7,9 +7,9 @@ import org.scalajs.dom.raw.HTMLElement
 import rlp._
 import rlp.agent.{Agent, QStateSpace, QTableAgent}
 
-class QTableController[O, A](
+class QTableModel[O, A](
   numActions: Int, actionMap: (Int) => A, spaces: Array[QStateSpace[O]]
-) extends ModelController[Agent[O, A]](QTableController.name) {
+) extends Model[Agent[O, A]](QTableModel.name) {
 
   private val spacesEnabled: Vars[(QStateSpace[O], Boolean)] = Vars(spaces.map(s => (s, s.defaultEnabled)) :_ *)
 
@@ -98,8 +98,8 @@ class QTableController[O, A](
     agent.reset()
   }
 
-  override def cloneBuild(): QTableController[O,A] = {
-    val clone = new QTableController(numActions, actionMap, spaces)
+  override def cloneBuild(): QTableModel[O,A] = {
+    val clone = new QTableModel(numActions, actionMap, spaces)
 
     clone.spacesEnabled.get.clear()
     clone.spacesEnabled.get ++= spacesEnabled.get
@@ -107,7 +107,7 @@ class QTableController[O, A](
     clone
   }
 
-  override protected def _duplicate(): QTableController[O,A] = {
+  override protected def _duplicate(): QTableModel[O,A] = {
     val clone = cloneBuild()
     clone.agent // Force build agent
 
@@ -120,15 +120,15 @@ class QTableController[O, A](
   }
 }
 
-object QTableController {
+object QTableModel {
 
   val name = "Q Table"
 
   def builder[O,A](
     numActions: Int, actionMap: (Int) => A,
     spaces: QStateSpace[O]*
-  ): ModelController.Builder[Agent[O,A]] = {
+  ): Model.Builder[Agent[O,A]] = {
 
-    name -> (() => new QTableController(numActions, actionMap, spaces.toArray))
+    name -> (() => new QTableModel(numActions, actionMap, spaces.toArray))
   }
 }

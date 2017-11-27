@@ -1,4 +1,4 @@
-package rlp.controllers
+package rlp.models
 
 import com.thoughtworks.binding.Binding
 import com.thoughtworks.binding.Binding.{Constant, Var}
@@ -6,10 +6,10 @@ import org.scalajs.dom.raw.HTMLElement
 import org.scalajs.dom.window.performance
 import rlp._
 
-abstract class ModelController[A](
-                                 val controllerName: String,
-                                 val id: Long = (1000 * performance.now()).toLong
-                                 ) {
+abstract class Model[A](
+  val controllerName: String,
+  val id: Long = (1000 * performance.now()).toLong
+) {
 
   val modelName: Var[String] = Var("")
   val gamesPlayed: Var[Int] = Var(0)
@@ -22,11 +22,11 @@ abstract class ModelController[A](
 
   lazy val agent: A = buildAgent()
 
-  def cloneBuild(): ModelController[A]
+  def cloneBuild(): Model[A]
 
-  protected def _duplicate(): ModelController[A]
+  protected def _duplicate(): Model[A]
 
-  final def duplicate(): ModelController[A] = {
+  final def duplicate(): Model[A] = {
     val newModel = _duplicate()
 
     newModel.modelName := modelName.get + " copy"
@@ -42,7 +42,7 @@ abstract class ModelController[A](
   override def toString: String = controllerName + " - " + modelName.get
 }
 
-object ModelController {
-  type Builder[A] = (String, (() => ModelController[A]))
+object Model {
+  type Builder[A] = (String, (() => Model[A]))
 }
 

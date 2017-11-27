@@ -5,38 +5,38 @@ import com.thoughtworks.binding.Binding.{BindingSeq, Constant, Var, Vars}
 import org.scalajs.dom.{Event, html}
 import org.scalajs.dom.html.Div
 import rlp.SelectHandler
-import rlp.controllers.ModelController
 import rlp._
+import rlp.models.Model
 
 class ModelBuilder[A](
-  builders: List[ModelController.Builder[A]],
-  models: Vars[ModelController[A]]
+  builders: List[Model.Builder[A]],
+  models: Vars[Model[A]]
 ) {
 
-  val newModelSelect = new SelectHandler("Model Type", builders.map(_._1), Constant(false))
+  private val modelSelect = new SelectHandler("Model Type", builders.map(_._1), Constant(false))
 
-  val controllerCache: Vars[(Int, ModelController[A])] = Vars()
+  private val modelCache: Vars[(Int, Model[A])] = Vars()
 
-  val modelController = Binding {
-    val idx = newModelSelect.selectedIndex.bind
+  private val modelBinding = Binding {
+    val idx = modelSelect.selectedIndex.bind
     val builder = builders(idx)._2
-    val cache = controllerCache.bind
+    val cache = modelCache.get
 
     cache.find(c => c._1 == idx) match {
-      case Some((_, controller)) => controller
+      case Some((_, model)) => model
       case None => {
-        val controller = builder()
-        controllerCache.get += ((idx, controller))
-        controller
+        val model = builder()
+        cache += ((idx, model))
+        model
       }
     }
   }
 
-  val modelName: Var[String] = Var(findUnusedName())
+  private val modelName: Var[String] = Var(findUnusedName())
 
-  val validName: Var[Boolean] = Var(true)
-  val valid: Binding[Boolean] = Binding {
-    validName.bind && modelController.bind.buildValid.bind
+  private val validName: Var[Boolean] = Var(true)
+  private val valid: Binding[Boolean] = Binding {
+    validName.bind && modelBinding.bind.buildValid.bind
   }
 
   private def findUnusedName(): String = {
@@ -62,17 +62,17 @@ class ModelBuilder[A](
 
   @dom
   private def onCreate(): Unit = {
-    val controller = modelController.bind
-    controller.agent // Call build model
-    controller.modelName := modelName.get
+    val model = modelBinding.bind
+    model.agent // Call build model
+    model.modelName := modelName.get
 
-    models.get += controller
+    models.get += model
     onClose()
   }
 
   private def reset(): Unit = {
-    controllerCache.get.clear()
-    newModelSelect.selectedIndex := 0
+    modelCache.get.clear()
+    modelSelect.selectedIndex := 0
     modelName := findUnusedName()
     validName := true
   }
@@ -82,18 +82,18 @@ class ModelBuilder[A](
     getElem[html.Span]("close-button").click()
   }
 
-  private def cloneModel(model: ModelController[A]): Unit = {
+  private def cloneModel(model: Model[A]): Unit = {
 
-    val newController = model.cloneBuild()
+    val newModel = model.cloneBuild()
 
     // Find builder index for this controller type
-    val idx = builders.indexWhere(_._1 == newController.controllerName)
+    val builderIdx = builders.indexWhere(_._1 == newModel.controllerName)
 
     // Inject controller into cache then fake selecting it
-    val existingIdx = controllerCache.get.indexWhere(_._1 == idx)
-    if (existingIdx >= 0) controllerCache.get.remove(existingIdx)
-    controllerCache.get += ((idx, newController))
-    newModelSelect.selectedIndex := idx
+    val cacheIdx = modelCache.get.indexWhere(_._1 == builderIdx)
+    if (cacheIdx >= 0) modelCache.get.remove(cacheIdx)
+    modelCache.get += ((builderIdx, newModel))
+    modelSelect.selectedIndex := builderIdx
   }
 
   @dom
@@ -129,7 +129,7 @@ class ModelBuilder[A](
       <div class="col s12" style={"height:20px"}></div>
 
       <div class="col s3 offset-s2">
-        { newModelSelect.handler.bind }
+        { modelSelect.handler.bind }
       </div>
 
       <div class="col s3 offset-s2 input-field">
@@ -139,7 +139,7 @@ class ModelBuilder[A](
       </div>
 
       <div class="col s12">
-        { modelController.bind.modelBuilder.bind }
+        { modelBinding.bind.modelBuilder.bind }
       </div>
 
       <div class="col s2 offset-s4">
