@@ -6,7 +6,7 @@ import org.scalajs.dom.Event
 import org.scalajs.dom.html.Div
 import rlp.environment.Environment
 import rlp.models.Model
-import rlp.{BackgroundProcess, SelectHandler}
+import rlp.utils.{BackgroundProcess, SelectHandler}
 
 import scala.scalajs.js
 

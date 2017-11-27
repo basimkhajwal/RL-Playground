@@ -1,7 +1,6 @@
 package rlp.utils
 
 import org.scalajs.dom.window.performance
-import Logger
 
 import scala.scalajs.js.timers
 

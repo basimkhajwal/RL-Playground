@@ -4,9 +4,9 @@ import com.thoughtworks.binding.{Binding, dom}
 import com.thoughtworks.binding.Binding.{BindingSeq, Constant, Var, Vars}
 import org.scalajs.dom.{Event, html}
 import org.scalajs.dom.html.Div
-import rlp.SelectHandler
 import rlp._
 import rlp.models.Model
+import rlp.utils.SelectHandler
 
 class ModelBuilder[A](
   builders: List[Model.Builder[A]],

@@ -8,6 +8,7 @@ import org.scalajs.dom.raw.CanvasRenderingContext2D
 import rlp.environment.Environment
 import rlp._
 import rlp.models.Model
+import rlp.utils.{BackgroundProcess, KeyboardHandler}
 
 abstract class GamePage[S, A] {
 

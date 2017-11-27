@@ -8,6 +8,7 @@ import org.scalajs.dom.CanvasRenderingContext2D
 import org.scalajs.dom.html.Div
 import rlp.agent.QStateSpace
 import rlp.models.{Model, QTableModel}
+import rlp.utils.SelectHandler
 
 
 class PongPage extends GamePage[Pong.State, Pong.PongAgent] {
