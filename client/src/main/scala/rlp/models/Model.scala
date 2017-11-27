@@ -1,6 +1,6 @@
 package rlp.models
 
-import com.thoughtworks.binding.Binding
+import com.thoughtworks.binding.{Binding, dom}
 import com.thoughtworks.binding.Binding.{Constant, Var}
 import org.scalajs.dom.raw.HTMLElement
 import org.scalajs.dom.window.performance
@@ -14,9 +14,11 @@ abstract class Model[A](
   val modelName: Var[String] = Var("")
   val gamesPlayed: Var[Int] = Var(0)
 
-  lazy val modelBuilder: Binding[HTMLElement] = Binding { <div></div> }
+  @dom
+  lazy val modelBuilder: Binding[HTMLElement] = <div></div>
 
-  lazy val modelViewer: Binding[HTMLElement] = Binding { <div></div> }
+  @dom
+  lazy val modelViewer: Binding[HTMLElement] = <div></div>
 
   lazy val buildValid: Binding[Boolean] = Constant(true)
 
