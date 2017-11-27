@@ -10,7 +10,7 @@ import rlp._
 
 class ModelBuilder[A](
   builders: List[ModelController.Builder[A]],
-  models: Vars[Model[A]]
+  models: Vars[ModelController[A]]
 ) {
 
   val newModelSelect = new SelectHandler("Model Type", builders.map(_._1), Constant(false))
@@ -40,15 +40,14 @@ class ModelBuilder[A](
   }
 
   private def findUnusedName(): String = {
-    val names = models.get.map(_.name)
+    val names = models.get.map(_.modelName.get)
     var idx = 1
     while (names contains ("Model"+idx)) idx += 1
     "Model"+idx
   }
 
-  @dom
   private def onNameChange(): Unit = {
-    val modelNames = models.bind.map(_.name)
+    val modelNames = models.get.map(_.modelName.get)
     val modelNameElem = getElem[html.Input]("model-name")
 
     if (modelNames contains modelNameElem.value) {
@@ -63,9 +62,11 @@ class ModelBuilder[A](
 
   @dom
   private def onCreate(): Unit = {
-    modelController.bind.agent // Call build model
-    models.get += Model(modelName.get, modelController.bind)
+    val controller = modelController.bind
+    controller.agent // Call build model
+    controller.modelName := modelName.get
 
+    models.get += controller
     onClose()
   }
 
@@ -81,12 +82,12 @@ class ModelBuilder[A](
     getElem[html.Span]("close-button").click()
   }
 
-  private def cloneModel(model: Model[A]): Unit = {
+  private def cloneModel(model: ModelController[A]): Unit = {
 
-    val newController = model.controller.cloneBuild()
+    val newController = model.cloneBuild()
 
     // Find builder index for this controller type
-    val idx = builders.indexWhere(_._1 == newController.name)
+    val idx = builders.indexWhere(_._1 == newController.controllerName)
 
     // Inject controller into cache then fake selecting it
     val existingIdx = controllerCache.get.indexWhere(_._1 == idx)

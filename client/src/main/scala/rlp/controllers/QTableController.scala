@@ -9,9 +9,7 @@ import rlp.agent.{Agent, QStateSpace, QTableAgent}
 
 class QTableController[O, A](
   numActions: Int, actionMap: (Int) => A, spaces: Array[QStateSpace[O]]
-) extends ModelController[Agent[O, A]] {
-
-  override val name: String = "Tabular Q Learning"
+) extends ModelController[Agent[O, A]](QTableController.name) {
 
   private val spacesEnabled: Vars[(QStateSpace[O], Boolean)] = Vars(spaces.map(s => (s, s.defaultEnabled)) :_ *)
 
@@ -109,7 +107,7 @@ class QTableController[O, A](
     clone
   }
 
-  override def duplicate(): QTableController[O,A] = {
+  override protected def _duplicate(): QTableController[O,A] = {
     val clone = cloneBuild()
     clone.agent // Force build agent
 
@@ -124,11 +122,13 @@ class QTableController[O, A](
 
 object QTableController {
 
+  val name = "Q Table"
+
   def builder[O,A](
     numActions: Int, actionMap: (Int) => A,
     spaces: QStateSpace[O]*
   ): ModelController.Builder[Agent[O,A]] = {
 
-    "Tabular Q Learning" -> (() => new QTableController(numActions, actionMap, spaces.toArray))
+    name -> (() => new QTableController(numActions, actionMap, spaces.toArray))
   }
 }

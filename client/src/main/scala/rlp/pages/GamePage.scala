@@ -20,13 +20,13 @@ abstract class GamePage[S, A] {
 
   protected val MAX_EPISODE_LENGTH = 1000
 
-  protected def initModel(model: Model[A]): Environment[S]
+  protected def initModel(model: ModelController[A]): Environment[S]
   protected def render(ctx: CanvasRenderingContext2D): Unit
 
   protected val renderTraining: Var[Boolean] = Var(true)
 
-  protected val models: Vars[Model[A]] = Vars()
-  private var model: Model[A] = _
+  protected val models: Vars[ModelController[A]] = Vars()
+  private var model: ModelController[A] = _
 
   lazy val modelBuilder = new ModelBuilder(modelControllerBuilders, models)
   lazy val modelTrainer = new ModelTrainer(models, modelBuilder, trainStep)

@@ -4,13 +4,14 @@ import com.thoughtworks.binding.{Binding, dom}
 import com.thoughtworks.binding.Binding.{Constant, Var, Vars}
 import org.scalajs.dom.Event
 import org.scalajs.dom.html.Div
+import rlp.controllers.ModelController
 import rlp.environment.Environment
 import rlp.{BackgroundProcess, SelectHandler}
 
 import scala.scalajs.js
 
 class ModelTrainer[A](
-  models: Vars[Model[A]],
+  models: Vars[ModelController[A]],
   builder: ModelBuilder[A],
   trainStep: () => Unit,
 ) {
@@ -25,7 +26,7 @@ class ModelTrainer[A](
 
   val modelExists = Binding { models.bind.nonEmpty }
 
-  val selectedModel: Binding[Option[Model[A]]] = Binding {
+  val selectedModel: Binding[Option[ModelController[A]]] = Binding {
     if (modelExists.bind) {
       val model = models.bind(modelSelect.selectedIndex.bind)
       modelSelected(model)
@@ -47,7 +48,7 @@ class ModelTrainer[A](
     isTraining := false
   }
 
-  private def modelSelected(model: Model[A]): Unit = {
+  private def modelSelected(model: ModelController[A]): Unit = {
     if (isTraining.get) pauseTraining()
     js.timers.setTimeout(100) { js.Dynamic.global.Materialize.updateTextFields() }
   }
@@ -56,7 +57,7 @@ class ModelTrainer[A](
   private def resetTraining(): Unit = {
     val model = selectedModel.bind.get
 
-    model.controller.resetAgent()
+    model.resetAgent()
     model.gamesPlayed := 0
   }
 
@@ -66,7 +67,7 @@ class ModelTrainer[A](
     trainingProcess.start(Environment.FPS * gameSpeedMultiplier(gameSpeed.get))
   }
 
-  private def duplicateModel(model: Model[A]): Unit = {
+  private def duplicateModel(model: ModelController[A]): Unit = {
     val newModel = model.duplicate()
     models.get += newModel
     modelSelect.selectedIndex := models.get.indexOf(newModel)
@@ -115,7 +116,7 @@ class ModelTrainer[A](
       <div class="col s12">
         {
         selectedModel.bind match {
-          case Some(model) => model.controller.modelViewer.bind
+          case Some(model) => model.modelViewer.bind
           case None => <!-- -->
         }
         }

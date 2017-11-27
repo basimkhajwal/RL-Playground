@@ -7,7 +7,7 @@ import com.thoughtworks.binding.{Binding, dom}
 import org.scalajs.dom.CanvasRenderingContext2D
 import org.scalajs.dom.html.Div
 import rlp.agent.QStateSpace
-import rlp.controllers.QTableController
+import rlp.controllers.{ModelController, QTableController}
 
 
 class PongPage extends GamePage[Pong.State, Pong.PongAgent] {
@@ -39,16 +39,15 @@ class PongPage extends GamePage[Pong.State, Pong.PongAgent] {
     )
   )
 
-  override def initModel(model: Model[PongAgent]): Pong = {
-    val agent = model.controller.agent
-    new Pong(agent, agent.clone())
+  override def initModel(model: ModelController[PongAgent]): Pong = {
+    new Pong(model.agent, model.agent.clone())
   }
 
   private def createAgent(idx: Int): PongAgent = idx match {
     case 0 => new NaivePongAgent
     case 1 => new PongUserAgent("w", "s")
     case 2 => new PongUserAgent("ArrowUp", "ArrowDown")
-    case _ => models.get(idx-3).controller.agent.clone()
+    case _ => models.get(idx-3).agent.clone()
   }
 
   private def createGameEnvironment(leftAgentIdx: Int, rightAgentIdx: Int): Unit = {

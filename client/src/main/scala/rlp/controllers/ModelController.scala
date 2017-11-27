@@ -1,13 +1,18 @@
 package rlp.controllers
 
 import com.thoughtworks.binding.Binding
-import com.thoughtworks.binding.Binding.Constant
+import com.thoughtworks.binding.Binding.{Constant, Var}
 import org.scalajs.dom.raw.HTMLElement
+import org.scalajs.dom.window.performance
 import rlp._
 
-trait ModelController[A] {
+abstract class ModelController[A](
+                                 val controllerName: String,
+                                 val id: Long = (1000 * performance.now()).toLong
+                                 ) {
 
-  val name: String
+  val modelName: Var[String] = Var("")
+  val gamesPlayed: Var[Int] = Var(0)
 
   lazy val modelBuilder: Binding[HTMLElement] = Binding { <div></div> }
 
@@ -19,7 +24,16 @@ trait ModelController[A] {
 
   def cloneBuild(): ModelController[A]
 
-  def duplicate(): ModelController[A]
+  protected def _duplicate(): ModelController[A]
+
+  final def duplicate(): ModelController[A] = {
+    val newModel = _duplicate()
+
+    newModel.modelName := modelName.get + " copy"
+    newModel.gamesPlayed := gamesPlayed.get
+
+    newModel
+  }
 
   def buildAgent(): A
 
