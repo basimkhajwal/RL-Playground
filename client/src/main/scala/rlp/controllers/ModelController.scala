@@ -38,6 +38,8 @@ abstract class ModelController[A](
   def buildAgent(): A
 
   def resetAgent(): Unit
+
+  override def toString: String = controllerName + " - " + modelName.get
 }
 
 object ModelController {
