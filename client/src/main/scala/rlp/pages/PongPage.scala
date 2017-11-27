@@ -7,7 +7,7 @@ import com.thoughtworks.binding.{Binding, dom}
 import org.scalajs.dom.CanvasRenderingContext2D
 import org.scalajs.dom.html.Div
 import rlp.agent.QStateSpace
-import rlp.models.{Model, QTableModel}
+import rlp.models.{Model, QModelParam, QTableModel}
 import rlp.utils.SelectHandler
 
 
@@ -32,11 +32,11 @@ class PongPage extends GamePage[Pong.State, Pong.PongAgent] {
   override val modelBuilders = List(
     QTableModel.builder(
       2, { a => if (a == 0) UpAction else DownAction },
-      QStateSpace.boxed[AgentState]("Ball X", 0, SCREEN_WIDTH, 20, _.ballPos.x),
-      QStateSpace.boxed[AgentState]("Ball Y", 0, SCREEN_HEIGHT, 10, _.ballPos.y),
-      QStateSpace.boxed[AgentState]("Paddle Y", 0, SCREEN_HEIGHT, 10, _.currentPaddle),
-      QStateSpace.boxed[AgentState]("Ball Angle", 0, 2 * Math.PI, 10, _.ballDir.angle(), false),
-      QStateSpace.boxed[AgentState]("Opponent Y", 0, SCREEN_HEIGHT, 10, _.otherPaddle, false),
+      QModelParam("Ball X", QStateSpace.boxed[AgentState](0, SCREEN_WIDTH, 20, _.ballPos.x)),
+      QModelParam("Ball Y", QStateSpace.boxed[AgentState](0, SCREEN_HEIGHT, 10, _.ballPos.y)),
+      QModelParam("Paddle Y", QStateSpace.boxed[AgentState](0, SCREEN_HEIGHT, 10, _.currentPaddle)),
+      QModelParam("Ball Angle", QStateSpace.boxed[AgentState](0, 2 * Math.PI, 10, _.ballDir.angle()), false),
+      QModelParam("Opponent Y", QStateSpace.boxed[AgentState](0, SCREEN_HEIGHT, 10, _.otherPaddle), false)
     )
   )
 

@@ -8,10 +8,10 @@ import rlp._
 import rlp.agent.{Agent, QStateSpace, QTableAgent}
 
 class QTableModel[O, A](
-  numActions: Int, actionMap: (Int) => A, spaces: Array[QStateSpace[O]]
+  numActions: Int, actionMap: (Int) => A, params: Array[QModelParam[O]]
 ) extends Model[Agent[O, A]](QTableModel.name) {
 
-  private val spacesEnabled: Vars[(QStateSpace[O], Boolean)] = Vars(spaces.map(s => (s, s.defaultEnabled)) :_ *)
+  private val paramsEnabled: Vars[(QModelParam[O], Boolean)] = Vars(params.map(s => (s, s.defaultEnabled)) :_ *)
 
   private val learningRate = Var(0.1)
   private val discountFactor = Var(0.9)
@@ -25,13 +25,13 @@ class QTableModel[O, A](
       <h5 class="col offset-s1 s11 light">Q Table Inputs</h5>
       <div class="col s12" id="q-checkbox-container">
         {
-        for ((space, enabled) <- spacesEnabled) yield {
+        for ((param, enabled) <- paramsEnabled) yield {
           <div class="q-table-checkbox">
-            <input type="checkbox" id={getCheckBoxID(space)}
-                   onchange={ _:Event => checkBoxToggled(space)}
+            <input type="checkbox" id={getCheckBoxID(param)}
+                   onchange={ _:Event => checkBoxToggled(param)}
                    checked={enabled}
             />
-            <label for={getCheckBoxID(space)}>{space.name}</label>
+            <label for={getCheckBoxID(param)}>{param.name}</label>
           </div>
         }
         }
@@ -41,7 +41,8 @@ class QTableModel[O, A](
 
 
   override def buildAgent(): Agent[O, A] = {
-    val (qAgent, agent) = QTableAgent.build(numActions, actionMap, spacesEnabled.get.filter(_._2).map(_._1))
+    val qSpaces = for ((param, enabled) <- paramsEnabled.get; if enabled) yield param.space
+    val (qAgent, agent) = QTableAgent.build(numActions, actionMap, qSpaces)
 
     learningRate := qAgent.learningRate
     discountFactor := qAgent.discountFactor
@@ -85,13 +86,13 @@ class QTableModel[O, A](
     }
   }
 
-  private def getCheckBoxID(space: QStateSpace[O]): String = "q-enable-" + space.name
+  private def getCheckBoxID(param: QModelParam[O]): String = "q-enable-" + param.name
 
-  private def checkBoxToggled(space: QStateSpace[O]): Unit = {
-    val idx = spaces.indexOf(space)
-    val checkBox = getElem[html.Input](getCheckBoxID(space))
+  private def checkBoxToggled(param: QModelParam[O]): Unit = {
+    val idx = params.indexOf(param)
+    val checkBox = getElem[html.Input](getCheckBoxID(param))
 
-    spacesEnabled.get(idx) = (space, checkBox.checked)
+    paramsEnabled.get(idx) = (param, checkBox.checked)
   }
 
   override def resetAgent(): Unit = {
@@ -99,10 +100,10 @@ class QTableModel[O, A](
   }
 
   override def cloneBuild(): QTableModel[O,A] = {
-    val clone = new QTableModel(numActions, actionMap, spaces)
+    val clone = new QTableModel(numActions, actionMap, params)
 
-    clone.spacesEnabled.get.clear()
-    clone.spacesEnabled.get ++= spacesEnabled.get
+    clone.paramsEnabled.get.clear()
+    clone.paramsEnabled.get ++= paramsEnabled.get
 
     clone
   }
@@ -126,9 +127,15 @@ object QTableModel {
 
   def builder[O,A](
     numActions: Int, actionMap: (Int) => A,
-    spaces: QStateSpace[O]*
+    params: QModelParam[O]*
   ): Model.Builder[Agent[O,A]] = {
 
-    name -> (() => new QTableModel(numActions, actionMap, spaces.toArray))
+    name -> (() => new QTableModel(numActions, actionMap, params.toArray))
   }
 }
+
+case class QModelParam[T](
+  name: String,
+  space: QStateSpace[T],
+  defaultEnabled: Boolean = true
+)

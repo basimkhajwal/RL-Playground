@@ -73,20 +73,15 @@ object QTableAgent {
 
 }
 
-class QStateSpace[T](val name: String, val size: Int, val map: T => Int, val defaultEnabled: Boolean) {
+class QStateSpace[T](val size: Int, val map: T => Int) {
   def apply(s: T): Int = map(s)
 }
 
 object QStateSpace {
 
-  def discrete[T](name: String, n: Int, map: (T) => Int, defaultEnabled: Boolean = true) = {
-    new QStateSpace(name, n, map, defaultEnabled)
-  }
+  def discrete[T](n: Int, map: (T) => Int) = new QStateSpace(n, map)
 
-  def boxed[T](
-    name: String, low: Double, high: Double, divisions: Int = 10,
-    map: T => Double, defaultEnabled: Boolean = true
-  ) = {
-    discrete[T](name, divisions, { s => (divisions * (map(s) - low) / (high-low)).toInt }, defaultEnabled)
+  def boxed[T](low: Double, high: Double, divisions: Int = 10, map: T => Double) = {
+    discrete[T](divisions, { s => (divisions * (map(s) - low) / (high-low)).toInt })
   }
 }
