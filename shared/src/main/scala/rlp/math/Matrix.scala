@@ -169,6 +169,18 @@ class Matrix(var rows: Int, var cols: Int, var data: Array[Double]) {
 object Matrix {
 
   /**
+    * Create a new matrix representing row vectors
+    * with the data given
+    * @param data
+    * @return
+    */
+  def rows(data: Array[Array[Double]]): Matrix = {
+    new Matrix(data.length, data(0).length, data.flatten)
+  }
+
+  def rows(data: Array[Double]*): Matrix = rows(data.toArray)
+
+  /**
     * Concatenate matrices supplied along the row dimension
     * @param ms
     * @return
