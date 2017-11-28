@@ -8,13 +8,18 @@ class QNetworkAgent(
   val network: NeuralNetwork
 ) extends SteppedAgent[Array[Double], Int]{
 
-   // type Replay = (Array[Double], Int, Double, Array[Double])
+  type Replay = (Array[Double], Int, Double, Array[Double])
 
-  // val replayBuffer = new ArrayBuffer[Replay]()
+  val replayBuffer = new Array[Replay](100)
+  var replayBufferIdx = 0
+  var isFull = false
 
   val optimiser = new SGDMomentum(network)
   val learningRate = 0.1
-  val discountFactor = 0.9
+  val discountFactor = 0.99
+
+  // TODO: Implement experience replay
+  // TODO: Fix the issue when the environment is reset
 
   override def step(prevState: Array[Double], action: Int, reward: Double, newState: Array[Double]): Int = {
 
@@ -30,8 +35,16 @@ class QNetworkAgent(
 
     if (prevState != null) {
 
-      val returns = network.forwardProp(prevState)
+      // Add replay to buffer
+      replayBuffer(replayBufferIdx) = (prevState, action, reward, newState)
+      replayBufferIdx += 1
 
+      if (replayBufferIdx >= replayBuffer.length) {
+        replayBufferIdx -= replayBuffer.length
+        isFull = true
+      }
+
+      val returns = network.forwardProp(prevState)
       returns(action) += learningRate * (reward + maxAns * discountFactor - returns(action))
 
       optimiser.step(Matrix.rows(prevState), Matrix.rows(returns))
