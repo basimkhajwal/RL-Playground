@@ -6,10 +6,11 @@ import rlp.environment.{NaivePongAgent, Pong}
 import com.thoughtworks.binding.{Binding, dom}
 import org.scalajs.dom.CanvasRenderingContext2D
 import org.scalajs.dom.html.Div
-import rlp.agent.QStateSpace
-import rlp.models.{Model, QModelParam, QTableModel}
+import rlp.agent.QNetworkAgent.QNetworkSpace
+import rlp.agent.{QStateSpace}
+import rlp.math.Matrix
+import rlp.models.{Model, QModelParam, QNetworkModel, QTableModel}
 import rlp.utils.SelectHandler
-
 
 class PongPage extends GamePage[Pong.State, Pong.PongAgent] {
 
@@ -30,6 +31,7 @@ class PongPage extends GamePage[Pong.State, Pong.PongAgent] {
   val rightAgentSelect = new SelectHandler("Player 2", agentNames, renderTraining)
 
   override val modelBuilders = List(
+
     QTableModel.builder(
       2, { a => if (a == 0) UpAction else DownAction },
       QModelParam("Ball X", QStateSpace.boxed[AgentState](0, SCREEN_WIDTH, 20, _.ballPos.x)),
@@ -37,6 +39,13 @@ class PongPage extends GamePage[Pong.State, Pong.PongAgent] {
       QModelParam("Paddle Y", QStateSpace.boxed[AgentState](0, SCREEN_HEIGHT, 10, _.currentPaddle)),
       QModelParam("Ball Angle", QStateSpace.boxed[AgentState](0, 2 * Math.PI, 10, _.ballDir.angle()), false),
       QModelParam("Opponent Y", QStateSpace.boxed[AgentState](0, SCREEN_HEIGHT, 10, _.otherPaddle), false)
+    ),
+
+    QNetworkModel.builder(
+      2, { a => if (a == 0) UpAction else DownAction },
+      QNetworkSpace[AgentState](1, s => Array(s.ballPos.x / SCREEN_WIDTH)),
+      QNetworkSpace[AgentState](1, s => Array(s.ballPos.y / SCREEN_HEIGHT)),
+      QNetworkSpace[AgentState](1, s => Array(s.currentPaddle / SCREEN_HEIGHT))
     )
   )
 
