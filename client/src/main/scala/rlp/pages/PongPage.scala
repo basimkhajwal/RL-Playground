@@ -8,7 +8,6 @@ import org.scalajs.dom.CanvasRenderingContext2D
 import org.scalajs.dom.html.Div
 import rlp.agent.QNetworkAgent.QNetworkSpace
 import rlp.agent.{QStateSpace}
-import rlp.math.Matrix
 import rlp.models.{Model, QModelParam, QNetworkModel, QTableModel}
 import rlp.utils.SelectHandler
 
@@ -69,13 +68,12 @@ class PongPage extends GamePage[Pong.State, Pong.PongAgent] {
 
   override protected def render(ctx: CanvasRenderingContext2D): Unit = {
 
-    if (trainingEnvironment == null) {
-      ctx.clearRect(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT)
-      return
-    }
-
     if (renderTraining.get) {
-      renderState(ctx, trainingEnvironment.getState())
+      if (trainingEnvironment == null) {
+        ctx.clearRect(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT)
+      } else {
+        renderState(ctx, trainingEnvironment.getState())
+      }
     } else {
       if (gameEnvironment.step()) gameEnvironment.reset()
       renderState(ctx, gameEnvironment.getState())
