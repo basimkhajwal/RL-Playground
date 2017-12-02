@@ -8,10 +8,10 @@ import rlp._
 import rlp.agent.{Agent, QStateSpace, QTableAgent}
 
 class QTableModel[O, A](
-  numActions: Int, actionMap: (Int) => A, params: Array[QModelParam[O]]
+  numActions: Int, actionMap: (Int) => A, params: Array[ModelParam[QStateSpace[O]]]
 ) extends Model[Agent[O, A]](QTableModel.name) {
 
-  private val paramsEnabled: Vars[(QModelParam[O], Boolean)] = Vars(params.map(s => (s, s.defaultEnabled)) :_ *)
+  private val paramsEnabled: Vars[(ModelParam[QStateSpace[O]], Boolean)] = Vars(params.map(s => (s, s.defaultEnabled)) :_ *)
 
   private val learningRate = Var(0.1)
   private val discountFactor = Var(0.9)
@@ -41,7 +41,7 @@ class QTableModel[O, A](
 
 
   override def buildAgent(): Agent[O, A] = {
-    val qSpaces = for ((param, enabled) <- paramsEnabled.get; if enabled) yield param.space
+    val qSpaces = for ((param, enabled) <- paramsEnabled.get; if enabled) yield param.value
     val (qAgent, agent) = QTableAgent.build(numActions, actionMap, qSpaces)
 
     learningRate := qAgent.learningRate
@@ -86,9 +86,9 @@ class QTableModel[O, A](
     }
   }
 
-  private def getCheckBoxID(param: QModelParam[O]): String = "q-enable-" + param.name
+  private def getCheckBoxID(param: ModelParam[QStateSpace[O]]): String = "q-enable-" + param.name
 
-  private def checkBoxToggled(param: QModelParam[O]): Unit = {
+  private def checkBoxToggled(param: ModelParam[QStateSpace[O]]): Unit = {
     val idx = params.indexOf(param)
     val checkBox = getElem[html.Input](getCheckBoxID(param))
 
@@ -115,15 +115,10 @@ object QTableModel {
 
   def builder[O,A](
     numActions: Int, actionMap: (Int) => A,
-    params: QModelParam[O]*
+    params: ModelParam[QStateSpace[O]]*
   ): Model.Builder[Agent[O,A]] = {
 
     name -> (() => new QTableModel(numActions, actionMap, params.toArray))
   }
 }
 
-case class QModelParam[T](
-  name: String,
-  space: QStateSpace[T],
-  defaultEnabled: Boolean = true
-)
