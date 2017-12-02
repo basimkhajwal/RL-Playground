@@ -129,7 +129,14 @@ class Pong(val leftAgent: Pong.PongAgent, val rightAgent: Pong.PongAgent) extend
     leftAgent.percept(leftReward)
     rightAgent.percept(rightReward)
 
-    leftWon || rightWon
+    val done = leftWon || rightWon
+
+    if (done) {
+      leftAgent.resetEpisode()
+      rightAgent.resetEpisode()
+    }
+
+    done
   }
 }
 

@@ -25,11 +25,19 @@ trait SteppedAgent[S, A] extends Agent[S, A] {
     lastReward = reward
   }
 
+  override def resetEpisode(): Unit = {
+    lastReward = 0.0
+
+    /* Reset actions and states */
+    lastAction = _ : A
+    lastState = _ : S
+  }
+
   /**
     * Combined act and percept functions into a
-    * single step
+    * single step.
     *
-    * @param prevState
+    * @param prevState The previous state, or null if no such state
     * @param action
     * @param reward
     * @param newState

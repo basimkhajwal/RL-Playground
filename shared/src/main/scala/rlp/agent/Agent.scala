@@ -24,6 +24,12 @@ trait Agent[S, A] {
   def percept(reward: Double): Unit = {}
 
   /**
+    * Called on episodic environments so the agent
+    * knows when the episode has finished
+    */
+  def resetEpisode(): Unit = {}
+
+  /**
     * Reset the agent to it's default state before
     * it learnt anything
     * @return
