@@ -14,10 +14,15 @@ import rlp._
 class QNetworkModel[S,A](
   numActions: Int,
   actionMap: Int => A,
-  spaces: Array[QNetworkSpace[S]]
+  params: Array[ModelParam[QNetworkSpace[S]]]
 ) extends Model[Agent[S,A]](QNetworkModel.name){
 
-  private val numStates = spaces.map(s => s.size).sum
+  type Param = ModelParam[QNetworkSpace[S]]
+
+  val numStates = params.map(_.value.size).sum
+
+  private val paramSelector = new ParamSelector(params)
+  private val paramsEnabled = paramSelector.paramsEnabled
 
   private var qNetwork: QNetworkAgent = _
 
@@ -28,7 +33,7 @@ class QNetworkModel[S,A](
     fixed: Boolean = false
   )
 
-  private val layerDefinitions = Vars[LayerDef](LayerDef("Input Layer", Var(numStates), fixed = true) )
+  private val layerDefinitions = Vars[LayerDef]()
 
   @dom
   def layerDefinition(layer: LayerDef): Binding[Div] = {
@@ -72,7 +77,7 @@ class QNetworkModel[S,A](
 
     qNetwork = new QNetworkAgent(network)
 
-    QNetworkAgent.build(qNetwork, actionMap, spaces)
+    QNetworkAgent.build(qNetwork, actionMap, params.map(_.value))
   }
 
   override def cloneBuildFrom(that: Model[Agent[S,A]]): Unit = {
@@ -88,7 +93,7 @@ object QNetworkModel {
 
   val name = "Q Network"
 
-  def builder[S,A](numActions: Int, actionMap: Int => A, spaces: QNetworkSpace[S]*): Model.Builder[Agent[S,A]] = {
-    name -> (() => new QNetworkModel(numActions, actionMap, spaces.toArray))
+  def builder[S,A](numActions: Int, actionMap: Int => A, params: ModelParam[QNetworkSpace[S]]*): Model.Builder[Agent[S,A]] = {
+    name -> (() => new QNetworkModel(numActions, actionMap, params.toArray))
   }
 }

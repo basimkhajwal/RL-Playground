@@ -11,31 +11,20 @@ class QTableModel[O, A](
   numActions: Int, actionMap: (Int) => A, params: Array[ModelParam[QStateSpace[O]]]
 ) extends Model[Agent[O, A]](QTableModel.name) {
 
-  private val paramsEnabled: Vars[(ModelParam[QStateSpace[O]], Boolean)] = Vars(params.map(s => (s, s.defaultEnabled)) :_ *)
-
   private val learningRate = Var(0.1)
   private val discountFactor = Var(0.9)
 
   private var qTable: QTableAgent = _
+
+  private val paramSelector = new ParamSelector(params)
+  private val paramsEnabled = paramSelector.paramsEnabled
 
   @dom
   override lazy val modelBuilder: Binding[HTMLElement] = {
     <div class="row">
 
       <h5 class="col offset-s1 s11 light">Q Table Inputs</h5>
-      <div class="col s12" id="q-checkbox-container">
-        {
-        for ((param, enabled) <- paramsEnabled) yield {
-          <div class="q-table-checkbox">
-            <input type="checkbox" id={getCheckBoxID(param)}
-                   onchange={ _:Event => checkBoxToggled(param)}
-                   checked={enabled}
-            />
-            <label for={getCheckBoxID(param)}>{param.name}</label>
-          </div>
-        }
-        }
-      </div>
+      <div class="col s12"> { paramSelector.builder.bind } </div>
       <h6 class="col offset-s3 s6 center-align">
         Table Size: {
           (
@@ -96,14 +85,6 @@ class QTableModel[O, A](
     }
   }
 
-  private def getCheckBoxID(param: ModelParam[QStateSpace[O]]): String = "q-enable-" + param.name
-
-  private def checkBoxToggled(param: ModelParam[QStateSpace[O]]): Unit = {
-    val idx = params.indexOf(param)
-    val checkBox = getElem[html.Input](getCheckBoxID(param))
-
-    paramsEnabled.get(idx) = (param, checkBox.checked)
-  }
 
   override def resetAgent(): Unit = {
     agent.reset()
