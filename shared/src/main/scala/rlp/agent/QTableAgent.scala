@@ -56,6 +56,23 @@ class QTableAgent(
 
 object QTableAgent {
 
+  def build[S,A](numActions: Int, actionMap: (Int) => A, space: QStateSpace[S]): (QTableAgent, Agent[S,A]) = {
+    val agent = new QTableAgent(space.size, numActions)
+
+    agent -> new MappedAgent[Int,Int,S,A](agent, space.map, actionMap)
+  }
+
+  def build[S, A](numActions: Int, actionMap: (Int) => A, spaces: Seq[QStateSpace[S]]): (QTableAgent, Agent[S,A]) = {
+    build(numActions, actionMap, QStateSpace.combination(spaces.toArray))
+  }
+}
+
+class QStateSpace[T](val size: Int, val map: T => Int) {
+  def apply(s: T): Int = map(s)
+}
+
+object QStateSpace {
+
   private def stateMap[S](spaces: Array[QStateSpace[S]])(state: S): Int = {
     var stateSize = 1
     var currentIdx = 0
@@ -68,25 +85,15 @@ object QTableAgent {
     currentIdx
   }
 
-  def build[S, A](numActions: Int, actionMap: (Int) => A, spaces: Seq[QStateSpace[S]]): (QTableAgent, Agent[S,A]) = {
-
-    val numStates = spaces.map(_.size).product
-    val agent = new QTableAgent(numStates, numActions)
-
-    agent -> new MappedAgent[Int,Int,S,A](agent, stateMap(spaces.toArray), actionMap)
-  }
-
-}
-
-class QStateSpace[T](val size: Int, val map: T => Int) {
-  def apply(s: T): Int = map(s)
-}
-
-object QStateSpace {
-
   def discrete[T](n: Int, map: (T) => Int) = new QStateSpace(n, map)
 
   def boxed[T](low: Double, high: Double, divisions: Int = 10, map: T => Double) = {
     discrete[T](divisions, { s => (divisions * (map(s) - low) / (high-low)).toInt })
+  }
+
+  def combination[T](spaces: QStateSpace[T]*): QStateSpace[T] = combination(spaces.toArray)
+
+  def combination[T](spaces: Array[QStateSpace[T]]): QStateSpace[T] = {
+    new QStateSpace[T](spaces.map(_.size).product, stateMap(spaces))
   }
 }
