@@ -36,6 +36,16 @@ class QTableModel[O, A](
         }
         }
       </div>
+      <h6 class="col offset-s3 s6 center-align">
+        Table Size: {
+          (
+            for {
+              (param, enabled) <- paramsEnabled.bind
+              if enabled
+            } yield param.value.size
+          ).product.toString
+        }
+      </h6>
     </div>
   }
 
