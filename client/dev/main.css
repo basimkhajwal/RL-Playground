@@ -22,13 +22,13 @@
     padding: 30px;
 }
 
-#q-checkbox-container {
+.param-selector {
     padding: 20px 10%;
     display: flex;
     justify-content: space-evenly;
 }
 
-.q-table-checkbox {
+.param-checkbox {
     display: inline-block;
     margin: 0 auto;
 }

@@ -22,10 +22,10 @@ class ParamSelector[A](params: Array[ModelParam[A]]) {
 
   @dom
   lazy val builder: Binding[Div] = {
-    <div>
+    <div class="param-selector">
        {
        for ((param, enabled) <- paramsEnabled) yield {
-          <div class="q-table-checkbox">
+          <div class="param-checkbox">
              <input type="checkbox" id={getCheckBoxID(param)}
                     onchange={ _:Event => checkBoxToggled(param)}
                     checked={enabled}
