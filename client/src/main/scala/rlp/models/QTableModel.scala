@@ -99,25 +99,13 @@ class QTableModel[O, A](
     agent.reset()
   }
 
-  override def cloneBuild(): QTableModel[O,A] = {
-    val clone = new QTableModel(numActions, actionMap, params)
+  override def cloneBuildFrom(controller: Model[Agent[O,A]]): Unit = {
 
-    clone.paramsEnabled.get.clear()
-    clone.paramsEnabled.get ++= paramsEnabled.get
+    // Require the controller to be a QTableModel
+    val that = controller.asInstanceOf[QTableModel[O,A]]
 
-    clone
-  }
-
-  override protected def _duplicate(): QTableModel[O,A] = {
-    val clone = cloneBuild()
-    clone.agent // Force build agent
-
-    // Copy across learnt q values
-    for (i <- qTable.table.indices) {
-      clone.qTable.table(i) = qTable.table(i)
-    }
-
-    clone
+    paramsEnabled.get.clear()
+    paramsEnabled.get ++= that.paramsEnabled.get
   }
 }
 

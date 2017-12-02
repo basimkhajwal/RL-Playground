@@ -24,18 +24,7 @@ abstract class Model[A](
 
   lazy val agent: A = buildAgent()
 
-  def cloneBuild(): Model[A]
-
-  protected def _duplicate(): Model[A]
-
-  final def duplicate(): Model[A] = {
-    val newModel = _duplicate()
-
-    newModel.modelName := modelName.get + " copy"
-    newModel.gamesPlayed := gamesPlayed.get
-
-    newModel
-  }
+  def cloneBuildFrom(controller: Model[A]): Unit
 
   def buildAgent(): A
 

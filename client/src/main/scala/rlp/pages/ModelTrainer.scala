@@ -66,12 +66,6 @@ class ModelTrainer[A](
     trainingProcess.start(Environment.FPS * gameSpeedMultiplier(gameSpeed.get))
   }
 
-  private def duplicateModel(model: Model[A]): Unit = {
-    val newModel = model.duplicate()
-    models.get += newModel
-    modelSelect.selectedIndex := models.get.indexOf(newModel)
-  }
-
   @dom
   lazy val content: Binding[Div] = {
 
@@ -89,12 +83,6 @@ class ModelTrainer[A](
         <div class="col s4" id="model-training-btns">
           {
           val btnStyle = "btn waves-effect waves-light"
-          val model = selectedModel.bind
-
-          <a class={btnStyle + (if (modelExists.bind) "" else " disabled")}
-            onclick={_:Event => duplicateModel(model.get)}>
-            Duplicate
-          </a>
 
           <a class={btnStyle + " activator"}>New</a>
           }

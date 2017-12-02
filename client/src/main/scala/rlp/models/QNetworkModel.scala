@@ -17,10 +17,6 @@ class QNetworkModel[S,A](
   spaces: Array[QNetworkSpace[S]]
 ) extends Model[Agent[S,A]](QNetworkModel.name){
 
-  // TODO: Implement these properly
-  override def cloneBuild(): Model[Agent[S, A]] = this
-  override protected def _duplicate(): Model[Agent[S, A]] = this
-
   private val numStates = spaces.map(s => s.size).sum
 
   private var qNetwork: QNetworkAgent = _
@@ -71,13 +67,16 @@ class QNetworkModel[S,A](
   }
 
   override def buildAgent(): Agent[S, A] = {
-
     val network = new NeuralNetwork(Array(numStates, 10, numActions), Array(Sigmoid, Sigmoid))
     network.randomiseWeights(-0.5, 0.5)
 
     qNetwork = new QNetworkAgent(network)
 
     QNetworkAgent.build(qNetwork, actionMap, spaces)
+  }
+
+  override def cloneBuildFrom(that: Model[Agent[S,A]]): Unit = {
+
   }
 
   override def resetAgent(): Unit = {
