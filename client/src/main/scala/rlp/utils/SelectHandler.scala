@@ -4,18 +4,9 @@ import com.thoughtworks.binding.Binding.{BindingSeq, Constants, Var}
 import com.thoughtworks.binding.{Binding, dom}
 import org.scalajs.dom.{Event, document}
 import org.scalajs.dom.html.{Div, Select}
+import rlp._
 
 import scala.scalajs.js.Dynamic
-
-object SelectHandler {
-
-  private var counter = 0
-
-  def getGUID(): String = {
-    counter += 1
-    "select--" + counter
-  }
-}
 
 class SelectHandler(val name: String, val items: BindingSeq[String], val disabledCondition: Binding[Boolean]) {
 
@@ -23,7 +14,7 @@ class SelectHandler(val name: String, val items: BindingSeq[String], val disable
     this(name, Constants(items :_ *), disabledCondition)
   }
 
-  val selectID = SelectHandler.getGUID()
+  val selectID = getGUID("select")
   val selectedIndex = Var(0)
 
   private def selectionChanged(): Unit = {
