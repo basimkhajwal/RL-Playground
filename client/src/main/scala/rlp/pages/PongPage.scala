@@ -42,9 +42,9 @@ class PongPage extends GamePage[Pong.State, Pong.PongAgent] {
 
     QNetworkModel.builder(
       2, { a => if (a == 0) UpAction else DownAction },
-      QNetworkSpace[AgentState](1, s => Array(s.ballPos.x / SCREEN_WIDTH)),
-      QNetworkSpace[AgentState](1, s => Array(s.ballPos.y / SCREEN_HEIGHT)),
-      QNetworkSpace[AgentState](1, s => Array(s.currentPaddle / SCREEN_HEIGHT))
+      ModelParam("Ball X", QNetworkSpace[AgentState](1, s => Array(s.ballPos.x / SCREEN_WIDTH))),
+      ModelParam("Ball Y", QNetworkSpace[AgentState](1, s => Array(s.ballPos.y / SCREEN_HEIGHT))),
+      ModelParam("Paddle Y", QNetworkSpace[AgentState](1, s => Array(s.currentPaddle / SCREEN_HEIGHT)))
     )
   )
 
