@@ -93,7 +93,7 @@ class ModelBuilder[A](
     val cacheIdx = modelCache.get.indexWhere(_._1 == builderIdx)
     if (cacheIdx >= 0) modelCache.get.remove(cacheIdx)
     modelCache.get += ((builderIdx, newModel))
-    modelSelect.selectedIndex := builderIdx
+    modelSelect.selectedIndex := modelCache.get.length - 1
   }
 
   @dom
