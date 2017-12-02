@@ -15,18 +15,18 @@ class ModelBuilder[A](
 
   private val modelSelect = new SelectHandler("Model Type", builders.map(_._1), Constant(false))
 
-  private val modelCache: Vars[(Int, Model[A])] = Vars()
+  private val modelCache: Vars[Model[A]] = Vars()
 
   private val modelBinding = Binding {
     val idx = modelSelect.selectedIndex.bind
-    val builder = builders(idx)._2
-    val cache = modelCache.get
+    val (name, builder) = builders(idx)
+    val cache = modelCache.bind
 
-    cache.find(c => c._1 == idx) match {
-      case Some((_, model)) => model
+    cache.find(_.controllerName equals name) match {
+      case Some(model) => model
       case None => {
         val model = builder()
-        cache += ((idx, model))
+        modelCache.get += model
         model
       }
     }
@@ -84,16 +84,13 @@ class ModelBuilder[A](
 
   private def cloneModel(model: Model[A]): Unit = {
 
-    val newModel = model.cloneBuild()
+    val builderIdx = builders.indexWhere(_._1 equals model.controllerName)
+    modelSelect.selectedIndex := builderIdx
 
-    // Find builder index for this controller type
-    val builderIdx = builders.indexWhere(_._1 == newModel.controllerName)
+    val newModel = modelCache.get.find(_.controllerName equals model.controllerName).get
+    newModel.cloneBuildFrom(model)
 
-    // Inject controller into cache then fake selecting it
-    val cacheIdx = modelCache.get.indexWhere(_._1 == builderIdx)
-    if (cacheIdx >= 0) modelCache.get.remove(cacheIdx)
-    modelCache.get += ((builderIdx, newModel))
-    modelSelect.selectedIndex := modelCache.get.length - 1
+    onNameChange()
   }
 
   @dom
