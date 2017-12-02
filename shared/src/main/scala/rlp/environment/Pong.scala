@@ -121,20 +121,14 @@ class Pong(val leftAgent: Pong.PongAgent, val rightAgent: Pong.PongAgent) extend
       ballDir = ballDir copy (x = -ballDir.x)
     }
 
+    val done = leftWon || rightWon
     val (leftReward, rightReward) =
       if (leftWon) (1, -1)
       else if (rightWon) (-1, 1)
       else (0, 0)
 
-    leftAgent.percept(leftReward)
-    rightAgent.percept(rightReward)
-
-    val done = leftWon || rightWon
-
-    if (done) {
-      leftAgent.resetEpisode()
-      rightAgent.resetEpisode()
-    }
+    leftAgent.percept(leftReward, done)
+    rightAgent.percept(rightReward, done)
 
     done
   }

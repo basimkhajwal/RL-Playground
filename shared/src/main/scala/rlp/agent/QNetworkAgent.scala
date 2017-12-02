@@ -21,7 +21,7 @@ class QNetworkAgent(
   // TODO: Implement experience replay
   // TODO: Fix the issue when the environment is reset
 
-  override def step(prevState: Array[Double], action: Int, reward: Double, newState: Array[Double]): Int = {
+  override def step(prevState: Array[Double], action: Int, reward: Double, newState: Array[Double], first: Boolean, last: Boolean): Int = {
 
     val newReturns = network.forwardProp(newState)
     var maxIdx = -1

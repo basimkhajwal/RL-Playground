@@ -13,10 +13,15 @@ class QTableAgent(
     this(numStates, numActions, new Array[Double](numStates * numActions))
   }
 
-  override def step(prevState: Int, action: Int, reward: Double, newState: Int): Int = {
-    val (greedyAction, expectedReward) = maximumAction(newState)
+  override def step(prevState: Int, action: Int, reward: Double, newState: Int, first: Boolean, last: Boolean): Int = {
+    val (greedyAction, maxReward) = maximumAction(newState)
 
-    this(prevState, action) += learningRate * (reward + discountFactor * expectedReward - this(prevState, action))
+    if (!first) {
+
+      val expectedReward = reward + discountFactor * (if (last) 0 else maxReward)
+
+      this(prevState, action) += learningRate * (expectedReward - this(prevState, action))
+    }
 
     greedyAction
   }
