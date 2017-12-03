@@ -74,6 +74,9 @@ class Pong(val leftAgent: Pong.PongAgent, val rightAgent: Pong.PongAgent) extend
     ballDir = Point2D.fromPolar(ran.nextDouble() * 2 * math.Pi, 1)
     leftPaddleY = (SCREEN_HEIGHT - PADDLE_HEIGHT) / 2
     rightPaddleY = leftPaddleY
+
+    leftAgent.resetEpisode()
+    rightAgent.resetEpisode()
   }
 
   override def step(): Boolean = {
@@ -121,16 +124,15 @@ class Pong(val leftAgent: Pong.PongAgent, val rightAgent: Pong.PongAgent) extend
       ballDir = ballDir copy (x = -ballDir.x)
     }
 
-    val done = leftWon || rightWon
     val (leftReward, rightReward) =
       if (leftWon) (1, -1)
       else if (rightWon) (-1, 1)
       else (0, 0)
 
-    leftAgent.percept(leftReward, done)
-    rightAgent.percept(rightReward, done)
+    leftAgent.percept(leftReward)
+    rightAgent.percept(rightReward)
 
-    done
+    leftWon || rightWon
   }
 }
 
