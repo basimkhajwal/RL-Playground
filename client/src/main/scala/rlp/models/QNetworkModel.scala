@@ -30,6 +30,7 @@ class QNetworkModel[S,A](
 
   private val paramSelector = new ParamSelector(params)
   private val paramsEnabled = paramSelector.paramsEnabled
+  private val inputParams = for ((param, enabled) <- paramsEnabled; if enabled) yield param
 
   private var qNetwork: QNetworkAgent = _
 
@@ -59,7 +60,7 @@ class QNetworkModel[S,A](
     lazy val handler: Binding[Div] = {
       val inputID = getGUID("input-size")
 
-      <div class="layer-definition row">
+      <div class="layer-definition row valign-wrapper">
         <span class="col s3">{s"Hidden Layer ${index.bind+1}"}</span>
 
         <div class="input-field col s4">
@@ -79,9 +80,9 @@ class QNetworkModel[S,A](
         }
 
         <div class="col s1">
-          <a class="btn-flat grey waves-effect waves-light"
+          <a class="btn-floating red lighten-2 waves-effect waves-light"
              onclick={_:Event => deleteLayer(this)}>
-            <i class="material-icons small">delete</i>
+            <i class="material-icons">delete</i>
           </a>
         </div>
       </div>
@@ -115,10 +116,12 @@ class QNetworkModel[S,A](
     <div class="row">
       <h5 class="col s11 offset-s1 light">Layer Definitions</h5>
       <div id="layer-definitions" class="col s10 offset-s1">
-        <div class="layer-definition" id="input-layer">
-          <span class="center-align">Input Layer</span>
-          <br />
-          { paramSelector.builder.bind }
+        <div class="layer-definition row" id="input-layer">
+          <span class="col s3">Input Layer</span>
+          <span class="col s4">{inputParams.bind.map(_.value.size).sum.toString} neurons</span>
+          <div class="col s12">
+            { paramSelector.builder.bind }
+          </div>
         </div>
 
         {
@@ -127,16 +130,20 @@ class QNetworkModel[S,A](
           }
         }
 
-        <div id="create-layer">
-          <a onclick={_:Event => createLayer()}
-             class={"btn" + (if (layerDefinitions.length.bind >= maxHiddenLayers) " disabled" else "")}>
-            <i class="material-icons left">add_circle_outline</i> Add Hidden Layer
-          </a>
+        <div class="layer-definition row" id="output-layer">
+          <span class="col s3">Output Layer</span>
+          <span class="col s4">{s"$numActions neurons"}</span>
+          <span class="col s4">
+            { activationFunctions.find(_._2 == outputActivation).map(_._1).getOrElse("")}
+          </span>
         </div>
+      </div>
 
-        <div class="layer-definition" id="output-layer">
-          <span class="center-align">{ s"Output Layer - $numActions neurons"} </span>
-        </div>
+      <div class="col s12" id="create-layer">
+        <a onclick={_:Event => createLayer()}
+           class={"btn light-green" + (if (layerDefinitions.length.bind >= maxHiddenLayers) " disabled" else "")}>
+          <i class="material-icons left">add_circle_outline</i> Add Hidden Layer
+        </a>
       </div>
     </div>
   }

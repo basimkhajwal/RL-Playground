@@ -71,6 +71,25 @@
     outline: none;
 }
 
+.layer-definition {
+    border: 1px darkgray solid;
+    border-radius: 5px;
+    padding: 24px;
+}
+
+.layer-definition span {
+    font-size: 18px;
+    font-weight: 300;
+}
+
+#create-layer {
+    text-align: center;
+}
+
+#create-layer a {
+    display: inline-block;
+}
+
 @media (min-width: 1300px) {
 
     .page-container {
