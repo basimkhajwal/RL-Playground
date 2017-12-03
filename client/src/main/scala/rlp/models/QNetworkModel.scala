@@ -177,6 +177,15 @@ class QNetworkModel[S,A](
     )
   }
 
+  @dom
+  override lazy val modelViewer: Binding[HTMLElement] = {
+    <div>
+      {
+
+      }
+    </div>
+  }
+
   override def resetAgent(): Unit = {
     qNetwork.reset()
   }
