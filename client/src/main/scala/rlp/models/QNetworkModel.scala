@@ -20,17 +20,23 @@ class QNetworkModel[S,A](
 
   type Param = ModelParam[QNetworkSpace[S]]
 
-  val numStates = params.map(_.value.size).sum
+  private val activationFunctions: List[(String, ActivationFunction)] = List(
+    "ReLU" -> ReLU,
+    "Sigmoid" -> Sigmoid,
+    "Linear" -> Linear
+  )
+  private val outputActivation = Sigmoid
+  private val maxHiddenLayers = 5
 
   private val paramSelector = new ParamSelector(params)
   private val paramsEnabled = paramSelector.paramsEnabled
 
   private var qNetwork: QNetworkAgent = _
 
-  case class LayerDef(
-    size: Var[Int] = Var(10),
-    activation: Var[ActivationFunction] = Var(ReLU),
-    index: Var[Int] = Var(0)
+  class LayerDef(
+    val size: Var[Int] = Var(10),
+    val activation: Var[ActivationFunction] = Var(ReLU),
+    val index: Var[Int] = Var(0)
   ) {
 
     private val activationSelector = new SelectHandler(
@@ -60,7 +66,7 @@ class QNetworkModel[S,A](
           <input id={inputID}
                  value={size.bind.toString} onchange={_:Event => inputChanged(inputID)}
                  class="validate" type="number" min="1" max="100" step="1" />
-          <label for={inputID} data:data-error="Enter size in range 1-100">Layer Size</label>
+          <label for={inputID} class="active" data:data-error="Enter size in range 1-100">Layer Size</label>
         </div>
 
         <div class="col s4">
@@ -82,18 +88,16 @@ class QNetworkModel[S,A](
     }
   }
 
-  private val activationFunctions: List[(String, ActivationFunction)] = List(
-    "ReLU" -> ReLU,
-    "Sigmoid" -> Sigmoid,
-    "Linear" -> Linear
-  )
-
-  private val maxHiddenLayers = 5
+  object LayerDef {
+    def apply(size: Int = 10, activation: ActivationFunction = ReLU, index: Int = 0): LayerDef = {
+      new LayerDef(Var(size), Var(activation), Var(index))
+    }
+  }
 
   private val layerDefinitions = Vars[LayerDef]()
 
   private def createLayer(): Unit = {
-    layerDefinitions.get += LayerDef(index = Var(layerDefinitions.get.length))
+    layerDefinitions.get += LayerDef(index = layerDefinitions.get.length)
   }
 
   private def deleteLayer(layer: LayerDef): Unit = {
@@ -138,16 +142,32 @@ class QNetworkModel[S,A](
   }
 
   override def buildAgent(): Agent[S, A] = {
-    val network = new NeuralNetwork(Array(numStates, 10, numActions), Array(Sigmoid, Sigmoid))
-    network.randomiseWeights(-0.5, 0.5)
 
-    qNetwork = new QNetworkAgent(network)
+    val inputs = for ((param, enabled) <- paramsEnabled.get; if enabled) yield param.value
 
-    QNetworkAgent.build(qNetwork, actionMap, params.map(_.value))
+    val hiddenLayerSizes = layerDefinitions.get.map(_.size.get).toArray
+    val hiddenLayerActivations = layerDefinitions.get.map(_.activation.get).toArray
+
+    val layerSizes = Array(inputs.map(_.size).sum) ++ hiddenLayerSizes ++ Array(numActions)
+    val layerActivations = hiddenLayerActivations ++ Array(outputActivation)
+
+    qNetwork = new QNetworkAgent(new NeuralNetwork(layerSizes, layerActivations))
+    qNetwork.reset()
+
+    QNetworkAgent.build(qNetwork, actionMap, inputs)
   }
 
   override def cloneBuildFrom(that: Model[Agent[S,A]]): Unit = {
 
+    val controller = that.asInstanceOf[QNetworkModel[S,A]]
+
+    paramsEnabled.get.clear()
+    paramsEnabled.get ++= controller.paramsEnabled.get
+
+    layerDefinitions.get.clear()
+    layerDefinitions.get ++= controller.layerDefinitions.get.map(
+      l => LayerDef(l.size.get, l.activation.get, l.index.get)
+    )
   }
 
   override def resetAgent(): Unit = {
