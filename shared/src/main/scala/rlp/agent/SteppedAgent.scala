@@ -23,12 +23,13 @@ trait SteppedAgent[S, A] extends Agent[S, A] {
     lastAction
   }
 
-  override def percept(reward: Double, done: Boolean): Unit = {
+  override def percept(reward: Double): Unit = {
     lastReward = reward
-    if (done) {
-      step(lastState, lastAction, lastReward, lastState, first, true)
-      first = true
-    }
+  }
+
+  override def resetEpisode(): Unit = {
+    step(lastState, lastAction, lastReward, lastState, first, true)
+    first = true
   }
 
   def step(prevState: S, action: A, reward: Double, newState: S, first: Boolean, last: Boolean): A

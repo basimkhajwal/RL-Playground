@@ -21,9 +21,14 @@ trait Agent[S, A] {
     * Percept a reward for the previous action taken and whether
     * the episode finished
     * @param reward
-    * @param done Whether the episode finished
     */
-  def percept(reward: Double, done: Boolean): Unit = {}
+  def percept(reward: Double): Unit = {}
+
+  /**
+    * Called to reset the agent to the initial condition
+    * outside of an episode
+    */
+  def resetEpisode(): Unit = {}
 
   /**
     * Reset the agent to it's default state before

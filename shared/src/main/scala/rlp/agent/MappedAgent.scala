@@ -21,7 +21,7 @@ class MappedAgent[S1, A1, S2, A2](
 
   def act(state: S2): A2 = actionMap(agent.act(stateMap(state)))
 
-  override def percept(reward: Double, done: Boolean): Unit = agent.percept(reward, done)
+  override def percept(reward: Double): Unit = agent.percept(reward)
 
   override def duplicate(): Agent[S2, A2] = new MappedAgent(agent.duplicate(), stateMap, actionMap)
 
