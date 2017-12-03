@@ -2,6 +2,8 @@ package rlp.ai
 
 import rlp.math.Matrix
 
+import scala.util.Random
+
 /**
   * A dense, feed-forward neural network representation
   * with N layers
@@ -188,6 +190,18 @@ class NeuralNetwork(
       for (r <- 0 until weights(w).rows) {
         for (c <- 0 until weights(w).cols) {
           weights(w)(r,c) = math.random() * (max - min) + min
+        }
+      }
+    }
+  }
+
+  def initialiseWeights(): Unit = {
+    val rand = new Random()
+    for (w <- weights.indices) {
+      val stdDev = math.sqrt(2.0 / layerSizes(w))
+      for (r <- 0 until weights(w).rows) {
+        for (c <- 0 until weights(w).cols) {
+          weights(w)(r,c) = rand.nextGaussian() * stdDev
         }
       }
     }
