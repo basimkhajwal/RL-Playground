@@ -13,6 +13,7 @@ import scala.scalajs.js
 class ModelTrainer[A](
   models: Vars[Model[A]],
   trainStep: () => Unit,
+  openListener: => Unit
 ) {
 
   val gameSpeedMultiplier = List(1, 2, 5, 10, -1)
@@ -69,7 +70,7 @@ class ModelTrainer[A](
   @dom
   lazy val content: Binding[Div] = {
 
-    <div class="row">
+    <div class="row" id="model-trainer">
 
       <div class="row grey col s12 lighten-3" id="model-training">
         <div class="col s2">
@@ -84,7 +85,7 @@ class ModelTrainer[A](
           {
           val btnStyle = "btn waves-effect waves-light"
 
-          <a class={btnStyle + " activator"}>New</a>
+          <a class={btnStyle + " activator"} onclick={_:Event => openListener}>New</a>
           }
         </div>
       </div>

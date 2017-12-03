@@ -10,7 +10,8 @@ import rlp.utils.SelectHandler
 
 class ModelBuilder[A](
   builders: List[Model.Builder[A]],
-  models: Vars[Model[A]]
+  models: Vars[Model[A]],
+  closeListener: => Unit
 ) {
 
   private val modelSelect = new SelectHandler("Model Type", builders.map(_._1), Constant(false))
@@ -67,6 +68,8 @@ class ModelBuilder[A](
     model.modelName := modelName.get
 
     models.get += model
+
+    reset()
     onClose()
   }
 
@@ -77,9 +80,11 @@ class ModelBuilder[A](
     validName := true
   }
 
-  private def onClose(): Unit = {
-    reset()
-    getElem[html.Span]("close-button").click()
+  private def onClose(isButton: Boolean = false): Unit = {
+    closeListener
+    if (!isButton) {
+      getElem[html.Span]("close-button").click()
+    }
   }
 
   private def cloneModel(model: Model[A]): Unit = {
@@ -95,10 +100,10 @@ class ModelBuilder[A](
 
   @dom
   lazy val content: Binding[Div] = {
-    <div class="row">
+    <div class="row" id="model-builder">
 
       <div class="col s2 offset-s5">
-        <span class="card-title center-align">Create New</span>
+        <span class="card-title center-align" onclick={_:Event => onClose()}>Create Model</span>
       </div>
 
       <div class="col s3 offset-s1">
@@ -120,7 +125,9 @@ class ModelBuilder[A](
       </div>
 
       <div class="col s1">
-        <span class="card-title right" id="close-button"><i class="material-icons">close</i></span>
+        <span class="card-title right" id="close-button" onclick={_:Event => onClose(true)}>
+          <i class="material-icons">close</i>
+        </span>
       </div>
 
       <div class="col s12" style={"height:20px"}></div>
