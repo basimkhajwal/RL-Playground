@@ -49,14 +49,12 @@ class QNetworkModel[S,A](
       }
     }
 
-
     @dom
     lazy val handler: Binding[Div] = {
-      val idx = index.bind
       val inputID = getGUID("input-size")
 
       <div class="layer-definition row">
-        <span class="col s3">Hidden Layer {idx.toString}</span>
+        <span class="col s3">{s"Hidden Layer ${index.bind+1}"}</span>
 
         <div class="input-field col s4">
           <input id={inputID}
@@ -66,11 +64,13 @@ class QNetworkModel[S,A](
         </div>
 
         <div class="col s4">
-          {
-            activationChanged(activationSelector.selectedIndex.bind)
-            activationSelector.handler.bind
-          }
+          { activationSelector.handler.bind }
         </div>
+
+        {
+          activationChanged(activationSelector.selectedIndex.bind)
+          ""
+        }
 
         <div class="col s1">
           <a class="btn-flat grey waves-effect waves-light"

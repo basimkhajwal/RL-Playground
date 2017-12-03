@@ -32,7 +32,7 @@ class SelectHandler(val name: String, val items: BindingSeq[String], val disable
   }
 
   @dom
-  def handler(): Binding[Div] = {
+  lazy val handler: Binding[Div] = {
     <div class="input-field">
       <select id={selectID} onchange={_:Event => selectionChanged()} disabled={disabledCondition.bind}>
         {
