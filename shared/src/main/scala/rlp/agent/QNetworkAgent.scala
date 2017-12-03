@@ -14,8 +14,7 @@ class QNetworkAgent(
   var replayBufferIdx = 0
   var isFull = false
 
-  val optimiser = new SGDMomentum(network)
-  val learningRate = 0.1
+  val optimiser = new SGDMomentum(network, 0.0001)
   val discountFactor = 0.99
 
   // TODO: Implement experience replay
@@ -24,8 +23,8 @@ class QNetworkAgent(
   override def step(prevState: Array[Double], action: Int, reward: Double, newState: Array[Double], first: Boolean, last: Boolean): Int = {
 
     val newReturns = network.forwardProp(newState)
-    var maxIdx = -1
-    var maxAns = -1.0
+    var maxIdx = 0
+    var maxAns = Double.NegativeInfinity
     for (i <- newReturns.indices) {
       if (newReturns(i) > maxAns) {
         maxAns = newReturns(i)
@@ -33,24 +32,19 @@ class QNetworkAgent(
       }
     }
 
-    if (prevState != null) {
-
-      // Add replay to buffer
-      replayBuffer(replayBufferIdx) = (prevState, action, reward, newState)
-      replayBufferIdx += 1
-
-      if (replayBufferIdx >= replayBuffer.length) {
-        replayBufferIdx -= replayBuffer.length
-        isFull = true
-      }
+    if (!first) {
 
       val returns = network.forwardProp(prevState)
-      returns(action) += learningRate * (reward + maxAns * discountFactor - returns(action))
+      returns(action) = reward + (if (last) 0 else maxAns) * discountFactor
 
       optimiser.step(Matrix.rows(prevState), Matrix.rows(returns))
     }
 
     maxIdx
+  }
+
+  override def reset(): Unit = {
+    network.initialiseWeights()
   }
 }
 
