@@ -180,9 +180,7 @@ class QNetworkModel[S,A](
   @dom
   override lazy val modelViewer: Binding[HTMLElement] = {
     <div>
-      {
-
-      }
+      TODO - Create optimiser selection and neural network visualisation
     </div>
   }
 

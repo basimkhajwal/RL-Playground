@@ -10,8 +10,7 @@ import rlp.utils.SelectHandler
 
 class ModelBuilder[A](
   builders: List[Model.Builder[A]],
-  models: Vars[Model[A]],
-  closeListener: => Unit
+  models: Vars[Model[A]]
 ) {
 
   private val modelSelect = new SelectHandler("Model Type", builders.map(_._1), Constant(false))
@@ -81,7 +80,6 @@ class ModelBuilder[A](
   }
 
   private def onClose(isButton: Boolean = false): Unit = {
-    closeListener
     if (!isButton) {
       getElem[html.Span]("close-button").click()
     }

@@ -22,8 +22,8 @@ abstract class GamePage[S, A] {
   protected val models: Vars[Model[A]] = Vars()
   private var model: Model[A] = _
 
-  lazy val modelBuilder = new ModelBuilder(modelBuilders, models, { showTrainer() } )
-  lazy val modelTrainer = new ModelTrainer(models, trainStep, { showBuilder() })
+  lazy val modelBuilder = new ModelBuilder(modelBuilders, models)
+  lazy val modelTrainer = new ModelTrainer(models, trainStep)
 
   protected val aspectRatio: Double = 3.0/4
   protected val targetGameWidth = 800
@@ -69,18 +69,6 @@ abstract class GamePage[S, A] {
       trainingEnvironment.reset()
       episodeLength = 0
     }
-  }
-
-  protected def showBuilder(): Unit = {
-    val select = getElem[html.Div]("model-select")
-    val builder = getElem[html.Div]("model-builder")
-    builder.style.display = "block"
-  }
-
-  protected def showTrainer(): Unit = {
-    val select = getElem[html.Div]("model-select")
-    val builder = getElem[html.Div]("model-builder")
-    builder.style.display = "none"
   }
 
   @dom
