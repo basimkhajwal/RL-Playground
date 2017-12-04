@@ -3,6 +3,9 @@ logLevel := Level.Warn
 
 // Resolvers
 resolvers += "Typesafe repository" at "https://repo.typesafe.com/typesafe/releases/"
+resolvers += Resolver.bintrayRepo("definitelyscala", "maven")
+resolvers += Resolver.sonatypeRepo("snapshots")
+resolvers += Resolver.jcenterRepo
 
 // Sbt plugins
 addSbtPlugin("com.typesafe.play" % "sbt-plugin" % "2.6.6")
