@@ -140,6 +140,8 @@ class NaivePongAgent extends Agent[Pong.AgentState, Pong.Action] {
 
   import Pong._
 
+  private var won: Boolean = false
+
   override def act(state: AgentState): Action = {
     val y = state.currentPaddle + PADDLE_HEIGHT/2
     val by = state.ballPos.y
@@ -149,4 +151,9 @@ class NaivePongAgent extends Agent[Pong.AgentState, Pong.Action] {
     else NoAction
   }
 
+  def hasWon() = won
+
+  override def percept(reward: Double): Unit = {
+    won = reward > 0
+  }
 }
