@@ -1,6 +1,7 @@
 package rlp.pages
 
-import com.thoughtworks.binding.Binding.{Var, Vars}
+import com.definitelyscala.plotlyjs.Plotly
+import com.thoughtworks.binding.Binding.{SingleMountPoint, Var, Vars}
 import com.thoughtworks.binding.{Binding, dom}
 import org.scalajs.dom.{Event, html, window}
 import org.scalajs.dom.html.{Canvas, Div}
@@ -29,6 +30,7 @@ abstract class GamePage[S, A] {
 
   lazy val modelBuilder = new ModelBuilder(modelBuilders, models)
   lazy val modelTrainer = new ModelTrainer(models, trainStep)
+  lazy val modelComparison = new ModelComparison(models)
 
   protected val aspectRatio: Double = 3.0/4
   protected val targetGameWidth = 800
@@ -139,25 +141,7 @@ abstract class GamePage[S, A] {
         </div>
 
         <div class="col s12">
-          <div class="card-panel" id="model-performance">
-            <span class="card-title">Model Performance</span>
-            {
-              modelTrainer.selectedModel.bind match  {
-
-                case Some(model) => {
-                  <ul>
-                    {
-                      for (p <- model.performanceHistory) yield {
-                        <li>{p.toString}</li>
-                      }
-                    }
-                  </ul>
-                }
-
-                case None => <h5>No Model Selected</h5>
-              }
-            }
-          </div>
+          { modelComparison.content.bind }
         </div>
 
       </div>
