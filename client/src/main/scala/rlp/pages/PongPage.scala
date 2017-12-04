@@ -48,6 +48,29 @@ class PongPage extends GamePage[Pong.State, Pong.PongAgent] {
     )
   )
 
+  override protected def modelPerformance(model: Model[PongAgent]): Double = {
+
+    val numRuns = 50
+    val naivePongAgent = new NaivePongAgent()
+    val testEnv = new Pong(model.agent.clone(), naivePongAgent)
+
+    var totalScore = 0.0
+
+    for (_ <- 0 until numRuns) {
+
+      var episodeLength = 0
+      while (!testEnv.step() && episodeLength < MAX_EPISODE_LENGTH) {
+        episodeLength += 1
+      }
+
+      if (episodeLength < MAX_EPISODE_LENGTH) {
+        totalScore += (if (naivePongAgent.hasWon()) -1 else 1)
+      }
+    }
+
+    totalScore / numRuns
+  }
+
   override def createEnvironment(model: Model[PongAgent]): Pong = {
     new Pong(model.agent, model.agent.clone())
   }

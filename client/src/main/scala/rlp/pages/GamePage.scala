@@ -10,12 +10,17 @@ import rlp._
 import rlp.models.Model
 import rlp.utils.{BackgroundProcess, KeyboardHandler}
 
+import scala.scalajs.js.timers
+
 abstract class GamePage[S, A] {
 
   protected val modelBuilders: List[Model.Builder[A]]
 
   protected def createEnvironment(model: Model[A]): Environment[S]
   protected def render(ctx: CanvasRenderingContext2D): Unit
+
+  protected val performanceEntryGap: Int = 100
+  protected def modelPerformance(model: Model[A]): Double
 
   protected val renderTraining: Var[Boolean] = Var(true)
 
@@ -65,6 +70,14 @@ abstract class GamePage[S, A] {
     if (trainingEnvironment.step() || episodeLength > MAX_EPISODE_LENGTH) {
       if (episodeLength <= MAX_EPISODE_LENGTH) {
         model.gamesPlayed := model.gamesPlayed.get + 1
+
+        if (model.gamesPlayed.get % performanceEntryGap == 0) {
+
+          // Asynchronously perform performance check
+          timers.setTimeout(50) {
+            model.performanceHistory.get += modelPerformance(model)
+          }
+        }
       }
       trainingEnvironment.reset()
       episodeLength = 0
@@ -121,6 +134,30 @@ abstract class GamePage[S, A] {
 
             <div class="card-reveal">
               { modelBuilder.content.bind }
+            </div>
+          </div>
+        </div>
+
+        <div class="col s12">
+          <div class="card" id="model-performance">
+            <div class="card-content">
+              <span class="card-title">Model Performance</span>
+              {
+                modelTrainer.selectedModel.bind match  {
+
+                  case Some(model) => {
+                    <ul>
+                      {
+                        for (p <- model.performanceHistory) yield {
+                          <li>{p.toString}</li>
+                        }
+                      }
+                    </ul>
+                  }
+
+                  case None => <h5>No Model Selected</h5>
+                }
+              }
             </div>
           </div>
         </div>
