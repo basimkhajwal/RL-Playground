@@ -139,26 +139,24 @@ abstract class GamePage[S, A] {
         </div>
 
         <div class="col s12">
-          <div class="card" id="model-performance">
-            <div class="card-content">
-              <span class="card-title">Model Performance</span>
-              {
-                modelTrainer.selectedModel.bind match  {
+          <div class="card-panel" id="model-performance">
+            <span class="card-title">Model Performance</span>
+            {
+              modelTrainer.selectedModel.bind match  {
 
-                  case Some(model) => {
-                    <ul>
-                      {
-                        for (p <- model.performanceHistory) yield {
-                          <li>{p.toString}</li>
-                        }
+                case Some(model) => {
+                  <ul>
+                    {
+                      for (p <- model.performanceHistory) yield {
+                        <li>{p.toString}</li>
                       }
-                    </ul>
-                  }
-
-                  case None => <h5>No Model Selected</h5>
+                    }
+                  </ul>
                 }
+
+                case None => <h5>No Model Selected</h5>
               }
-            </div>
+            }
           </div>
         </div>
 
