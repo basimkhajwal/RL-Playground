@@ -1,6 +1,5 @@
 package rlp.pages
 
-import com.definitelyscala.plotlyjs.Plotly
 import com.thoughtworks.binding.Binding.{SingleMountPoint, Var, Vars}
 import com.thoughtworks.binding.{Binding, dom}
 import org.scalajs.dom.{Event, html, window}
@@ -71,15 +70,15 @@ abstract class GamePage[S, A] {
     episodeLength += 1
     if (trainingEnvironment.step() || episodeLength > MAX_EPISODE_LENGTH) {
       if (episodeLength <= MAX_EPISODE_LENGTH) {
-        model.gamesPlayed := model.gamesPlayed.get + 1
 
+        // Asynchronously perform performance check
         if (model.gamesPlayed.get % performanceEntryGap == 0) {
-
-          // Asynchronously perform performance check
-          timers.setTimeout(50) {
+          timers.setTimeout(20) {
             model.performanceHistory.get += modelPerformance(model)
           }
         }
+
+        model.gamesPlayed := model.gamesPlayed.get + 1
       }
       trainingEnvironment.reset()
       episodeLength = 0
