@@ -4,7 +4,7 @@ import com.definitelyscala.plotlyjs._
 import com.definitelyscala.plotlyjs.all._
 import com.definitelyscala.plotlyjs.PlotlyImplicits._
 import com.definitelyscala.plotlyjs.plotlyConts._
-import com.thoughtworks.binding.Binding.Vars
+import com.thoughtworks.binding.Binding.{BindingSeq, Vars}
 import com.thoughtworks.binding.{Binding, dom}
 import org.querki.jsext.JSOptionBuilder
 import org.scalajs.dom.html
@@ -12,6 +12,8 @@ import rlp.models.Model
 import rlp._
 
 import scala.scalajs.js
+import scala.scalajs.js.JSConverters._
+import scala.util.Random
 
 class ModelComparison[A](
   models: Vars[Model[A]]
@@ -25,6 +27,11 @@ class ModelComparison[A](
   implicit def intellijIsWeird(a: PlotMarkerBuilder) = a.asInstanceOf[BS[PlotMarker, PlotMarkerBuilder]]._result
   implicit def intellijIsWeird(a: ConfigBuilder) = a.asInstanceOf[BS[Config, ConfigBuilder]]._result
 
+  private def modelColour(model: Model[A]): (Int, Int, Int) = {
+    val rand = new Random(model.id)
+    (rand.nextInt(255), rand.nextInt(255), rand.nextInt(255))
+  }
+
   @dom
   lazy val content: Binding[html.Div] = {
     <div class="card-panel" id="model-comparison">
@@ -32,34 +39,30 @@ class ModelComparison[A](
       {
         val plotDiv = {<div></div>}
 
-        val layout: Layout = Layout.title("My line plot")
-          .showlegend(true)
-          .xaxis(Axis.title("Time"))
-          .yaxis(Axis.title("Production"))
+        val layout: Layout = Layout.showlegend(true)
+          .xaxis(Axis.title("Games Played"))
+          .yaxis(Axis.title("Performance"))
 
         val data = PlotData
-          .set(plotlymode.markers.lines)
-          .set(plotlymarker.set(plotlysymbol.square))
+          .set(plotlymode.lines)
 
-        val data1: PlotData = data
-          .x(js.Array(1,2,3))
-          .y(js.Array(1,2,3).map(2*_))
-          .set(plotlymarker.size(12.0).set(plotlycolor.rgb(180,0,0)))
-          .name("Reds")
+        val items: BindingSeq[PlotData] = for (model:Model[A] <- models) yield {
+          val hs = model.performanceHistory.bind
+          val (r,g,b) = modelColour(model)
 
-        val data2: PlotData = data
-          .x(js.Array(1,2,3))
-          .y(js.Array(1,2,3))
-          .set(plotlymarker.size(10.0).set(plotlycolor.rgb(0, 136, 170)).set(plotlysymbol.cross))
-          .name("Blues")
+          data
+            .x(hs.indices.map(100*_).toJSArray)
+            .y(hs.toJSArray)
+            .set(plotlymarker.set(plotlycolor.rgb(r,g,b)))
+            .name(model.toString)
+        }
 
         val config: Config = Config.displayModeBar(false)
 
-        val plot = Plotly.newPlot(plotDiv, js.Array(data1, data2), layout, config)
+        Plotly.newPlot(plotDiv, items.bind.toJSArray, layout, config)
 
         plotDiv
       }
-
     </div>
   }
 }
