@@ -7,11 +7,12 @@ import com.thoughtworks.binding.{Binding, dom}
 import org.scalajs.dom.CanvasRenderingContext2D
 import org.scalajs.dom.html.Div
 import rlp.agent.QNetworkAgent.QNetworkSpace
-import rlp.agent.{QStateSpace}
+import rlp.agent.QStateSpace
+import rlp.environment.Pong.PongAgent
 import rlp.models.{Model, ModelParam, QNetworkModel, QTableModel}
 import rlp.utils.SelectHandler
 
-class PongPage extends GamePage[Pong.State, Pong.PongAgent] {
+class PongPage extends GamePage[Pong.State, PongAgent] {
 
   import Pong._
 
@@ -28,6 +29,8 @@ class PongPage extends GamePage[Pong.State, Pong.PongAgent] {
   val leftAgentSelect = new SelectHandler("Player 1", agentNames, renderTraining)
 
   val rightAgentSelect = new SelectHandler("Player 2", agentNames, renderTraining)
+
+  override val performanceEntryGap: Int = 200
 
   override val modelBuilders = List(
 
@@ -50,7 +53,7 @@ class PongPage extends GamePage[Pong.State, Pong.PongAgent] {
 
   override protected def modelPerformance(model: Model[PongAgent]): Double = {
 
-    val numRuns = 50
+    val numRuns = 10
     val naivePongAgent = new NaivePongAgent()
     val testEnv = new Pong(model.agent.clone(), naivePongAgent)
 
@@ -79,7 +82,7 @@ class PongPage extends GamePage[Pong.State, Pong.PongAgent] {
     case 0 => new NaivePongAgent
     case 1 => new PongUserAgent("w", "s")
     case 2 => new PongUserAgent("ArrowUp", "ArrowDown")
-    case _ => models.get(idx-3).agent.clone()
+    case _ => models.get(idx - 3).agent.clone()
   }
 
   private def createGameEnvironment(leftAgentIdx: Int, rightAgentIdx: Int): Unit = {
@@ -127,15 +130,8 @@ class PongPage extends GamePage[Pong.State, Pong.PongAgent] {
   @dom
   override lazy val gameOptions: Binding[Div] = {
     <div>
-      <br />
-      { leftAgentSelect.handler.bind }
-      <br />
-      { rightAgentSelect.handler.bind }
-
-      {
-        createGameEnvironment(leftAgentSelect.selectedIndex.bind, rightAgentSelect.selectedIndex.bind)
-        ""
-      }
+      <br/>{leftAgentSelect.handler.bind}<br/>{rightAgentSelect.handler.bind}{createGameEnvironment(leftAgentSelect.selectedIndex.bind, rightAgentSelect.selectedIndex.bind)
+    ""}
     </div>
   }
 
@@ -150,5 +146,6 @@ class PongPage extends GamePage[Pong.State, Pong.PongAgent] {
       else NoAction
     }
   }
+
 }
 
