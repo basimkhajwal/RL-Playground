@@ -1,7 +1,7 @@
 package rlp.agent
 
 import rlp.ai.NeuralNetwork
-import rlp.ai.optimizers.{Adam, SGDMomentum}
+import rlp.ai.optimizers.{Adam, NetworkOptimizer, SGDMomentum}
 import rlp.math.Matrix
 
 class QNetworkAgent(
@@ -14,7 +14,7 @@ class QNetworkAgent(
   var replayBufferIdx = 0
   var isFull = false
 
-  val optimiser = new SGDMomentum(network, 0.0001)
+  var optimiser: NetworkOptimizer = new SGDMomentum(network, 0.0001)
   val discountFactor = 0.99
 
   // TODO: Implement experience replay
