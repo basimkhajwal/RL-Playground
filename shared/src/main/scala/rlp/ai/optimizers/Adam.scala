@@ -5,11 +5,11 @@ import rlp.math.Matrix
 
 class Adam(
   network: NeuralNetwork,
-  learningRate: Double = 0.001,
-  beta1: Double = 0.9,
-  beta2: Double = 0.999,
-  epsilon: Double = 1e-8,
-  decay: Double = 0
+  val learningRate: Double = 0.001,
+  val beta1: Double = 0.9,
+  val beta2: Double = 0.999,
+  val epsilon: Double = 1e-8,
+  val decay: Double = 0
 ) extends NetworkOptimizer(network) {
 
   val m: Array[Matrix] = network.weights.map(w => new Matrix(w.rows, w.cols))

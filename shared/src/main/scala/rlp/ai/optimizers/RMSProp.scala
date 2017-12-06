@@ -5,10 +5,10 @@ import rlp.math.Matrix
 
 class RMSProp(
   network: NeuralNetwork,
-  learningRate: Double = 0.001,
-  rho: Double = 0.9,
-  epsilon: Double = 1e-8,
-  decay: Double = 0,
+  val learningRate: Double = 0.001,
+  val rho: Double = 0.9,
+  val epsilon: Double = 1e-8,
+  val decay: Double = 0,
 ) extends NetworkOptimizer(network) {
 
   val v: Array[Array[Double]] =

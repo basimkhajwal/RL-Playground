@@ -5,10 +5,10 @@ import rlp.math.Matrix
 
 class SGDMomentum(
   network: NeuralNetwork,
-  learningRate: Double = 0.01,
-  momentum: Double = 0,
-  decay: Double = 0,
-  nesterov: Boolean = false
+  val learningRate: Double = 0.01,
+  val momentum: Double = 0,
+  val decay: Double = 0,
+  val nesterov: Boolean = false
 ) extends NetworkOptimizer(network) {
 
   val v: Array[Matrix] = network.weights.map(w => new Matrix(w.rows, w.cols))
