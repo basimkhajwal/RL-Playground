@@ -162,7 +162,6 @@ class QNetworkModel[S,A](
     val layerSizes = Array(inputs.map(_.size).sum) ++ hiddenLayerSizes ++ Array(numActions)
     val layerActivations = hiddenLayerActivations ++ Array(outputActivation)
 
-    println("HERE")
     qNetwork = new QNetworkAgent(new NeuralNetwork(layerSizes, layerActivations))
     qNetwork.reset()
 
@@ -329,11 +328,11 @@ class QNetworkModel[S,A](
 
     <div class="row">
 
-      <div class="col s3">
+      <div class="col s3 offset-s1">
         { optimiserSelect.handler.bind }
       </div>
 
-      <div class="col s3">
+      <div class="col s3 offset-s1">
         <a class={buttonClasses.bind} onclick={_:Event => undoChanges()}>Undo Changes</a>
       </div>
 
@@ -341,7 +340,7 @@ class QNetworkModel[S,A](
         <a class={buttonClasses.bind} onclick={_:Event => updateOptimiser()}>Update Optimiser</a>
       </div>
 
-      <div class="col s12">
+      <div class="col s10 offset-s1">
         { optimisers(optimiserSelect.selectedIndex.bind).handler.bind }
       </div>
 
