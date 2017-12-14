@@ -30,7 +30,10 @@ abstract class Model[A](
 
   def buildAgent(): A
 
-  def resetAgent(): Unit
+  def resetAgent(): Unit = {
+    gamesPlayed := 0
+    performanceHistory.get.clear()
+  }
 
   override def toString: String = controllerName + " - " + modelName.get
 }

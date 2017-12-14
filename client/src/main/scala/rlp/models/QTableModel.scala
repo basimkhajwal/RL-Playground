@@ -87,6 +87,7 @@ class QTableModel[O, A](
 
 
   override def resetAgent(): Unit = {
+    super.resetAgent()
     agent.reset()
   }
 

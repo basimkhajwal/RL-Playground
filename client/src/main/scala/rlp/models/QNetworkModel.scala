@@ -354,6 +354,7 @@ class QNetworkModel[S,A](
   }
 
   override def resetAgent(): Unit = {
+    super.resetAgent()
     qNetwork.reset()
   }
 }
