@@ -306,22 +306,28 @@ class QNetworkModel[S,A](
 
     optimiserSelect.selectedIndex := currentOptimiserIndex
 
-    val selectedOptimiser = Binding { optimisers(optimiserSelect.selectedIndex.bind) }
+    val currentOptimiserBinding = Var(qNetwork.optimiser)
 
     val dirty = Binding {
-      currentOptimiserIndex != optimiserSelect.selectedIndex.bind || selectedOptimiser.bind.dirty.bind
+      val currentOptimiser = currentOptimiserBinding.bind
+      val optIdx = optimisers.indexWhere(_.isInstance(currentOptimiser))
+      val selectedOptimiser = optimisers(optimiserSelect.selectedIndex.bind)
+      optIdx != optimiserSelect.selectedIndex.bind || selectedOptimiser.dirty.bind
     }
 
-    val buttonClasses = Binding { "btn" + (if (dirty.bind) "" else " disabled") }
+    val buttonClasses = Binding {
+      "btn" + (if (dirty.bind) "" else " disabled")
+    }
 
     def undoChanges(): Unit = {
-      optimisers(currentOptimiserIndex).selectOptimiser(qNetwork.optimiser)
-      optimiserSelect.selectedIndex := currentOptimiserIndex
+      val idx = currentOptimiserIndex
+      currentOptimiserBinding := qNetwork.optimiser
+      optimisers(idx).selectOptimiser(qNetwork.optimiser)
+      optimiserSelect.selectedIndex := idx
     }
 
-    @dom
     def updateOptimiser(): Unit = {
-      val optimiserBuilder = selectedOptimiser.bind
+      val optimiserBuilder = optimisers(optimiserSelect.selectedIndex.get)
       qNetwork.optimiser = optimiserBuilder.construct()
       undoChanges()
     }
