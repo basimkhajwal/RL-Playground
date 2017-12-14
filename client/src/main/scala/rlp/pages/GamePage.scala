@@ -121,16 +121,7 @@ abstract class GamePage[S, A] {
         <div class="col s12">
           <div class="card" id="model-select">
             <div class="card-content">
-              {
-                modelTrainer.selectedModel.bind match {
-                  case Some(model) => {
-                    this.model = model
-                    trainingEnvironment = createEnvironment(model)
-                  }
-                  case None => /* Do nothing */
-                }
-                modelTrainer.content.bind
-              }
+              { modelTrainer.content.bind }
             </div>
 
             <div class="card-reveal">
@@ -144,6 +135,16 @@ abstract class GamePage[S, A] {
         </div>
 
       </div>
+      {
+        modelTrainer.selectedModel.bind match {
+          case Some(newModel) => {
+            this.model = newModel
+            trainingEnvironment = createEnvironment(model)
+          }
+          case None => /* Do nothing */
+        }
+        ""
+      }
 
     </div>
   }

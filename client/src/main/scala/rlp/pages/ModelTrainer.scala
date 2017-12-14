@@ -92,20 +92,20 @@ class ModelTrainer[A](
       <div class="col s12">
         <h6 class="center-align">
           {
-          selectedModel.bind match {
-            case Some(m) => s"Games Played: ${m.gamesPlayed.bind}"
-            case None => ""
-          }
+            selectedModel.bind match {
+              case Some(m) => s"Games Played: ${m.gamesPlayed.bind}"
+              case None => ""
+            }
           }
         </h6>
       </div>
 
       <div class="col s12">
         {
-        selectedModel.bind match {
-          case Some(model) => model.modelViewer.bind
-          case None => <!-- -->
-        }
+          selectedModel.bind match {
+            case Some(model) => model.modelViewer.bind
+            case None => <!-- -->
+          }
         }
       </div>
 
