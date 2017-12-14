@@ -15,7 +15,7 @@ class ModelTrainer[A](
   trainStep: () => Unit,
 ) {
 
-  val gameSpeedMultiplier = List(1, 2, 5, 10, -1)
+  val gameSpeedMultiplier = List(1, 2, 4, 6, -1)
   val gameSpeedToString = gameSpeedMultiplier.init.map("x"+_) ++ List("Max")
 
   val isTraining: Var[Boolean] = Var(false)
@@ -54,10 +54,7 @@ class ModelTrainer[A](
 
   @dom
   private def resetTraining(): Unit = {
-    val model = selectedModel.bind.get
-
-    model.resetAgent()
-    model.gamesPlayed := 0
+    selectedModel.bind.get.resetAgent()
   }
 
   private def fastForwardTraining(): Unit = {
