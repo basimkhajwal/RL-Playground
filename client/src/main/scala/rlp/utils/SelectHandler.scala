@@ -33,8 +33,10 @@ class SelectHandler(val name: String, val items: BindingSeq[String], val disable
 
   @dom
   lazy val handler: Binding[Div] = {
-    <div class="input-field">
-      <select id={selectID} onchange={_:Event => selectionChanged()} disabled={disabledCondition.bind}>
+
+    <div>
+      <label>{name}</label>
+      <select id={selectID} class="browser-default" onchange={_:Event => selectionChanged()} disabled={disabledCondition.bind}>
         {
           val indexedItems = Constants(items.bind.zipWithIndex: _*)
           for ((item, idx) <- indexedItems) yield {
@@ -44,7 +46,6 @@ class SelectHandler(val name: String, val items: BindingSeq[String], val disable
           }
         }
       </select>
-      <label>{name}</label>
 
       { contentChanged(disabledCondition.bind, items.bind); "" }
     </div>
