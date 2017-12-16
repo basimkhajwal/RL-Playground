@@ -16,6 +16,9 @@ class PongPage extends GamePage[Pong.State, PongAgent] {
 
   import Pong._
 
+  override val name: String = "Pong"
+  override val description: String = "TODO: Pong description"
+
   private var gameEnvironment: Pong = _
 
   private val agentNames: BindingSeq[String] = {

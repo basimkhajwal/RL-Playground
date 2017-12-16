@@ -12,7 +12,7 @@ import rlp.utils.{BackgroundProcess, KeyboardHandler}
 
 import scala.scalajs.js.timers
 
-abstract class GamePage[S, A] {
+abstract class GamePage[S, A] extends Page {
 
   protected val modelBuilders: List[Model.Builder[A]]
 
@@ -44,7 +44,7 @@ abstract class GamePage[S, A] {
 
   private val renderProcess = new BackgroundProcess(() => render(ctx), "Rendering")
 
-  def start(): Unit = {
+  override def start(): Unit = {
     renderProcess.start(Environment.FPS)
     window.onresize = { _:Event => pageResized() }
     pageResized()
@@ -86,55 +86,44 @@ abstract class GamePage[S, A] {
   }
 
   @dom
-  final lazy val content: Binding[Div] = {
+  override lazy val content: Binding[Div] = {
 
-    <div id="app">
+    <div class="row page-container">
 
-      <nav class="teal z-depth-0">
-        <div class="nav-wrapper page-container">
-          <a href="#" class="brand-logo left">RL-Playground</a>
-          <p id="subtitle" class="right hide-on-med-and-down">
-            An interactive reinforcement learning demonstration
-          </p>
-        </div>
-      </nav>
-
-      <div class="row page-container">
-
-        <div class="col s12">
-          <h5 class="center-align">Pong</h5>
-        </div>
-
-        <div class="col s12">
-          <div class="card">
-            <div class="row" id="game-row">
-              <div class="col s8">
-                { gameContainer.bind }
-              </div>
-              <div class="col s4 teal lighten-5">
-                { controlsSection.bind }
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div class="col s12">
-          <div class="card" id="model-select">
-            <div class="card-content">
-              { modelTrainer.content.bind }
-            </div>
-
-            <div class="card-reveal">
-              { modelBuilder.content.bind }
-            </div>
-          </div>
-        </div>
-
-        <div class="col s12">
-          { modelComparison.content.bind }
-        </div>
-
+      <div class="col s12">
+        <h5 class="center-align">{name}</h5>
+        <p class="center-align">{description}</p>
       </div>
+
+      <div class="col s12">
+        <div class="card">
+          <div class="row" id="game-row">
+            <div class="col s8">
+              { gameContainer.bind }
+            </div>
+            <div class="col s4 teal lighten-5">
+              { controlsSection.bind }
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="col s12">
+        <div class="card" id="model-select">
+          <div class="card-content">
+            { modelTrainer.content.bind }
+          </div>
+
+          <div class="card-reveal">
+            { modelBuilder.content.bind }
+          </div>
+        </div>
+      </div>
+
+      <div class="col s12">
+        { modelComparison.content.bind }
+      </div>
+
       {
         modelTrainer.selectedModel.bind match {
           case Some(newModel) => {
@@ -145,7 +134,6 @@ abstract class GamePage[S, A] {
         }
         ""
       }
-
     </div>
   }
 
