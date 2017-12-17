@@ -2,15 +2,40 @@ package rlp.utils
 
 import com.thoughtworks.binding.Binding.{BindingSeq, Constants, Var}
 import com.thoughtworks.binding.{Binding, dom}
-import org.scalajs.dom.{Event, html}
-import org.scalajs.dom.html.{Div}
+import org.scalajs.dom.{Event, html, window}
+import org.scalajs.dom.html.Div
+import org.scalajs.dom.raw.AnimationEvent
 
 import scala.scalajs.js.timers
 import rlp._
 
+import scala.collection.mutable.ArrayBuffer
 import scala.scalajs.js.Dynamic
 
+object SelectHandler {
+
+  private val handlers: ArrayBuffer[SelectHandler] = ArrayBuffer.empty
+
+  def init(): Unit = {
+    window.addEventListener(
+      "animationstart",
+      { e:AnimationEvent => if (e.animationName == "selectInserted") onChange() }
+      , false
+    )
+  }
+
+  private def onChange(): Unit = {
+    for (h <- handlers) h.refresh()
+  }
+
+  def register(handler: SelectHandler): Unit = {
+    handlers.append(handler)
+  }
+}
+
 class SelectHandler(val name: String, val items: BindingSeq[String], val disabledCondition: Binding[Boolean]) {
+
+  SelectHandler.register(this)
 
   def this(name: String, items: Seq[String], disabledCondition: Binding[Boolean]) = {
     this(name, Constants(items:_*), disabledCondition)
@@ -22,6 +47,13 @@ class SelectHandler(val name: String, val items: BindingSeq[String], val disable
   private def selectionChanged(): Unit = {
     val select = getElem[html.Select](selectID)
     selectedIndex := select.selectedIndex
+  }
+
+  private def refresh(): Unit = {
+    val select = getElem[html.Select](selectID)
+    if (select != null && select.selectedIndex != selectedIndex.get) {
+   //   select.selectedIndex = selectedIndex.get
+    }
   }
 
   private def contentChanged(condition: Boolean, innerItems: Seq[String]): Unit = {
@@ -36,7 +68,8 @@ class SelectHandler(val name: String, val items: BindingSeq[String], val disable
 
     <div>
       <label>{name}</label>
-      <select id={selectID} class="browser-default" onchange={_:Event => selectionChanged()} disabled={disabledCondition.bind}>
+      <select id={selectID} class="browser-default" onchange={_:Event => selectionChanged()} disabled={disabledCondition.bind}
+        value={selectedIndex.toString}>
         {
           val indexedItems = Constants(items.bind.zipWithIndex: _*)
           for ((item, idx) <- indexedItems) yield {

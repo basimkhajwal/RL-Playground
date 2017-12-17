@@ -60,5 +60,7 @@ object Client {
 
   def main(args: Array[String]): Unit = {
     dom.render(document.getElementById("clientContainer"), app)
+
+    SelectHandler.init()
   }
 }
