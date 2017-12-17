@@ -101,6 +101,16 @@
     width: 100%;
 }
 
+.optimiser-input {
+    display: inline-block;
+}
+
+.optimiser-input-container {
+    display: flex;
+    align-items: stretch;
+    justify-content: space-between;
+}
+
 @media (min-width: 1300px) {
 
     .page-container {

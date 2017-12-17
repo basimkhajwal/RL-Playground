@@ -235,7 +235,7 @@ class QNetworkModel[S,A](
 
     @dom
     lazy val handler: Binding[html.Div] = {
-      <div>
+      <div class="optimiser-input-container">
         {
           val indexed = Constants(params.zipWithIndex :_*)
           val values = paramValues.bind
@@ -243,7 +243,7 @@ class QNetworkModel[S,A](
           for ((param, idx) <- indexed) yield {
             val pid = getGUID(param.name)
 
-            <div class="input-field">
+            <div class="input-field optimiser-input">
               <input id={pid} class="validate" value={values(idx).toString}
                 onchange={_:Event => paramUpdated(pid, idx)}
                 type="number" min={param.min.toString} max={param.max.toString} step="any"
@@ -334,16 +334,22 @@ class QNetworkModel[S,A](
 
     <div class="row">
 
-      <div class="col s3 offset-s1">
-        { optimiserSelect.handler.bind }
+      <div class="col s11 offset-s1">
+        <h5>Optimiser Select</h5>
       </div>
 
-      <div class="col s3 offset-s1">
-        <a class={buttonClasses.bind} onclick={_:Event => undoChanges()}>Undo Changes</a>
-      </div>
+      <div class="row col s12 valign-wrapper">
+        <div class="col s3">
+          { optimiserSelect.handler.bind }
+        </div>
 
-      <div class="col s3">
-        <a class={buttonClasses.bind} onclick={_:Event => updateOptimiser()}>Update Optimiser</a>
+        <div class="col s3 offset-s1">
+          <a class={buttonClasses.bind} onclick={_:Event => undoChanges()}>Undo Changes</a>
+        </div>
+
+        <div class="col s3">
+          <a class={buttonClasses.bind} onclick={_:Event => updateOptimiser()}>Update Optimiser</a>
+        </div>
       </div>
 
       <div class="col s10 offset-s1">
