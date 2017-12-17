@@ -37,12 +37,12 @@ class ModelTrainer[A](
 
   private val trainingProcess = new BackgroundProcess(trainStep, "Training")
 
-  private def startTraining(): Unit = {
+  def startTraining(): Unit = {
     trainingProcess.start(Environment.FPS * gameSpeedMultiplier(gameSpeed.get))
     isTraining := true
   }
 
-  private def pauseTraining(): Unit = {
+  def pauseTraining(): Unit = {
     trainingProcess.stop()
     isTraining := false
   }

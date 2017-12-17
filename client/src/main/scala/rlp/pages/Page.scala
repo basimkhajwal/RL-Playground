@@ -7,6 +7,8 @@ trait Page {
 
   def start(): Unit
 
+  def stop(): Unit
+
   val name: String
   val description: String
 

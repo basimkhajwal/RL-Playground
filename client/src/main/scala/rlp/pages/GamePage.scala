@@ -54,6 +54,11 @@ abstract class GamePage[S, A] extends Page {
     keyboardHandler.register(game)
   }
 
+  override def stop(): Unit = {
+    renderProcess.stop()
+    if (modelTrainer.isTraining.get) modelTrainer.pauseTraining()
+  }
+
   protected def toggleRenderTraining(): Unit = {
     renderTraining := !renderTraining.get
   }
