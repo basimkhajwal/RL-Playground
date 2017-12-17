@@ -8,7 +8,7 @@ object OptimizerComparison {
 
   def main(args: Array[String]): Unit = {
 
-    val epochs = 15000
+    val epochs = 10000
     val dataSamples = 100
     val displayEpochs: List[Int] =
       (0 until 10).toList ++
@@ -16,17 +16,21 @@ object OptimizerComparison {
       (100 until 1000 by 100).toList ++
       (1000 until epochs by 1000)
 
-    val network = new NeuralNetwork(Array(2, 5, 1), Array(Sigmoid, Linear))
+    val testFunction = (x: Double, y: Double) => if (x > y) math.sqrt(10 * x) else math.sqrt(5 * y)
 
-    val testFunction = (x: Double, y: Double) => y + math.sin(10*x) + 4
+    val networkA = new NeuralNetwork(Array(2, 5, 5, 1), Array(Sigmoid, ReLU, Linear))
+    val networkB = networkA.clone(false)
 
-    network.randomiseWeights(-3, 3)
+    networkA.randomiseWeights(-3, 3)
+    networkB.initialiseWeights()
 
     val optimizers: Map[String, NetworkOptimizer] = Map(
-      "SGD" -> new SGDMomentum(network.clone()),
-      "SGD+Momentum" -> new SGDMomentum(network.clone(), 0.01, 0.9),
-      "RMSProp" -> new RMSProp(network.clone()),
-      "ADAM" -> new Adam(network.clone())
+      "Momentum" -> new SGDMomentum(networkA.clone(), 0.01, 0.9),
+      "Momentum+WeightInit" -> new SGDMomentum(networkB.clone(), 0.01, 0.9),
+      "RMSProp" -> new RMSProp(networkA.clone()),
+      "RMSProp+WeightInit" -> new RMSProp(networkB.clone()),
+      "ADAM" -> new Adam(networkA.clone()),
+      "ADAM+WeightInit" -> new Adam(networkB.clone())
     )
 
     val input = new Matrix(dataSamples, 2) each (_ => math.random())
@@ -59,6 +63,5 @@ object OptimizerComparison {
         displayIdx += 1
       }
     }
-
   }
 }

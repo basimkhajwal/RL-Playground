@@ -48,7 +48,7 @@ class NeuralNetwork(
     cloned
   }
 
-  override def clone(): NeuralNetwork = clone(false)
+  override def clone(): NeuralNetwork = clone(true)
 
   def forwardProp(activations: Array[Double]): Array[Double] = {
     forwardProp(new Matrix(1, activations.length, activations)).data

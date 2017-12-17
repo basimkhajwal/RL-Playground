@@ -11,12 +11,12 @@ class NeuralNetworkSuite extends FunSuite with PropertyChecks with Matchers {
 
   test("Multi-layer ReLU network converges properly") {
     val nn = new NeuralNetwork(Array(1, 3, 3, 3, 3, 1), Array(ReLU, ReLU, ReLU, ReLU, Linear))
-    nn.randomiseWeights(-0.4,0.4)
+    nn.initialiseWeights()
 
     val input = new Matrix(50, 1, (0 until 50) map (_ / 50.0) toArray)
     val output = input map { 2*_ + 3}
 
-    nn.train(input, output, 1e-3, 10000)
+    nn.train(input, output, 1e-3, 5000)
 
     nn.forwardProp(Array(0.5))(0) shouldEqual (4.0 +- 0.05)
   }
