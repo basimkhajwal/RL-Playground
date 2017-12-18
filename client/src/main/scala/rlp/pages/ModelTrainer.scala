@@ -1,12 +1,13 @@
 package rlp.pages
 
 import com.thoughtworks.binding.{Binding, dom}
-import com.thoughtworks.binding.Binding.{Constant, Var, Vars}
-import org.scalajs.dom.Event
+import com.thoughtworks.binding.Binding.{Var, Vars}
+import org.scalajs.dom.{Event, html}
 import org.scalajs.dom.html.Div
 import rlp.environment.Environment
 import rlp.models.Model
 import rlp.utils.{BackgroundProcess, SelectHandler}
+import rlp._
 
 import scala.scalajs.js
 
@@ -21,7 +22,9 @@ class ModelTrainer[A](
   val isTraining: Var[Boolean] = Var(false)
   val gameSpeed: Var[Int] = Var(0)
 
-  val modelSelect = new SelectHandler("Model Select", models.map(_.toString), Constant(false))
+  val modelSelect = new SelectHandler("Model Select",
+    models.mapBinding(m => Binding { m.controllerName + " - " + m.modelName.bind })
+  )
 
   val modelExists = Binding { models.bind.nonEmpty }
 
@@ -86,15 +89,39 @@ class ModelTrainer[A](
         </div>
       </div>
 
-      <div class="col s12">
-        <h6 class="center-align">
-          {
-            selectedModel.bind match {
-              case Some(m) => s"Games Played: ${m.gamesPlayed.bind}"
-              case None => ""
+      <div class="col s10 offset-s1">
+        {
+          selectedModel.bind match {
+            case Some(model) => {
+
+              def onNameChange(): Unit = {
+                val modelNames = models.get.map(_.modelName.get)
+                val modelNameElem = getElem[html.Input]("model-name-train")
+
+                if (modelNames contains modelNameElem.value) {
+                  modelNameElem.setCustomValidity("Invalid")
+                } else {
+                  modelNameElem.setCustomValidity("")
+                  model.modelName := modelNameElem.value
+                }
+              }
+
+              <div class="row">
+                <div class="input-field col s3">
+                  <input id="model-name-train" class="validate" type="text"
+                         value={model.modelName.bind} onchange={_:Event => onNameChange()} required={true}/>
+                  <label for="model-name-train" data:data-error="Model name empty or already exists">Model Name</label>
+                </div>
+
+                <h6 class="center-align col s3">{s"Games Played: ${model.gamesPlayed.bind}"}</h6>
+
+                <a class="btn waves-effect waves-light col s3">Export</a>
+                <a class="btn waves-effect waves-light col s3">Delete</a>
+              </div>
             }
+            case None => <!-- -->
           }
-        </h6>
+        }
       </div>
 
       <div class="col s12">
