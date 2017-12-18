@@ -106,6 +106,15 @@ class ModelTrainer[A](
                 }
               }
 
+              def onDelete(): Unit = {
+                modelSelect.selectedIndex := 0
+                models.get.remove(models.get.indexOf(model))
+              }
+
+              def onExport(): Unit = {
+                // TOOD: Add model exporting and serialization within models
+              }
+
               <div class="row">
                 <div class="input-field col s3">
                   <input id="model-name-train" class="validate" type="text"
@@ -115,8 +124,10 @@ class ModelTrainer[A](
 
                 <h6 class="center-align col s3">{s"Games Played: ${model.gamesPlayed.bind}"}</h6>
 
-                <a class="btn waves-effect waves-light col s3">Export</a>
-                <a class="btn waves-effect waves-light col s3">Delete</a>
+                <a class="btn waves-effect waves-light col s3"
+                   onclick={_:Event => onExport()}>Export</a>
+                <a class="btn waves-effect waves-light col s3"
+                   onclick={_:Event => onDelete() }>Delete</a>
               </div>
             }
             case None => <!-- -->
