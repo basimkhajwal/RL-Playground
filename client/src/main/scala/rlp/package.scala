@@ -1,8 +1,10 @@
 import com.thoughtworks.binding.Binding
+import com.thoughtworks.binding.dom.Runtime.TagsAndTags2
 import org.scalajs.dom.raw
 import org.scalajs.dom.document
 
 import scala.collection.mutable
+import scalatags.JsDom
 
 package object rlp {
 
@@ -11,6 +13,8 @@ package object rlp {
 
   implicit def makeIntellijHappy2[T<:raw.Node](x: scala.xml.Elem): T =
     throw new AssertionError("This should never execute.")
+
+  implicit def toSvgTags(x: TagsAndTags2.type) = JsDom.svgTags
 
   private val counters = mutable.Map[String,Int]()
 
