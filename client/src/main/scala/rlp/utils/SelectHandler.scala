@@ -1,6 +1,6 @@
 package rlp.utils
 
-import com.thoughtworks.binding.Binding.{BindingSeq, Constants, Var}
+import com.thoughtworks.binding.Binding.{BindingSeq, Constant, Constants, Var}
 import com.thoughtworks.binding.{Binding, dom}
 import org.scalajs.dom.{Event, html, window}
 import org.scalajs.dom.html.Div
@@ -36,6 +36,14 @@ object SelectHandler {
 class SelectHandler(val name: String, val items: BindingSeq[String], val disabledCondition: Binding[Boolean]) {
 
   SelectHandler.register(this)
+
+  def this(name: String, items: BindingSeq[String]) = {
+    this(name, items, Constant(false))
+  }
+
+  def this(name: String, items: Seq[String]) = {
+    this(name, Constants(items:_*))
+  }
 
   def this(name: String, items: Seq[String], disabledCondition: Binding[Boolean]) = {
     this(name, Constants(items:_*), disabledCondition)
