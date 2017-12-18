@@ -1,10 +1,8 @@
 package rlp.models
 
-import scala.reflect.runtime.universe.TypeTag
 import com.thoughtworks.binding.Binding.{Constant, Constants, Var, Vars}
 import com.thoughtworks.binding.{Binding, dom}
-import org.scalajs.dom.{Event, html}
-import org.scalajs.dom.html.Div
+import org.scalajs.dom.{Event, html, svg}
 import org.scalajs.dom.raw.HTMLElement
 import rlp.agent.QNetworkAgent.QNetworkSpace
 import rlp.agent.{Agent, QNetworkAgent}
@@ -13,8 +11,6 @@ import rlp.ai.{ActivationFunction, NeuralNetwork}
 import rlp._
 import rlp.ai.optimizers.{Adam, NetworkOptimizer, RMSProp, SGDMomentum}
 import rlp.utils.SelectHandler
-
-import scala.reflect.ClassTag
 
 class QNetworkModel[S,A](
   numActions: Int,
@@ -61,7 +57,7 @@ class QNetworkModel[S,A](
     }
 
     @dom
-    lazy val handler: Binding[Div] = {
+    lazy val handler: Binding[html.Div] = {
       val inputID = getGUID("input-size")
 
       <div class="layer-definition row valign-wrapper">
@@ -296,7 +292,7 @@ class QNetworkModel[S,A](
   )
 
   @dom
-  private def networkVisualisation(network: NeuralNetwork): Binding[Div] = {
+  private def networkVisualisation(network: NeuralNetwork): Binding[html.Div] = {
 
     val maxWidth = 800
 
@@ -309,13 +305,16 @@ class QNetworkModel[S,A](
     val width = layerWidth * network.numLayers
     val height = headerHeight + nodeHeight
 
-    val nodeRadius = 20
+    val nodeRadius = 10
     val nodeSpacing = 10
-    val maxNodes = 8
+    val maxNodes = 10
+
+    def layerSize(layer: Int): Int = Math.min(maxNodes, network.layerSizes(layer))
 
     def getNodePosition(layer: Int, idx: Int): (Int, Int) = {
 
-      val n = network.layerSizes(layer)
+      val n = layerSize(layer)
+
       val layerHeight = 2 * nodeRadius * n + (n - 1) * nodeSpacing
       val layerOffset = headerHeight + (nodeHeight - layerHeight) / 2
 
@@ -323,12 +322,82 @@ class QNetworkModel[S,A](
 
       val y = layerOffset + (2 * nodeRadius + nodeSpacing) * idx
 
-      (x, y)
+      (x + nodeRadius, y + nodeRadius)
     }
 
-    <div>
-      <svg width={width} height={height}>
+    <div class="network-visualisation">
+      <svg data:width={width.toString} data:height={height.toString}>
 
+        <!-- Network Nodes -->
+        {
+          for {
+            layer <- Constants(0 until network.numLayers :_*)
+            idx <- Constants(0 until layerSize(layer) :_*)
+          } yield {
+            val (x,y) = getNodePosition(layer, idx)
+            <circle
+              data:cx={x.toString}
+              data:cy={y.toString}
+              data:fill="black"
+              data:r={nodeRadius.toString}
+            />
+          }
+        }
+
+        <!-- Network Connections -->
+        {
+          for {
+            layerA <- Constants(0 until (network.numLayers - 1): _*)
+            layerB = layerA + 1
+            idxA <- Constants(0 until layerSize(layerA): _*)
+            idxB <- Constants(0 until layerSize(layerB): _*)
+          } yield {
+
+            val (x1, y1) = getNodePosition(layerA, idxA)
+            val (x2, y2) = getNodePosition(layerB, idxB)
+
+              <line
+              data:x1={x1.toString} data:x2={x2.toString}
+              data:y1={y1.toString} data:y2={y2.toString}
+              data:stroke-width="2" data:stroke="rgba(0,0,0,0.5)"/>
+          }
+        }
+
+        <!-- Network Labels -->
+        {
+          {
+            for (layer <- Constants(0 until network.numLayers :_*)) yield {
+
+              val x = layer * layerWidth + layerWidth / 2
+
+              <g data:text-anchor="middle" data:style="font-size:12px; font-weight:300;">
+                <text data:x={x.toString} data:y="15" data:style="font-size:14px; font-weight:400;">
+                  {
+                    if (layer == 0) "Input Layer"
+                    else if (layer == network.numLayers-1) "Output Layer"
+                    else "Hidden Layer " + layer
+                  }
+                </text>
+
+                <text data:x={x.toString} data:y="40">
+                  { network.layerSizes(layer) + " neurons" }
+                </text>
+
+                <text data:x={x.toString} data:y="60">
+                  {
+                    if (layer == 0) ""
+                    else {
+                      activationFunctions.find(_._2 == network.activationFunctions(layer-1)) match {
+                        case Some((name, _)) => name + " activation"
+                        case None => "Unknown activation"
+                      }
+                    }
+                  }
+                </text>
+              </g>
+            }
+          }
+        }
       </svg>
     </div>
   }
@@ -377,7 +446,7 @@ class QNetworkModel[S,A](
       </div>
 
       <div class="row col s10 offset-s1">
-        { networkVisualisation(qNetwork.network) }
+        { networkVisualisation(qNetwork.network).bind }
       </div>
 
       <div class="col s10 offset-s1">
