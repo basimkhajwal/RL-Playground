@@ -111,6 +111,11 @@
     justify-content: space-between;
 }
 
+.network-visualisation svg {
+    display: block;
+    margin: 20px auto;
+}
+
 /* CSS trick */
 @keyframes selectInserted {
     from { opacity: 0.9999; }
