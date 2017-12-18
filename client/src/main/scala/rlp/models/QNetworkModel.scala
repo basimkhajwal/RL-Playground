@@ -296,6 +296,44 @@ class QNetworkModel[S,A](
   )
 
   @dom
+  private def networkVisualisation(network: NeuralNetwork): Binding[Div] = {
+
+    val maxWidth = 800
+
+    val maxlayerWidth = 200
+    val layerWidth = Math.min(maxlayerWidth, maxWidth / network.numLayers)
+
+    val headerHeight = 100
+    val nodeHeight = 300
+
+    val width = layerWidth * network.numLayers
+    val height = headerHeight + nodeHeight
+
+    val nodeRadius = 20
+    val nodeSpacing = 10
+    val maxNodes = 8
+
+    def getNodePosition(layer: Int, idx: Int): (Int, Int) = {
+
+      val n = network.layerSizes(layer)
+      val layerHeight = 2 * nodeRadius * n + (n - 1) * nodeSpacing
+      val layerOffset = headerHeight + (nodeHeight - layerHeight) / 2
+
+      val x = layer * layerWidth + (layerWidth - 2 * nodeRadius) / 2
+
+      val y = layerOffset + (2 * nodeRadius + nodeSpacing) * idx
+
+      (x, y)
+    }
+
+    <div>
+      <svg width={width} height={height}>
+
+      </svg>
+    </div>
+  }
+
+  @dom
   override lazy val modelViewer: Binding[HTMLElement] = {
 
     val optimiserSelect = new SelectHandler("Optimiser", optimisers.map(_.name), Constant(false))
@@ -334,11 +372,19 @@ class QNetworkModel[S,A](
 
     <div class="row">
 
-      <div class="col s11 offset-s1">
+      <div class="col s10 offset-s1">
+        <h5>Network Structure</h5>
+      </div>
+
+      <div class="row col s10 offset-s1">
+        { networkVisualisation(qNetwork.network) }
+      </div>
+
+      <div class="col s10 offset-s1">
         <h5>Optimiser Select</h5>
       </div>
 
-      <div class="row col s12 valign-wrapper">
+      <div class="row col s10 offset-s1 valign-wrapper">
         <div class="col s3">
           { optimiserSelect.handler.bind }
         </div>
