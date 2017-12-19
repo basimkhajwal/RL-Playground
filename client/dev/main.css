@@ -116,6 +116,11 @@
     margin: 20px auto;
 }
 
+#builder-modal {
+    width: 90%;
+    max-width: 1200px;
+}
+
 /* CSS trick */
 @keyframes selectInserted {
     from { opacity: 0.9999; }

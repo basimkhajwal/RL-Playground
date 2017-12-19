@@ -82,9 +82,8 @@ class ModelTrainer[A](
 
         <div class="col s4" id="model-training-btns">
           {
-          val btnStyle = "btn waves-effect waves-light"
-
-          <a class={btnStyle + " activator"}>New</a>
+            val btnStyle = "btn waves-effect waves-light"
+            <a class={btnStyle + " modal-trigger"} href="#builder-modal">New</a>
           }
         </div>
       </div>

@@ -2,11 +2,13 @@ package rlp.pages
 
 import com.thoughtworks.binding.{Binding, dom}
 import com.thoughtworks.binding.Binding.{BindingSeq, Constant, Var, Vars}
-import org.scalajs.dom.{Event, html}
+import org.scalajs.dom.{Event, html, document}
 import org.scalajs.dom.html.Div
 import rlp._
 import rlp.models.Model
 import rlp.utils.SelectHandler
+
+import scala.scalajs.js
 
 class ModelBuilder[A](
   builders: List[Model.Builder[A]],
@@ -79,10 +81,8 @@ class ModelBuilder[A](
     validName := true
   }
 
-  private def onClose(isButton: Boolean = false): Unit = {
-    if (!isButton) {
-      getElem[html.Span]("close-button").click()
-    }
+  private def onClose(): Unit = {
+    js.Dynamic.global.$("#builder-modal").modal("close")
   }
 
   private def cloneModel(model: Model[A]): Unit = {
@@ -97,33 +97,32 @@ class ModelBuilder[A](
   }
 
   @dom
-  lazy val content: Binding[Div] = {
-    <div class="row" id="model-builder">
-
+  private lazy val innerContent: Binding[Div] = {
+    <div class="row">
       <div class="col s2 offset-s5">
         <span class="card-title center-align" onclick={_:Event => onClose()}>Create Model</span>
       </div>
 
       <div class="col s3 offset-s1">
         <a class={"dropdown-button btn-flat" + (if (models.bind.isEmpty) " disabled" else "")}
-          href="#"
-          data:data-activates="clone-dropdown" data:data-constrainwidth="false">
+           href="#"
+           data:data-activates="clone-dropdown" data:data-constrainwidth="false">
           <i class="material-icons left">arrow_drop_down_circle</i>Clone Existing
         </a>
 
         <ul id="clone-dropdown" class="dropdown-content">
           {
-            for (model <- models) yield {
-              <li>
-                <a href="#" onclick={_:Event => cloneModel(model)}>{model.toString}</a>
-              </li>
-            }
+          for (model <- models) yield {
+            <li>
+              <a href="#" onclick={_:Event => cloneModel(model)}>{model.toString}</a>
+            </li>
+          }
           }
         </ul>
       </div>
 
       <div class="col s1">
-        <span class="card-title right" id="close-button" onclick={_:Event => onClose(true)}>
+        <span class="card-title right" id="close-button" onclick={_:Event => onClose()}>
           <i class="material-icons">close</i>
         </span>
       </div>
@@ -143,18 +142,45 @@ class ModelBuilder[A](
       <div class="col s12">
         { modelBinding.bind.modelBuilder.bind }
       </div>
+    </div>
+  }
 
-      <div class="col s2 offset-s4">
-        <a class="waves-effect waves-light btn" onclick={_:Event => onClose()}>Cancel</a>
+  @dom
+  lazy val content: Binding[Div] = {
+
+    var refreshTimer: js.timers.SetIntervalHandle = null
+
+    refreshTimer = js.timers.setInterval(200) {
+      println("Check start...")
+      if (document.readyState == "completed" && document.getElementById("builder-modal") != null) {
+        js.timers.clearInterval(refreshTimer)
+
+        println("Updating builder...")
+
+        js.timers.setTimeout(500) {
+          println("Updating builder... finally...")
+          js.Dynamic.global.$("#builder-modal").modal()
+        }
+      }
+      println("Check end...")
+    }
+
+    <div class="modal modal-fixed-footer" id="builder-modal">
+
+      <div class="modal-content">
+        { innerContent.bind }
       </div>
 
-      <div class="col s2">
-        <a class={
-           "waves-effect waves-light btn" + (if (valid.bind) "" else " disabled")
-           }
-           onclick={_:Event => onCreate() }>Create</a>
-      </div>
+      <div class="row modal-footer">
+        <div class="col s2 offset-s4">
+          <a class="waves-effect waves-light btn" onclick={_:Event => onClose()}>Cancel</a>
+        </div>
 
+        <div class="col s2">
+          <a class={ "waves-effect waves-light btn" + (if (valid.bind) "" else " disabled") }
+             onclick={_:Event => onCreate() }>Create</a>
+        </div>
+      </div>
     </div>
   }
 

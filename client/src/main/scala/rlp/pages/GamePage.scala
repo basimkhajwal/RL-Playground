@@ -119,9 +119,7 @@ abstract class GamePage[S, A] extends Page {
             { modelTrainer.content.bind }
           </div>
 
-          <div class="card-reveal">
-            { modelBuilder.content.bind }
-          </div>
+          { modelBuilder.content.bind }
         </div>
       </div>
 
