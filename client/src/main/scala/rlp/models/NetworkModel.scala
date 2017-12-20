@@ -28,8 +28,8 @@ abstract class NetworkModel[S,A,P](
   protected val maxHiddenLayers = 5
 
   private val paramSelector = new ParamSelector(params)
-  protected val paramsEnabled = paramSelector.paramsEnabled
-  private val inputParams = for ((param, enabled) <- paramsEnabled; if enabled) yield param
+  protected val paramBindings = paramSelector.paramBindings
+  private val paramsEnabled = for ((param, enabled) <- paramBindings; if enabled) yield param
 
   class LayerDef(
     val size: Var[Int] = Var(10),
@@ -115,7 +115,7 @@ abstract class NetworkModel[S,A,P](
       <div id="layer-definitions" class="col s10 offset-s1">
         <div class="layer-definition row" id="input-layer">
           <span class="col s3">Input Layer</span>
-          <span class="col s4">{inputParams.bind.map(p => paramSize(p.value)).sum.toString} neurons</span>
+          <span class="col s4">{paramsEnabled.bind.map(p => paramSize(p.value)).sum.toString} neurons</span>
           <div class="col s12">
             { paramSelector.builder.bind }
           </div>
@@ -147,7 +147,7 @@ abstract class NetworkModel[S,A,P](
 
   protected final def buildNetwork(): NeuralNetwork = {
 
-    val inputSizes = for ((param, enabled) <- paramsEnabled.get; if enabled) yield paramSize(param.value)
+    val inputSizes = for ((param, enabled) <- paramBindings.get; if enabled) yield paramSize(param.value)
     val inputSize = inputSizes.sum
 
     val hiddenLayerSizes = layerDefinitions.get.map(_.size.get).toArray

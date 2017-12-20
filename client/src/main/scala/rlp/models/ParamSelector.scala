@@ -8,7 +8,7 @@ import rlp._
 
 class ParamSelector[A](params: Array[ModelParam[A]]) {
 
-  val paramsEnabled: Vars[(ModelParam[A], Boolean)] = Vars(params.map(s => (s, s.defaultEnabled)) :_ *)
+  val paramBindings: Vars[(ModelParam[A], Boolean)] = Vars(params.map(s => (s, s.defaultEnabled)) :_ *)
   val baseID = getGUID("param-selector")
 
   private def getCheckBoxID(param: ModelParam[A]): String = baseID + param.name
@@ -17,14 +17,14 @@ class ParamSelector[A](params: Array[ModelParam[A]]) {
     val idx = params.indexOf(param)
     val checkBox = getElem[html.Input](getCheckBoxID(param))
 
-    paramsEnabled.get(idx) = (param, checkBox.checked)
+    paramBindings.get(idx) = (param, checkBox.checked)
   }
 
   @dom
   lazy val builder: Binding[Div] = {
     <div class="param-selector">
        {
-       for ((param, enabled) <- paramsEnabled) yield {
+       for ((param, enabled) <- paramBindings) yield {
           <div class="param-checkbox">
              <input type="checkbox" id={getCheckBoxID(param)}
                     onchange={ _:Event => checkBoxToggled(param)}

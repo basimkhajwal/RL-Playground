@@ -17,7 +17,7 @@ class QTableModel[O, A](
   private var qTable: QTableAgent = _
 
   private val paramSelector = new ParamSelector(params)
-  private val paramsEnabled = paramSelector.paramsEnabled
+  private val paramBindings = paramSelector.paramBindings
 
   @dom
   override lazy val modelBuilder: Binding[HTMLElement] = {
@@ -29,7 +29,7 @@ class QTableModel[O, A](
         Table Size: {
           (
             for {
-              (param, enabled) <- paramsEnabled.bind
+              (param, enabled) <- paramBindings.bind
               if enabled
             } yield param.value.size
           ).product.toString
@@ -40,7 +40,7 @@ class QTableModel[O, A](
 
 
   override def buildAgent(): Agent[O, A] = {
-    val qSpaces = for ((param, enabled) <- paramsEnabled.get; if enabled) yield param.value
+    val qSpaces = for ((param, enabled) <- paramBindings.get; if enabled) yield param.value
     val (qAgent, agent) = QTableAgent.build(numActions, actionMap, qSpaces)
 
     learningRate := qAgent.learningRate
@@ -96,8 +96,8 @@ class QTableModel[O, A](
     // Require the controller to be a QTableModel
     val that = controller.asInstanceOf[QTableModel[O,A]]
 
-    paramsEnabled.get.clear()
-    paramsEnabled.get ++= that.paramsEnabled.get
+    paramBindings.get.clear()
+    paramBindings.get ++= that.paramBindings.get
   }
 }
 

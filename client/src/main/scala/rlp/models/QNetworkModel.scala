@@ -20,7 +20,7 @@ class QNetworkModel[S,A](
   override lazy val modelBuilder = networkBuilder
 
   override def buildAgent(): Agent[S, A] = {
-    val inputs = for ((param, enabled) <- paramsEnabled.get; if enabled) yield param.value
+    val inputs = for ((param, enabled) <- paramBindings.get; if enabled) yield param.value
     val network = buildNetwork()
 
     qNetwork = new QNetworkAgent(network)
@@ -33,8 +33,8 @@ class QNetworkModel[S,A](
     super.cloneBuildFrom(that)
 
     val controller = that.asInstanceOf[QNetworkModel[S,A]]
-    paramsEnabled.get.clear()
-    paramsEnabled.get ++= controller.paramsEnabled.get
+    paramBindings.get.clear()
+    paramBindings.get ++= controller.paramBindings.get
   }
 
   override lazy val modelViewer = networkViewer
