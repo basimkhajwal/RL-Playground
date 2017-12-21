@@ -7,7 +7,8 @@ import org.scalajs.dom.window.performance
 import rlp._
 
 abstract class Model[A](
-  val controllerName: String,
+  val environmentName: String,
+  val agentName: String,
   val id: Long = (1000 * performance.now()).toLong
 ) {
 
@@ -30,12 +31,28 @@ abstract class Model[A](
 
   def buildAgent(): A
 
+  protected def serializeBuild(): String
+
+  protected def serializeAgent(): String
+
+  final def store(environmentName: String): ModelStore = {
+    ModelStore(
+      environmentName,
+      agentName,
+      modelName.get,
+      gamesPlayed.get,
+      performanceHistory.get,
+      serializeBuild(),
+      serializeAgent()
+    )
+  }
+
   def resetAgent(): Unit = {
     gamesPlayed := 0
     performanceHistory.get.clear()
   }
 
-  override def toString: String = controllerName + " - " + modelName.get
+  override def toString: String = agentName + " - " + modelName.get
 }
 
 object Model {

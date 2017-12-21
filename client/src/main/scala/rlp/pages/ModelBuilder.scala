@@ -24,7 +24,7 @@ class ModelBuilder[A](
     val (name, builder) = builders(idx)
     val cache = modelCache.bind
 
-    cache.find(_.controllerName equals name) match {
+    cache.find(_.agentName equals name) match {
       case Some(model) => model
       case None => {
         val model = builder()
@@ -87,10 +87,10 @@ class ModelBuilder[A](
 
   private def cloneModel(model: Model[A]): Unit = {
 
-    val builderIdx = builders.indexWhere(_._1 equals model.controllerName)
+    val builderIdx = builders.indexWhere(_._1 equals model.agentName)
     modelSelect.selectedIndex := builderIdx
 
-    val newModel = modelCache.get.find(_.controllerName equals model.controllerName).get
+    val newModel = modelCache.get.find(_.agentName equals model.agentName).get
     newModel.cloneBuildFrom(model)
 
     onNameChange()

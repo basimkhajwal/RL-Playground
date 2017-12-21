@@ -7,11 +7,13 @@ import rlp._
 import rlp.ai.optimizers.NetworkOptimizer
 
 class QNetworkModel[S,A](
+  environment: String,
   numActions: Int,
   actionMap: Int => A,
   params: Array[ModelParam[QNetworkSpace[S]]]
 ) extends NetworkModel[S, A, QNetworkSpace[S]](
-  QNetworkModel.name, params,
+  environment, QNetworkModel.name,
+  params,
   { p => p.size }, numActions
 ) {
 
@@ -51,13 +53,21 @@ class QNetworkModel[S,A](
   override protected def setOptimiser(optimiser: NetworkOptimizer): Unit = {
     qNetwork.optimiser = optimiser
   }
+
+  override protected def serializeBuild() = ???
+
+  override protected def serializeAgent() = ???
 }
 
 object QNetworkModel {
 
   val name = "Q Network"
 
-  def builder[S,A](numActions: Int, actionMap: Int => A, params: ModelParam[QNetworkSpace[S]]*): Model.Builder[Agent[S,A]] = {
-    name -> (() => new QNetworkModel(numActions, actionMap, params.toArray))
+  def builder[S,A](
+    environment: String,
+    numActions: Int, actionMap: Int => A,
+    params: ModelParam[QNetworkSpace[S]]*): Model.Builder[Agent[S,A]] = {
+
+    name -> (() => new QNetworkModel(environment, numActions, actionMap, params.toArray))
   }
 }

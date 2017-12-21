@@ -38,6 +38,7 @@ class PongPage extends GamePage[Pong.State, PongAgent] {
   override val modelBuilders = List(
 
     QTableModel.builder(
+      name,
       2, { a => if (a == 0) UpAction else DownAction },
       ModelParam("Ball X", QStateSpace.boxed[AgentState](0, SCREEN_WIDTH, 20, _.ballPos.x)),
       ModelParam("Ball Y", QStateSpace.boxed[AgentState](0, SCREEN_HEIGHT, 10, _.ballPos.y)),
@@ -47,6 +48,7 @@ class PongPage extends GamePage[Pong.State, PongAgent] {
     ),
 
     QNetworkModel.builder(
+      name,
       2, { a => if (a == 0) UpAction else DownAction },
       ModelParam("Ball X", QNetworkSpace[AgentState](1, s => Array(s.ballPos.x / SCREEN_WIDTH))),
       ModelParam("Ball Y", QNetworkSpace[AgentState](1, s => Array(s.ballPos.y / SCREEN_HEIGHT))),

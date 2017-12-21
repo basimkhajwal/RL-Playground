@@ -11,11 +11,12 @@ import rlp.utils.SelectHandler
 import rlp._
 
 abstract class NetworkModel[S,A,P](
+  environment: String,
   name: String,
   params: Array[ModelParam[P]],
   paramSize: P => Int,
   outputSize: Int
-) extends Model[Agent[S,A]](name) {
+) extends Model[Agent[S,A]](environment, name) {
 
   protected val activationFunctions: List[(String, ActivationFunction)] = List(
     "ReLU" -> ReLU,

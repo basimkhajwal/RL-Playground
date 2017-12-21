@@ -8,8 +8,11 @@ import rlp._
 import rlp.agent.{Agent, QStateSpace, QTableAgent}
 
 class QTableModel[O, A](
-  numActions: Int, actionMap: (Int) => A, params: Array[ModelParam[QStateSpace[O]]]
-) extends Model[Agent[O, A]](QTableModel.name) {
+  environment: String,
+  numActions: Int,
+  actionMap: (Int) => A,
+  params: Array[ModelParam[QStateSpace[O]]]
+) extends Model[Agent[O, A]](environment, QTableModel.name) {
 
   private val learningRate = Var(0.1)
   private val discountFactor = Var(0.9)
@@ -99,6 +102,10 @@ class QTableModel[O, A](
     paramBindings.get.clear()
     paramBindings.get ++= that.paramBindings.get
   }
+
+  override protected def serializeBuild() = ???
+
+  override protected def serializeAgent() = ???
 }
 
 object QTableModel {
@@ -106,11 +113,12 @@ object QTableModel {
   val name = "Q Table"
 
   def builder[O,A](
+    environment: String,
     numActions: Int, actionMap: (Int) => A,
     params: ModelParam[QStateSpace[O]]*
   ): Model.Builder[Agent[O,A]] = {
 
-    name -> (() => new QTableModel(numActions, actionMap, params.toArray))
+    name -> (() => new QTableModel(environment, numActions, actionMap, params.toArray))
   }
 }
 
