@@ -1,10 +1,13 @@
 package rlp.models
 
+import javax.management.remote.JMXConnectorServer
+
 import com.thoughtworks.binding.{Binding, dom}
 import com.thoughtworks.binding.Binding.{Constant, Var, Vars}
 import org.scalajs.dom.raw.HTMLElement
 import org.scalajs.dom.window.performance
 import rlp._
+import upickle.{Js, json}
 
 abstract class Model[A](
   val environmentName: String,
@@ -31,19 +34,37 @@ abstract class Model[A](
 
   def buildAgent(): A
 
-  protected def serializeBuild(): String
+  protected def storeBuild(): Js.Value
 
-  protected def serializeAgent(): String
+  protected def storeAgent(): Js.Value
 
-  final def store(environmentName: String): ModelStore = {
+  protected def loadBuild(build: Js.Value): Unit
+
+  protected def loadAgent(build: Js.Value): Unit
+
+  final def load(modelStore: ModelStore): Unit = {
+    require(environmentName == modelStore.environmentName && agentName == modelStore.agentName,
+      "Invalid store type")
+
+    modelName := modelStore.modelName
+    gamesPlayed := modelStore.gamesPlayed
+
+    performanceHistory.get.clear()
+    performanceHistory.get.appendAll(modelStore.performanceHistory)
+
+    loadBuild(json.read(modelStore.buildData))
+    loadAgent(json.read(modelStore.agentData))
+  }
+
+  final def store(): ModelStore = {
     ModelStore(
       environmentName,
       agentName,
       modelName.get,
       gamesPlayed.get,
       performanceHistory.get,
-      serializeBuild(),
-      serializeAgent()
+      json.write(storeBuild()),
+      json.write(storeAgent())
     )
   }
 

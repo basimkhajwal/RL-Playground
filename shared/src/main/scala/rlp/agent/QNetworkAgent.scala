@@ -3,6 +3,7 @@ package rlp.agent
 import rlp.ai.NeuralNetwork
 import rlp.ai.optimizers.{Adam, NetworkOptimizer, SGDMomentum}
 import rlp.math.Matrix
+import upickle.Js
 
 class QNetworkAgent(
   val network: NeuralNetwork
@@ -46,6 +47,10 @@ class QNetworkAgent(
   override def reset(): Unit = {
     network.initialiseWeights()
   }
+
+  override def load(data: Js.Value): Unit = ???
+
+  override def store(): Js.Value = ???
 }
 
 object QNetworkAgent {

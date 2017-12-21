@@ -54,9 +54,9 @@ class QNetworkModel[S,A](
     qNetwork.optimiser = optimiser
   }
 
-  override protected def serializeBuild() = ???
+  override protected def storeBuild() = ???
 
-  override protected def serializeAgent() = ???
+  override protected def storeAgent() = ???
 }
 
 object QNetworkModel {

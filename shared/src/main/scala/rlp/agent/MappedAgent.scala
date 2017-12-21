@@ -1,4 +1,5 @@
 package rlp.agent
+import upickle.Js
 
 /**
   * Utility wrapper to handle mapping
@@ -28,5 +29,9 @@ class MappedAgent[S1, A1, S2, A2](
   override def clone(): MappedAgent[S1,A1,S2,A2] = new MappedAgent(agent.clone(), stateMap, actionMap)
 
   override def reset(): Unit = agent.reset()
+
+  override def load(data: Js.Value): Unit = agent.load(data)
+
+  override def store(): Js.Value = agent.store()
 }
 

@@ -1,4 +1,5 @@
 package rlp.agent
+import upickle.Js
 
 /**
   * Convenient abstraction on top of a regular Agent
@@ -39,5 +40,19 @@ trait SteppedAgent[S, A] extends Agent[S, A] {
     *
     * @return A new agent with new internal state but the same step function
     */
-  override def clone(): SteppedAgent[S, A] = step
+  override def clone(): SteppedAgent[S, A] = {
+
+    val that = this
+
+    new SteppedAgent[S,A] {
+
+      override def step(prevState: S, action: A, reward: Double, newState: S, first: Boolean, last: Boolean): A = {
+        that.step(prevState, action, reward, newState, first, last)
+      }
+
+      override def load(data: Js.Value): Unit = that.load(data)
+
+      override def store(): Js.Value = that.store()
+    }
+  }
 }

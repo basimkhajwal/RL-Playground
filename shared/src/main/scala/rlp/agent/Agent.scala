@@ -1,5 +1,7 @@
 package rlp.agent
 
+import upickle.Js
+
 /**
   * Representation of a reinforcement learning agent
   *
@@ -51,5 +53,9 @@ trait Agent[S, A] {
     * @return
     */
   override def clone():Agent[S,A] = this
+
+  def load(data: Js.Value): Unit
+
+  def store(): Js.Value
 }
 

@@ -103,9 +103,9 @@ class QTableModel[O, A](
     paramBindings.get ++= that.paramBindings.get
   }
 
-  override protected def serializeBuild() = ???
+  override protected def storeBuild() = ???
 
-  override protected def serializeAgent() = ???
+  override protected def storeAgent() = ???
 }
 
 object QTableModel {
