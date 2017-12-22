@@ -33,8 +33,4 @@ bin/
 
 client/rlp.zip
 
-client/dev-send/client-fastopt.js
-
-client/dev-send/index.html
-
-client/dev-send/main.css
+client/dev-send/*
