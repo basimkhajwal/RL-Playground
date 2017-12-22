@@ -1,4 +1,5 @@
 package rlp.agent
+import upickle.Js
 
 class QTableAgent(
   val numStates: Int, val numActions: Int,
@@ -51,6 +52,17 @@ class QTableAgent(
   @inline
   def update(state: Int, action: Int, value: Double): Unit = {
     table(state + action * numStates) = value
+  }
+
+  override def load(data: Js.Value): Unit = {
+    val xs = data.arr.map(_.num)
+    for (i <- table.indices) {
+      table(i) = xs(i)
+    }
+  }
+
+  override def store(): Js.Value = {
+    Js.Arr(table.map(Js.Num) :_*)
   }
 }
 

@@ -1,6 +1,7 @@
 package rlp.ai
 
 import rlp.math.Matrix
+import upickle.Js
 
 import scala.util.Random
 
@@ -204,6 +205,17 @@ class NeuralNetwork(
           weights(w)(r,c) = rand.nextGaussian() * stdDev
         }
       }
+    }
+  }
+
+  def store(): Js.Value = {
+    Js.Arr(weights.map(_.store()) :_* )
+  }
+
+  def load(data: Js.Value): Unit = {
+    val xs = data.arr
+    for (w <- weights.indices) {
+      weights(w).load(xs(w))
     }
   }
 

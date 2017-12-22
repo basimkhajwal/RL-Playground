@@ -19,7 +19,6 @@ class QNetworkAgent(
   val discountFactor = 0.99
 
   // TODO: Implement experience replay
-  // TODO: Fix the issue when the environment is reset
 
   override def step(prevState: Array[Double], action: Int, reward: Double, newState: Array[Double], first: Boolean, last: Boolean): Int = {
 

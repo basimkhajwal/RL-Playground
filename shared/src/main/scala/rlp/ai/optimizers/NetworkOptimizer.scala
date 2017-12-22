@@ -12,3 +12,9 @@ abstract class NetworkOptimizer(val network: NeuralNetwork) {
 
   def step(gradient: Array[Matrix]): Unit
 }
+
+object NetworkOptimizer {
+
+
+
+}

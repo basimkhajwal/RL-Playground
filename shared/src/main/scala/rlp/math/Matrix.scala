@@ -1,5 +1,7 @@
 package rlp.math
 
+import upickle.Js
+
 /**
   * Storing and applying matrix operations to the data supplied
   *
@@ -147,6 +149,18 @@ class Matrix(var rows: Int, var cols: Int, var data: Array[Double]) {
     cols = that.cols
     data = buffer
     this
+  }
+
+  def store(): Js.Value = {
+    Js.Arr(data.map(x => Js.Num(x)) :_*)
+  }
+
+  def load(json: Js.Value): Unit = {
+    val xs: Seq[Double] = json.arr.map(_.num)
+
+    require(xs.length == data.length, s"Cannot load a $rows x $cols matrix from ${xs.length} values")
+
+    for (i <- data.indices) data(i) = xs(i)
   }
 
   override def clone(): Matrix = {
