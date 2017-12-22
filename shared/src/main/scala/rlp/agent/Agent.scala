@@ -54,8 +54,8 @@ trait Agent[S, A] {
     */
   override def clone():Agent[S,A] = this
 
-  def load(data: Js.Value): Unit
+  def load(data: Js.Value): Unit = {}
 
-  def store(): Js.Value
+  def store(): Js.Value = Js.Null
 }
 
