@@ -51,6 +51,7 @@ abstract class Model[A](
     performanceHistory.get.appendAll(modelStore.performanceHistory)
 
     loadBuild(json.read(modelStore.buildData))
+    agent
     loadAgent(json.read(modelStore.agentData))
   }
 
