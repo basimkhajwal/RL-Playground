@@ -1,6 +1,7 @@
 package rlp.ai
 
 import rlp.math.Matrix
+import rlp.storage.Storable
 import upickle.Js
 
 import scala.util.Random
@@ -19,7 +20,7 @@ class NeuralNetwork(
   val activationFunctions: Array[ActivationFunction],
   val useSoftMax: Boolean = false,
   val lambda: Double = 0
-) {
+) extends Storable {
 
   val numLayers = layerSizes.size
 

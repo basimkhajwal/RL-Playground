@@ -1,5 +1,6 @@
 package rlp.math
 
+import rlp.storage.Storable
 import upickle.Js
 
 /**
@@ -9,7 +10,7 @@ import upickle.Js
   * @param cols
   * @param data The matrix values, in row-major order
   */
-class Matrix(var rows: Int, var cols: Int, var data: Array[Double]) {
+class Matrix(var rows: Int, var cols: Int, var data: Array[Double]) extends Storable {
 
   require(rows > 0)
   require(cols > 0)
