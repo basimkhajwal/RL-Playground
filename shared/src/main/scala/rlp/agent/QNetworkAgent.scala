@@ -47,9 +47,18 @@ class QNetworkAgent(
     network.initialiseWeights()
   }
 
-  override def load(data: Js.Value): Unit = ???
+  override def load(data: Js.Value): Unit = {
+    val keyMap = data.obj
+    network.load(keyMap("network"))
+    optimiser = NetworkOptimizer.create(network, keyMap("optimiser"))
+  }
 
-  override def store(): Js.Value = ???
+  override def store(): Js.Value = {
+    Js.Obj(
+      "network" -> network.store(),
+      "optimiser" -> NetworkOptimizer.store(optimiser)
+    )
+  }
 }
 
 object QNetworkAgent {
