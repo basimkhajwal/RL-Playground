@@ -4,6 +4,7 @@ import org.scalajs.dom.raw
 import org.scalajs.dom.document
 
 import scala.collection.mutable
+import scala.scalajs.js
 import scalatags.JsDom
 
 package object rlp {
@@ -21,6 +22,20 @@ package object rlp {
   def getGUID(prefix: String = ""): String = {
     counters(prefix) = counters.getOrElse(prefix, 0) + 1
     prefix + counters(prefix)
+  }
+
+  def initModal(id: String): Unit = {
+
+    var refreshTimer: js.timers.SetIntervalHandle = null
+
+    def checkInit(): Unit = {
+      if (document.getElementById(id) != null) {
+        js.timers.clearInterval(refreshTimer)
+        js.Dynamic.global.$("#" + id).modal()
+      }
+    }
+
+    refreshTimer = js.timers.setInterval(50) { checkInit() }
   }
 
   def getElem[T](id: String): T = document.getElementById(id).asInstanceOf[T]
