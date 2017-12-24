@@ -2,6 +2,8 @@ package rlp.ai.optimizers
 
 import rlp.ai.NeuralNetwork
 import rlp.math.Matrix
+import rlp.storage.Storable
+import upickle.Js
 
 class SGDMomentum(
   network: NeuralNetwork,
@@ -34,5 +36,20 @@ class SGDMomentum(
     }
 
     lr *= (1 - decay)
+  }
+
+  override def store(): Js.Value = {
+    Js.Obj(
+      "lr" -> Js.Num(lr),
+      "v" -> Storable.store(v),
+      "vPrev" -> Storable.store(vPrev)
+    )
+  }
+
+  override def load(json: Js.Value): Unit = {
+    val keyMap = json.obj
+    lr = keyMap("lr").num
+    Storable.load(v, keyMap("v"))
+    Storable.load(vPrev, keyMap("vPrev"))
   }
 }

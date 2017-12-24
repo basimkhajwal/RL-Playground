@@ -2,6 +2,8 @@ package rlp.ai.optimizers
 
 import rlp.ai.NeuralNetwork
 import rlp.math.Matrix
+import rlp.storage.Storable
+import upickle.Js
 
 class Adam(
   network: NeuralNetwork,
@@ -38,4 +40,22 @@ class Adam(
     t += 1
   }
 
+  override def store(): Js.Value = {
+    Js.Obj(
+      "t" -> Js.Num(t),
+      "lr" -> Js.Num(lr),
+      "m" -> Storable.store(m),
+      "v" -> Storable.store(v)
+    )
+  }
+
+  override def load(json: Js.Value): Unit = {
+    val keyMap = json.obj
+
+    t = keyMap("t").num.toInt
+    lr = keyMap("lr").num
+
+    Storable.load(m, keyMap("m"))
+    Storable.load(v, keyMap("v"))
+  }
 }
