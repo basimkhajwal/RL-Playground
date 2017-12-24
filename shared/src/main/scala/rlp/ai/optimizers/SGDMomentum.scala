@@ -14,7 +14,7 @@ class SGDMomentum(
 ) extends NetworkOptimizer(network) {
 
   val v: Array[Matrix] = network.weights.map(w => new Matrix(w.rows, w.cols))
-  val vPrev: Array[Matrix] = new Array[Matrix](v.length)
+  val vPrev: Array[Matrix] = v map (_.clone())
 
   var lr: Double = learningRate
 
@@ -22,7 +22,7 @@ class SGDMomentum(
     for (i <- v.indices) {
 
       if (nesterov) {
-        vPrev(i) = v(i)
+        vPrev(i) = v(i).clone()
       }
 
       v(i) *= momentum
