@@ -18,7 +18,7 @@ lazy val client = (project in file("client")).settings(commonSettings).settings(
   libraryDependencies ++= Seq(
     "org.scala-js" %%% "scalajs-dom" % "0.9.3",
     "com.thoughtworks.binding" %%% "dom" % "10.0.3",
-    "com.lihaoyi" %% "upickle" % "0.5.1"
+    "com.lihaoyi" %%% "upickle" % "0.5.1"
   ),
   addCompilerPlugin("org.scalamacros" % "paradise" % "2.1.0" cross CrossVersion.full),
 ).enablePlugins(ScalaJSPlugin, ScalaJSWeb).
@@ -26,7 +26,7 @@ lazy val client = (project in file("client")).settings(commonSettings).settings(
 
 lazy val shared = (crossProject.crossType(CrossType.Pure) in file("shared")).settings(commonSettings).settings(
   libraryDependencies ++= Seq(
-    "com.lihaoyi" %% "upickle" % "0.5.1",
+    "com.lihaoyi" %%% "upickle" % "0.5.1",
     "org.scalactic" %% "scalactic" % "3.0.4" % "test",
     "org.scalatest" %% "scalatest" % "3.0.4" % "test",
     "org.scalacheck" %% "scalacheck" % "1.13.4" % "test"
