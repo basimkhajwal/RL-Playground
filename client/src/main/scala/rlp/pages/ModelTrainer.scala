@@ -2,8 +2,9 @@ package rlp.pages
 
 import com.thoughtworks.binding.{Binding, dom}
 import com.thoughtworks.binding.Binding.{Var, Vars}
-import org.scalajs.dom.{Event, html}
+import org.scalajs.dom.{Blob, Event, html}
 import org.scalajs.dom.html.Div
+import org.scalajs.dom.raw.BlobPropertyBag
 import rlp.environment.Environment
 import rlp.models.Model
 import rlp.utils.{BackgroundProcess, SelectHandler}
@@ -111,7 +112,11 @@ class ModelTrainer[A](
               }
 
               def onExport(): Unit = {
-                println(model.store().agentData)
+                import upickle.default._
+                val fileStore = write(model.store())
+                val fileBlob = new Blob(js.Array(fileStore))
+
+                js.Dynamic.global.saveAs(fileBlob, model.toString + ".json")
               }
 
               <div class="row">
