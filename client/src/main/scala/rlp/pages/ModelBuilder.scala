@@ -145,19 +145,10 @@ class ModelBuilder[A](
     </div>
   }
 
-  var refreshTimer: js.timers.SetIntervalHandle = null
-
-  private def initModal(): Unit = {
-    if (document.getElementById("builder-modal") != null) {
-      js.timers.clearInterval(refreshTimer)
-      js.Dynamic.global.$("#builder-modal").modal()
-    }
-  }
-
   @dom
   lazy val content: Binding[Div] = {
 
-    refreshTimer = js.timers.setInterval(50) { initModal() }
+    initModal("builder-modal")
 
     <div class="modal modal-fixed-footer" id="builder-modal">
 
