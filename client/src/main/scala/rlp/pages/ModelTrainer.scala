@@ -4,9 +4,9 @@ import com.thoughtworks.binding.{Binding, dom}
 import com.thoughtworks.binding.Binding.{Var, Vars}
 import org.scalajs.dom.{Blob, Event, html}
 import org.scalajs.dom.html.Div
-import org.scalajs.dom.raw.BlobPropertyBag
+import org.scalajs.dom.raw.{BlobPropertyBag, FileReader}
 import rlp.environment.Environment
-import rlp.models.Model
+import rlp.models.{Model, ModelStore}
 import rlp.utils.{BackgroundProcess, SelectHandler}
 import rlp._
 
@@ -14,6 +14,7 @@ import scala.scalajs.js
 
 class ModelTrainer[A](
   models: Vars[Model[A]],
+  builders: List[Model.Builder[A]],
   trainStep: () => Unit,
 ) {
 
@@ -81,12 +82,79 @@ class ModelTrainer[A](
 
         <div class="col s3"> { trainingButtons.bind } </div>
 
-        <div class="col s4" id="model-training-btns">
-          {
-            val btnStyle = "btn waves-effect waves-light"
-            <a class={btnStyle + " modal-trigger"} href="#builder-modal">New</a>
+        {
+          val btnStyle = "btn waves-effect waves-light modal-trigger"
+          val importError = Var("")
+
+          def onImport(): Unit = {
+
+            val fileElem = getElem[html.Input]("import-file")
+
+            if (fileElem.files.length == 0) {
+              importError := "Error - No file specified"
+              return
+            }
+
+            try {
+              val file = fileElem.files(0)
+
+              val reader = new FileReader()
+              reader.readAsText(file)
+
+              reader.onload = { _ =>
+                val result = reader.result.asInstanceOf[String]
+                val store = upickle.default.read[ModelStore](result)
+
+                builders.find(_._1 == store.agentName) match {
+
+                  case Some((_, builder)) => {
+                    val model = builder()
+                    model.load(store)
+                    models.get += model
+                  }
+
+                  case None => importError := s"Error reading data, invalid agent ${store.agentName}"
+                }
+              }
+
+            } catch {
+              case e: Exception => {
+                importError := "Error importing: \n" + e.getMessage
+              }
+            }
           }
-        </div>
+
+          initModal("import-modal")
+
+          <div class="col s4" id="model-training-btns">
+            <a class={btnStyle} href="#builder-modal">New</a>
+            <a class={btnStyle} href="#import-modal">Import</a>
+
+            <div class="modal" id="import-modal">
+
+              <div class="modal-content">
+                <h4 class="center-align">Import Model</h4>
+                <form action="#">
+                  <div class="file-field input-field">
+                    <div class="btn">
+                      <span>File</span>
+                      <input type="file" id="import-file"/>
+                    </div>
+                    <div class="file-path-wrapper">
+                      <input class="file-path validate" type="text" placeholder="Choose file" />
+                    </div>
+                  </div>
+                </form>
+
+                <h5 class="center-align red-text">{importError.bind}</h5>
+              </div>
+
+              <div class="modal-footer">
+                <a class="btn waves-effect waves-light center-align" onclick={_:Event => onImport()}>Import</a>
+              </div>
+            </div>
+          </div>
+        }
       </div>
 
       <div class="col s10 offset-s1">
