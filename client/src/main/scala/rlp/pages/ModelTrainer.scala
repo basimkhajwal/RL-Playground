@@ -111,7 +111,7 @@ class ModelTrainer[A](
               }
 
               def onExport(): Unit = {
-                // TOOD: Add model exporting and serialization within models
+                println(model.store().agentData)
               }
 
               <div class="row">

@@ -5,6 +5,7 @@ import rlp.agent.{Agent, QNetworkAgent}
 import rlp.ai.NeuralNetwork
 import rlp._
 import rlp.ai.optimizers.NetworkOptimizer
+import upickle.Js
 
 class QNetworkModel[S,A](
   environment: String,
@@ -54,9 +55,13 @@ class QNetworkModel[S,A](
     qNetwork.optimiser = optimiser
   }
 
-  override protected def storeBuild() = ???
+  override protected def storeBuild(): Js.Value = Js.Obj()
 
-  override protected def storeAgent() = ???
+  override protected def storeAgent(): Js.Value = qNetwork.store()
+
+  override protected def loadBuild(build: Js.Value): Unit = ???
+
+  override protected def loadAgent(build: Js.Value): Unit = ???
 }
 
 object QNetworkModel {

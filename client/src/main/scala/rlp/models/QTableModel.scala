@@ -6,6 +6,7 @@ import org.scalajs.dom.{Event, html}
 import org.scalajs.dom.raw.HTMLElement
 import rlp._
 import rlp.agent.{Agent, QStateSpace, QTableAgent}
+import upickle.Js
 
 class QTableModel[O, A](
   environment: String,
@@ -88,7 +89,6 @@ class QTableModel[O, A](
     }
   }
 
-
   override def resetAgent(): Unit = {
     super.resetAgent()
     agent.reset()
@@ -103,9 +103,17 @@ class QTableModel[O, A](
     paramBindings.get ++= that.paramBindings.get
   }
 
-  override protected def storeBuild() = ???
+  override protected def storeBuild(): Js.Obj = {
+    ???
+  }
 
-  override protected def storeAgent() = ???
+  override protected def storeAgent(): Js.Obj = {
+    ???
+  }
+
+  override protected def loadBuild(build: Js.Value): Unit = ???
+
+  override protected def loadAgent(build: Js.Value): Unit = ???
 }
 
 object QTableModel {

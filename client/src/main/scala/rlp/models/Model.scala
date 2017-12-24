@@ -1,7 +1,5 @@
 package rlp.models
 
-import javax.management.remote.JMXConnectorServer
-
 import com.thoughtworks.binding.{Binding, dom}
 import com.thoughtworks.binding.Binding.{Constant, Var, Vars}
 import org.scalajs.dom.raw.HTMLElement
