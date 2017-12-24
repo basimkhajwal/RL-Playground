@@ -9,6 +9,7 @@ import rlp.ai.{ActivationFunction, NeuralNetwork}
 import rlp.ai.optimizers.{Adam, NetworkOptimizer, RMSProp, SGDMomentum}
 import rlp.utils.SelectHandler
 import rlp._
+import upickle.Js
 
 abstract class NetworkModel[S,A,P](
   environment: String,
@@ -85,11 +86,30 @@ abstract class NetworkModel[S,A,P](
         </div>
       </div>
     }
+
+    def store(): Js.Value = {
+      Js.Obj(
+        "size" -> Js.Num(size.get),
+        "activation" -> Js.Str(activationFunctions.find(_._2 == activation.get).get._1),
+        "index" -> Js.Num(index.get)
+      )
+    }
   }
 
   object LayerDef {
     def apply(size: Int = 10, activation: ActivationFunction = ReLU, index: Int = 0): LayerDef = {
       new LayerDef(Var(size), Var(activation), Var(index))
+    }
+
+    def load(data: Js.Value): LayerDef = {
+
+      val keyMap = data.obj
+
+      LayerDef(
+        keyMap("size").num.toInt,
+        activationFunctions.find(_._1 == keyMap("activation").str).get._2,
+        keyMap("index").num.toInt
+      )
     }
   }
 
@@ -167,6 +187,42 @@ abstract class NetworkModel[S,A,P](
     layerDefinitions.get ++= controller.layerDefinitions.get.map(
       l => LayerDef(l.size.get, l.activation.get, l.index.get)
     )
+
+    paramBindings.get.clear()
+    paramBindings.get ++= controller.paramBindings.get
+  }
+
+  override protected def storeBuild(): Js.Value = {
+    Js.Obj(
+      "layers" -> Js.Arr(layerDefinitions.get.map(_.store()) :_*),
+      "params" ->
+        Js.Arr(
+          paramBindings.get.map(p =>
+            Js.Obj(
+              "name" -> Js.Str(p._1.name),
+              "enabled" -> (if (p._2) Js.True else Js.False)
+            )
+          )
+          :_*
+        )
+    )
+  }
+
+  override protected def loadBuild(build: Js.Value): Unit = {
+    val keyMap = build.obj
+
+    val defs = keyMap("layers").arr.map(LayerDef.load)
+    layerDefinitions.get.clear()
+    layerDefinitions.get.appendAll(defs)
+
+    val paramMap = keyMap("params").arr.map { p =>
+      val paramKey = p.obj
+      (paramKey("name").str, paramKey("enabled") == Js.True)
+    }.toMap
+
+    val newParams = paramBindings.get.map(p => (p._1, paramMap(p._1.name)))
+    paramBindings.get.clear()
+    paramBindings.get.appendAll(newParams)
   }
 
   protected def getNetwork(): NeuralNetwork

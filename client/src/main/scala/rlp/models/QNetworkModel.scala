@@ -32,14 +32,6 @@ class QNetworkModel[S,A](
     QNetworkAgent.build(qNetwork, actionMap, inputs)
   }
 
-  override def cloneBuildFrom(that: Model[Agent[S,A]]): Unit = {
-    super.cloneBuildFrom(that)
-
-    val controller = that.asInstanceOf[QNetworkModel[S,A]]
-    paramBindings.get.clear()
-    paramBindings.get ++= controller.paramBindings.get
-  }
-
   override lazy val modelViewer = networkViewer
 
   override def resetAgent(): Unit = {
@@ -55,13 +47,9 @@ class QNetworkModel[S,A](
     qNetwork.optimiser = optimiser
   }
 
-  override protected def storeBuild(): Js.Value = Js.Obj()
-
   override protected def storeAgent(): Js.Value = qNetwork.store()
 
-  override protected def loadBuild(build: Js.Value): Unit = ???
-
-  override protected def loadAgent(build: Js.Value): Unit = ???
+  override protected def loadAgent(data: Js.Value): Unit = qNetwork.load(data)
 }
 
 object QNetworkModel {
