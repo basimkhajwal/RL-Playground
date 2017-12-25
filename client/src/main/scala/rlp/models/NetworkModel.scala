@@ -195,16 +195,7 @@ abstract class NetworkModel[S,A,P](
   override protected def storeBuild(): Js.Value = {
     Js.Obj(
       "layers" -> Js.Arr(layerDefinitions.get.map(_.store()) :_*),
-      "params" ->
-        Js.Arr(
-          paramBindings.get.map(p =>
-            Js.Obj(
-              "name" -> Js.Str(p._1.name),
-              "enabled" -> (if (p._2) Js.True else Js.False)
-            )
-          )
-          :_*
-        )
+      "params" -> paramSelector.store()
     )
   }
 
@@ -215,14 +206,7 @@ abstract class NetworkModel[S,A,P](
     layerDefinitions.get.clear()
     layerDefinitions.get.appendAll(defs)
 
-    val paramMap = keyMap("params").arr.map { p =>
-      val paramKey = p.obj
-      (paramKey("name").str, paramKey("enabled") == Js.True)
-    }.toMap
-
-    val newParams = paramBindings.get.map(p => (p._1, paramMap(p._1.name)))
-    paramBindings.get.clear()
-    paramBindings.get.appendAll(newParams)
+    paramSelector.load(keyMap("params"))
   }
 
   protected def getNetwork(): NeuralNetwork

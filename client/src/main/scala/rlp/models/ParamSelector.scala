@@ -5,6 +5,7 @@ import com.thoughtworks.binding.Binding.Vars
 import org.scalajs.dom.{Event, html}
 import org.scalajs.dom.html.Div
 import rlp._
+import upickle.Js
 
 class ParamSelector[A](params: Array[ModelParam[A]]) {
 
@@ -18,6 +19,29 @@ class ParamSelector[A](params: Array[ModelParam[A]]) {
     val checkBox = getElem[html.Input](getCheckBoxID(param))
 
     paramBindings.get(idx) = (param, checkBox.checked)
+  }
+
+  def store(): Js.Value = {
+    Js.Arr(
+      paramBindings.get.map(p =>
+        Js.Obj(
+          "name" -> Js.Str(p._1.name),
+          "enabled" -> (if (p._2) Js.True else Js.False)
+        )
+      )
+      :_*
+    )
+  }
+
+  def load(data: Js.Value): Unit = {
+    val paramMap = data.arr.map { p =>
+      val paramKey = p.obj
+      (paramKey("name").str, paramKey("enabled") == Js.True)
+    }.toMap
+
+    val newParams = paramBindings.get.map(p => (p._1, paramMap(p._1.name)))
+    paramBindings.get.clear()
+    paramBindings.get.appendAll(newParams)
   }
 
   @dom
