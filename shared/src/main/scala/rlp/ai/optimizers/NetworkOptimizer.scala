@@ -5,8 +5,6 @@ import rlp.math.Matrix
 import rlp.storage.Storable
 import upickle.Js
 
-import scala.scalajs.js.annotation.{JSExport, JSExportTopLevel}
-
 abstract class NetworkOptimizer(val network: NeuralNetwork) extends Storable {
 
   def step(input: Matrix, target: Matrix): Unit = {
@@ -21,7 +19,6 @@ abstract class NetworkOptimizer(val network: NeuralNetwork) extends Storable {
   def load(json: Js.Value): Unit
 }
 
-@JSExportTopLevel("NetOpt")
 object NetworkOptimizer {
 
   def store(opt: NetworkOptimizer): Js.Value = {
