@@ -60,7 +60,7 @@ class SelectHandler(val name: String, val items: BindingSeq[String], val disable
   private def refresh(): Unit = {
     val select = getElem[html.Select](selectID)
     if (select != null && select.selectedIndex != selectedIndex.get) {
-   //   select.selectedIndex = selectedIndex.get
+      select.selectedIndex = selectedIndex.get
     }
   }
 
