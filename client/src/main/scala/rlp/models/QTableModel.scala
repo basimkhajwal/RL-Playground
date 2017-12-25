@@ -104,16 +104,18 @@ class QTableModel[O, A](
   }
 
   override protected def storeBuild(): Js.Obj = {
-    ???
+    Js.Obj(
+      "params" -> paramSelector.store()
+    )
   }
 
-  override protected def storeAgent(): Js.Obj = {
-    ???
+  override protected def loadBuild(data: Js.Value): Unit = {
+    paramSelector.load(data.obj("params"))
   }
 
-  override protected def loadBuild(build: Js.Value): Unit = ???
+  override protected def storeAgent(): Js.Value = qTable.store()
 
-  override protected def loadAgent(build: Js.Value): Unit = ???
+  override protected def loadAgent(data: Js.Value): Unit = qTable.load(data)
 }
 
 object QTableModel {
