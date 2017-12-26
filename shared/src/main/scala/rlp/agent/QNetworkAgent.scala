@@ -32,6 +32,10 @@ class QNetworkAgent(
       }
     }
 
+    if (math.random() < 0.1) {
+      maxIdx = (math.random() * newReturns.length).toInt
+    }
+
     if (!first) {
 
       val returns = network.forwardProp(prevState)
