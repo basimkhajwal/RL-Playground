@@ -62,7 +62,7 @@ class NeuralNetwork(
     * @return The output activations, in a similar layout to input data
     */
   def forwardProp(inputActivations: Matrix): Matrix = {
-    var alpha = inputActivations
+    var alpha = inputActivations.clone()
     val ones = new Matrix(inputActivations.rows, 1) fillWith 1
 
     // Iterate, keeping track of current activations by applying each consecutive
