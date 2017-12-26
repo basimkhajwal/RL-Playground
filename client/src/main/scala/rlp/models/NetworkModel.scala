@@ -476,6 +476,8 @@ abstract class NetworkModel[S,A,P](
       undoChanges()
     }
 
+    undoChanges()
+
     <div class="row">
 
       <div class="col s10 offset-s1">
