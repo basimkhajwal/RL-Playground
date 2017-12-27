@@ -3,7 +3,7 @@ package rlp
 import com.thoughtworks.binding.Binding.Constant
 import com.thoughtworks.binding.{Binding, dom}
 import org.scalajs.dom.{Event, document, html, window}
-import rlp.pages.{Page, PongPage}
+import rlp.pages.{FlappyBirdPage, Page, PongPage}
 import rlp.utils.SelectHandler
 
 import scala.scalajs.js.Dynamic
@@ -11,7 +11,8 @@ import scala.scalajs.js.Dynamic
 object Client {
 
   val pages: List[Page] = List(
-    new PongPage()
+    new PongPage(),
+    new FlappyBirdPage()
   )
 
   @dom
