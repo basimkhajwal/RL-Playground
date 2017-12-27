@@ -111,6 +111,8 @@ class ModelTrainer[A](
                     val model = builder()
                     model.load(store)
                     models.get += model
+
+                    js.Dynamic.global.$("import-modal").modal("close")
                   }
 
                   case None => importError := s"Error reading data, invalid agent ${store.agentName}"
