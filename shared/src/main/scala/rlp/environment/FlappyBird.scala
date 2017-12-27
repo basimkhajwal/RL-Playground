@@ -87,7 +87,7 @@ class FlappyBird(val agent: FlappyBird.FlappyBirdAgent) extends Environment[Flap
 
   private def getAgentState(): AgentState = {
 
-    var blockDist = SCREEN_WIDTH
+    var blockDist = Double.PositiveInfinity
     var gapHeight = 0.0
     for ((blockX, gapY) <- blocks) {
       val dx = blockX + BLOCK_WIDTH - x
@@ -135,8 +135,9 @@ class FlappyBird(val agent: FlappyBird.FlappyBirdAgent) extends Environment[Flap
     }
 
     val collision = groundCollision || blockCollision
+    val transitTime = (BLOCK_SPACING + BLOCK_WIDTH) * (1.0 / BIRD_SPEED)
 
-    agent.percept(if (collision) -1 else 1 * Environment.DELTA)
+    agent.percept(if (collision) -10 else (1.0 / transitTime) * Environment.DELTA)
 
     collision
   }
