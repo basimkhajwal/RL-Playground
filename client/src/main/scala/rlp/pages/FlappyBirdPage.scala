@@ -12,6 +12,8 @@ class FlappyBirdPage extends GamePage[FlappyBird.State, FlappyBird.FlappyBirdAge
   override val name: String = "Flappy Bird"
   override val description: String = "TODO: Flappy bird description"
 
+  override protected val MAX_EPISODE_LENGTH: Int = 5000
+
   override protected val modelBuilders: List[(String, () => Model[FlappyBirdAgent])] = List(
     QTableModel.builder(name,
       2, { a => if (a == 0) NoAction else JumpAction },
@@ -56,6 +58,23 @@ class FlappyBirdPage extends GamePage[FlappyBird.State, FlappyBird.FlappyBirdAge
     ctx.restore()
   }
 
-  override protected def modelPerformance(model: Model[FlappyBirdAgent]): Double = 0
+  override protected def modelPerformance(model: Model[FlappyBirdAgent]): Double = {
+    val testEnv = new FlappyBird(model.agent.clone())
+    val testRuns = 10
+    var totalDistance = 0.0
+
+    for (_ <- 0 until testRuns) {
+      testEnv.reset()
+      var steps = 0
+
+      while (!testEnv.step() && steps < MAX_EPISODE_LENGTH) {
+        steps += 1
+      }
+
+      totalDistance += testEnv.getState().x
+    }
+
+    totalDistance / testRuns
+  }
 
 }
