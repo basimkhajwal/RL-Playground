@@ -57,14 +57,24 @@ class QTableAgent(
   }
 
   override def load(data: Js.Value): Unit = {
-    val xs = data.arr.map(_.num)
+
+    val keyMap = data.obj
+
+    learningRate = keyMap("learningRate").num
+    discountFactor = keyMap("discountFactor").num
+
+    val xs = keyMap("table").arr.map(_.num)
     for (i <- table.indices) {
       table(i) = xs(i)
     }
   }
 
   override def store(): Js.Value = {
-    Js.Arr(table.map(Js.Num) :_*)
+    Js.Obj(
+      "learningRate" -> Js.Num(learningRate),
+      "discountFactor" -> Js.Num(discountFactor),
+      "table" -> Js.Arr(table.map(Js.Num) :_*)
+    )
   }
 }
 

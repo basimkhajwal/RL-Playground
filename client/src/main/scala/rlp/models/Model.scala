@@ -40,7 +40,7 @@ abstract class Model[A](
 
   protected def loadAgent(build: Js.Value): Unit
 
-  final def load(modelStore: ModelStore): Unit = {
+  def load(modelStore: ModelStore): Unit = {
     require(environmentName == modelStore.environmentName && agentName == modelStore.agentName,
       "Invalid store type")
 

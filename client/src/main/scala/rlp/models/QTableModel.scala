@@ -54,6 +54,14 @@ class QTableModel[O, A](
     agent
   }
 
+  override def load(modelStore: ModelStore): Unit = {
+    super.load(modelStore)
+
+    /* Reset from imported file */
+    learningRate := qTable.learningRate
+    discountFactor := qTable.discountFactor
+  }
+
   @dom
   override lazy val modelViewer: Binding[HTMLElement] = {
     <div>
