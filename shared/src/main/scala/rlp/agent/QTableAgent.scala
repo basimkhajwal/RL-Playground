@@ -17,6 +17,8 @@ class QTableAgent(
   override def step(prevState: Int, action: Int, reward: Double, newState: Int, first: Boolean, last: Boolean): Int = {
     val (greedyAction, maxReward) = maximumAction(newState)
 
+    val newAction = if (math.random() < 0.01) (math.random() * numActions).toInt else greedyAction
+
     if (!first) {
 
       val expectedReward = reward + discountFactor * (if (last) 0 else maxReward)
@@ -24,7 +26,7 @@ class QTableAgent(
       this(prevState, action) += learningRate * (expectedReward - this(prevState, action))
     }
 
-    greedyAction
+    newAction
   }
 
   private def maximumAction(state: Int): (Int, Double) = {
