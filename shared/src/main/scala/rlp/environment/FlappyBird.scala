@@ -12,15 +12,15 @@ object FlappyBird {
 
   val GROUND_HEIGHT = 100.0
 
-  val BIRD_WIDTH = 50.0
-  val BIRD_HEIGHT = 50.0
+  val BIRD_WIDTH = 30.0
+  val BIRD_HEIGHT = 30.0
   val BIRD_SPEED = 50.0
   val BIRD_JUMP_SPEED = 100.0
-  val MAX_SPEED = 100.0
+  val MAX_SPEED = BIRD_JUMP_SPEED
 
-  val GRAVITY = 20.0
+  val GRAVITY = 70.0
 
-  val GAP_HEIGHT = 100.0
+  val GAP_HEIGHT = 160.0
   val GAP_PADDING = 50.0
   val INITIAL_BLOCK_POS = 500.0
   val BLOCK_SPACING = 300.0
@@ -136,7 +136,7 @@ class FlappyBird(val agent: FlappyBird.FlappyBirdAgent) extends Environment[Flap
 
     val collision = groundCollision || blockCollision
 
-    agent.percept(0)
+    agent.percept(if (collision) -1 else 1 * Environment.DELTA)
 
     collision
   }
