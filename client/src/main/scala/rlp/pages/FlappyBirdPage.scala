@@ -38,14 +38,16 @@ class FlappyBirdPage extends GamePage[FlappyBird.State, FlappyBird.FlappyBirdAge
 
       val state = trainingEnvironment.getState()
 
+      ctx.fillStyle = "brown"
+      ctx.fillRect(0, SCREEN_HEIGHT - GROUND_HEIGHT, SCREEN_WIDTH, GROUND_HEIGHT)
+
+      ctx.translate(SCREEN_WIDTH/2 - state.x, 0)
+
       ctx.fillStyle = "lime"
       for ((blockX, gapY) <- state.blocks) {
         ctx.fillRect(blockX, 0, BLOCK_WIDTH, gapY)
-        ctx.fillRect(blockX, gapY + GAP_HEIGHT, BLOCK_WIDTH, SCREEN_HEIGHT - (gapY + GAP_HEIGHT))
+        ctx.fillRect(blockX, gapY + GAP_HEIGHT, BLOCK_WIDTH, SCREEN_HEIGHT - GROUND_HEIGHT - (gapY + GAP_HEIGHT))
       }
-
-      ctx.fillStyle = "brown"
-      ctx.fillRect(0, SCREEN_HEIGHT - GROUND_HEIGHT, SCREEN_WIDTH, GROUND_HEIGHT)
 
       ctx.fillStyle = "red"
       ctx.fillRect(state.x, state.y, BIRD_WIDTH, BIRD_HEIGHT)
