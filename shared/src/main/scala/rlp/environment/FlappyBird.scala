@@ -16,6 +16,7 @@ object FlappyBird {
   val BIRD_HEIGHT = 50.0
   val BIRD_SPEED = 50.0
   val BIRD_JUMP_SPEED = 100.0
+  val MAX_SPEED = 100.0
 
   val GRAVITY = 20.0
 
@@ -40,11 +41,13 @@ object FlappyBird {
     y: Double,
     vy: Double,
     blockDist: Double,
-    gapY: Double
+    gapMid: Double
   )
+
+  type FlappyBirdAgent = Agent[AgentState, Action]
 }
 
-class FlappyBird(val agent: Agent[FlappyBird.AgentState, FlappyBird.Action]) extends Environment[FlappyBird.State] {
+class FlappyBird(val agent: FlappyBird.FlappyBirdAgent) extends Environment[FlappyBird.State] {
 
   import FlappyBird._
 
@@ -54,6 +57,8 @@ class FlappyBird(val agent: Agent[FlappyBird.AgentState, FlappyBird.Action]) ext
   private var y: Double = _
   private var vy: Double = _
   private var blocks = ListBuffer.empty[(Double, Double)]
+
+  reset(0)
 
   override def reset(seed: Int): Unit = {
     random.setSeed(seed)
@@ -81,17 +86,18 @@ class FlappyBird(val agent: Agent[FlappyBird.AgentState, FlappyBird.Action]) ext
   }
 
   private def getAgentState(): AgentState = {
-    
+
     var blockDist = SCREEN_WIDTH
     var gapHeight = 0.0
     for ((blockX, gapY) <- blocks) {
-      if (blockX >= x && (blockX - x) < blockDist) {
-        blockDist = blockX - x
+      val dx = blockX + BLOCK_WIDTH - x
+      if (dx > 0 && dx < blockDist) {
+        blockDist = dx
         gapHeight = gapY
       }
     }
 
-    AgentState(y, vy, blockDist, gapHeight)
+    AgentState(y, vy, blockDist, gapHeight + GAP_HEIGHT / 2)
   }
 
   override def step(): Boolean = {
@@ -104,6 +110,8 @@ class FlappyBird(val agent: Agent[FlappyBird.AgentState, FlappyBird.Action]) ext
     }
 
     vy += GRAVITY * Environment.DELTA
+    vy = Math.max(-MAX_SPEED, Math.min(vy, MAX_SPEED))
+
     y += vy * Environment.DELTA
     x += BIRD_SPEED * Environment.DELTA
 
@@ -126,6 +134,10 @@ class FlappyBird(val agent: Agent[FlappyBird.AgentState, FlappyBird.Action]) ext
       withinX && (topHit || bottomHit)
     }
 
-    groundCollision || blockCollision
+    val collision = groundCollision || blockCollision
+
+    agent.percept(0)
+
+    collision
   }
 }
