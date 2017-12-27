@@ -14,13 +14,10 @@ class ModelComparison[A](
   performanceGap: Int
 ) {
 
-  private var graphDiv: html.Div = _
-
   @dom
   private lazy val graph: Binding[html.Div] = {
     val plotDiv = {<div id="graph-div"></div>}
     val global = js.Dynamic.global
-    graphDiv = plotDiv
 
     val layout: js.Object = js.Dynamic.literal(
       "xaxis" -> js.Dynamic.literal("title" -> "Games Played", "zeroline" -> true),
@@ -44,6 +41,7 @@ class ModelComparison[A](
   }
 
   private def pageResized(): Unit = {
+    val graphDiv = getElem[html.Div]("graph-div")
     if (graphDiv != null) {
       js.Dynamic.global.Plotly.Plots.resize(graphDiv)
     }
