@@ -126,6 +126,8 @@ class FlappyBird(val agent: FlappyBird.FlappyBirdAgent) extends Environment[Flap
 
     val groundCollision = y + BIRD_HEIGHT >= SCREEN_HEIGHT - GROUND_HEIGHT
 
+    val topCollision = y < 0
+
     val blockCollision = blocks.exists { case (blockX, gapY) =>
       val withinX = x + BIRD_WIDTH >= blockX && x <= blockX + BLOCK_WIDTH
       val topHit = y < gapY
@@ -134,7 +136,7 @@ class FlappyBird(val agent: FlappyBird.FlappyBirdAgent) extends Environment[Flap
       withinX && (topHit || bottomHit)
     }
 
-    val collision = groundCollision || blockCollision
+    val collision = topCollision || groundCollision || blockCollision
     val transitTime = (BLOCK_SPACING + BLOCK_WIDTH) * (1.0 / BIRD_SPEED)
 
     agent.percept(if (collision) -10 else (1.0 / transitTime) * Environment.DELTA)
