@@ -5,6 +5,9 @@ import rlp.ai.optimizers.{Adam, NetworkOptimizer, SGDMomentum}
 import rlp.math.Matrix
 import upickle.Js
 
+import scala.reflect.ClassTag
+import scala.util.Random
+
 class QNetworkAgent(
   val network: NeuralNetwork
 ) extends SteppedAgent[Array[Double], Int]{
@@ -18,33 +21,78 @@ class QNetworkAgent(
   var optimiser: NetworkOptimizer = new SGDMomentum(network, 0.0001)
   val discountFactor = 0.99
 
-  // TODO: Implement experience replay
+  private def sampleIndices(n: Int, k: Int): Array[Int] = {
+    val arr = new Array[Int](k)
+    val rand = new Random()
+
+    for (i <- 0 until k) arr(i) = i
+    for (i <- k until n) {
+      val j = rand.nextInt(i + 1)
+      if (j < k) arr(j) = i
+    }
+
+    arr
+  }
+
+  private def sampleItems[T : ClassTag](xs: Array[T], n: Int, k: Int): Array[T] = {
+    sampleIndices(n, k).map(xs).toArray
+  }
 
   override def step(prevState: Array[Double], action: Int, reward: Double, newState: Array[Double], first: Boolean, last: Boolean): Int = {
 
-    val newReturns = network.forwardProp(newState)
+    if (!first) {
+
+      /* Store replay */
+      replayBuffer(replayBufferIdx) = (prevState, action, reward, if (last) null else newState)
+      replayBufferIdx += 1
+      if (replayBufferIdx >= replayBuffer.length) {
+        replayBufferIdx = 0
+        isFull = true
+      }
+
+      val minibatchSize = 10
+      val numItems = if (isFull) replayBuffer.length else replayBufferIdx
+
+      if (numItems >= minibatchSize) {
+        val sample = sampleItems(replayBuffer, numItems, minibatchSize)
+
+        val inputs = Matrix.rows(sample.map(_._1))
+
+        val returns = network.forwardProp(inputs)
+
+        for (i <- 0 until minibatchSize) {
+          val (_, a, r, n) = sample(i)
+
+          if (n == null) {
+            returns(i, a) = r
+          } else {
+            returns(i, a) = r + discountFactor * maxAction(n)._2
+          }
+        }
+
+        optimiser.step(inputs, returns)
+      }
+    }
+
+    val numActions = network.layerSizes(network.numLayers - 1)
+
+    if (math.random() < 0.005) (math.random() * numActions).toInt
+    else maxAction(newState)._1
+  }
+
+  private def maxAction(state: Array[Double]): (Int, Double) = {
+    val result = network.forwardProp(state)
+
     var maxIdx = 0
     var maxAns = Double.NegativeInfinity
-    for (i <- newReturns.indices) {
-      if (newReturns(i) > maxAns) {
-        maxAns = newReturns(i)
+    for (i <- result.indices) {
+      if (result(i) > maxAns) {
+        maxAns = result(i)
         maxIdx = i
       }
     }
 
-    if (math.random() < 0.1) {
-      maxIdx = (math.random() * newReturns.length).toInt
-    }
-
-    if (!first) {
-
-      val returns = network.forwardProp(prevState)
-      returns(action) = reward + (if (last) 0 else maxAns) * discountFactor
-
-      optimiser.step(Matrix.rows(prevState), Matrix.rows(returns))
-    }
-
-    maxIdx
+    (maxIdx, maxAns)
   }
 
   override def reset(): Unit = {
@@ -69,6 +117,12 @@ object QNetworkAgent {
 
   case class QNetworkSpace[T](size: Int, map: T => Array[Double]) {
     def apply(state: T) = map(state)
+  }
+
+  object QNetworkSpace {
+    def bounded[T](min: Double, max: Double, map: T => Double): QNetworkSpace[T] = {
+      QNetworkSpace(1, s => Array((map(s) - min) / (max - min)))
+    }
   }
 
   def stateMap[S](spaces: Array[QNetworkSpace[S]])(state: S): Array[Double] = {
