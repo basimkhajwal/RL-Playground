@@ -1,9 +1,10 @@
 package rlp.pages
 
 import org.scalajs.dom.raw.CanvasRenderingContext2D
+import rlp.agent.QNetworkAgent.QNetworkSpace
 import rlp.agent.QStateSpace
 import rlp.environment.{Environment, FlappyBird}
-import rlp.models.{Model, ModelParam, QTableModel}
+import rlp.models.{Model, ModelParam, QNetworkModel, QTableModel}
 
 class FlappyBirdPage extends GamePage[FlappyBird.State, FlappyBird.FlappyBirdAgent]{
 
@@ -21,6 +22,13 @@ class FlappyBirdPage extends GamePage[FlappyBird.State, FlappyBird.FlappyBirdAge
       ModelParam("Vertical Speed", QStateSpace.boxed[AgentState](-MAX_SPEED, MAX_SPEED, 10, _.vy)),
       ModelParam("Next Block Distance", QStateSpace.boxed[AgentState](0, BLOCK_SPACING + BLOCK_WIDTH, 30, _.blockDist)),
       ModelParam("Gap Height", QStateSpace.boxed[AgentState](0, SCREEN_HEIGHT - GROUND_HEIGHT, 20, _.gapMid)),
+    ),
+    QNetworkModel.builder(name,
+      2, { a => if (a == 0) NoAction else JumpAction },
+      ModelParam("Height", QNetworkSpace.bounded[AgentState](0, SCREEN_HEIGHT - GROUND_HEIGHT, _.y)),
+      ModelParam("Vertical Speed", QNetworkSpace.bounded[AgentState](-MAX_SPEED, MAX_SPEED,  _.vy)),
+      ModelParam("Next Block Distance", QNetworkSpace.bounded[AgentState](0, BLOCK_SPACING + BLOCK_WIDTH,  _.blockDist)),
+      ModelParam("Gap Height", QNetworkSpace.bounded[AgentState](0, SCREEN_HEIGHT - GROUND_HEIGHT, _.gapMid)),
     )
   )
 
