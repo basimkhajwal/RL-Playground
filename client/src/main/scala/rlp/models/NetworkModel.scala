@@ -29,7 +29,7 @@ abstract class NetworkModel[S,A,P](
 
   protected val maxHiddenLayers = 5
 
-  private val paramSelector = new ParamSelector(params)
+  protected val paramSelector = new ParamSelector(params)
   protected val paramBindings = paramSelector.paramBindings
   private val paramsEnabled = for ((param, enabled) <- paramBindings; if enabled) yield param
 
