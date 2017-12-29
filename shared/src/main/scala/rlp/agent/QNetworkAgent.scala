@@ -4,6 +4,7 @@ import rlp.ai.NeuralNetwork
 import rlp.ai.optimizers.{Adam, NetworkOptimizer, SGDMomentum}
 import rlp.math.Matrix
 import upickle.Js
+import upickle.default._
 
 import scala.reflect.ClassTag
 import scala.util.Random
@@ -97,20 +98,29 @@ class QNetworkAgent(
 
     network.load(keyMap("network"))
     optimiser = NetworkOptimizer.create(network, keyMap("optimiser"))
+
     discountFactor = keyMap("discountFactor").num
     explorationEpsilon = keyMap("explorationEpsilon").num
     miniBatchSize = keyMap("miniBatchSize").num.toInt
     updateStepInterval = keyMap("updateStepInterval").num.toInt
+
+    stepCount = keyMap("stepCount").num.toInt
+    val replayData = readJs[Seq[Replay]](keyMap("replayBuffer")).toArray
+    for (i <- replayBuffer.indices) replayBuffer(i) = replayData(i)
   }
 
   override def store(): Js.Value = {
     Js.Obj(
       "network" -> network.store(),
       "optimiser" -> NetworkOptimizer.store(optimiser),
+
       "discountFactor" -> Js.Num(discountFactor),
       "explorationEpsilon" -> Js.Num(explorationEpsilon),
       "miniBatchSize" -> Js.Num(miniBatchSize),
-      "updateStepInterval" -> Js.Num(updateStepInterval)
+      "updateStepInterval" -> Js.Num(updateStepInterval),
+
+      "stepCount" -> Js.Num(stepCount),
+      "replayBuffer" -> writeJs(replayBuffer.toSeq)
     )
   }
 }
