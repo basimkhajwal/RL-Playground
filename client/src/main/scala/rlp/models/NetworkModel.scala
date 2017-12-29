@@ -7,7 +7,7 @@ import rlp.agent.Agent
 import rlp.ai.ActivationFunction.{Linear, ReLU, Sigmoid}
 import rlp.ai.{ActivationFunction, NeuralNetwork}
 import rlp.ai.optimizers.{Adam, NetworkOptimizer, RMSProp, SGDMomentum}
-import rlp.utils.SelectHandler
+import rlp.utils.{NumericInputHandler, SelectHandler}
 import rlp._
 import upickle.Js
 
@@ -48,30 +48,14 @@ abstract class NetworkModel[S,A,P](
       activation := activationFunctions(activationIdx)._2
     }
 
-    private def inputChanged(inputID: String): Unit = {
-      val inputElem = getElem[html.Input](inputID)
-      if (inputElem.validity.valid) {
-        size := inputElem.value.toInt
-      }
-    }
-
     @dom
     lazy val handler: Binding[html.Div] = {
-      val inputID = getGUID("input-size")
-
       <div class="layer-definition row valign-wrapper">
         <span class="col s3">{s"Hidden Layer ${index.bind+1}"}</span>
 
-        <div class="input-field col s4">
-          <input id={inputID}
-                 value={size.bind.toString} onchange={_:Event => inputChanged(inputID)}
-                 class="validate" type="number" min="1" max="100" step="1" />
-          <label for={inputID} class="active" data:data-error="Enter size in range 1-100">Layer Size</label>
-        </div>
+        <div class="col s4">{ new NumericInputHandler("Layer Size", size, 1, 100).content.bind }</div>
 
-        <div class="col s4">
-          { activationSelector.handler.bind }
-        </div>
+        <div class="col s4">{ activationSelector.handler.bind }</div>
 
         {
           activationChanged(activationSelector.selectedIndex.bind)
@@ -142,17 +126,13 @@ abstract class NetworkModel[S,A,P](
           </div>
         </div>
 
-        {
-        for (layer <- layerDefinitions) yield {
-          layer.handler.bind
-        }
-        }
+        { for (layer <- layerDefinitions) yield layer.handler.bind }
 
         <div class="layer-definition row" id="output-layer">
           <span class="col s3">Output Layer</span>
           <span class="col s4">{s"$outputSize neurons"}</span>
           <span class="col s4">
-            { activationFunctions.find(_._2 == outputActivation).map(_._1).getOrElse("")}
+            { activationFunctions.find(_._2 == outputActivation).map(_._1).getOrElse("") }
           </span>
         </div>
       </div>
@@ -232,15 +212,15 @@ abstract class NetworkModel[S,A,P](
 
     val dirty: Var[Boolean] = Var(false)
 
-    val initialValues: Array[Double] = params.map(_.extractor(default)).toArray
-    val paramDirty = new Array[Boolean](initialValues.size)
-    val paramValues: Vars[Double] = Vars(initialValues:_*)
+    private val initialValues: Array[Double] = params.map(_.extractor(default)).toArray
+    private val paramDirty = new Array[Boolean](initialValues.size)
+    private val paramValues: List[Var[Double]] = initialValues.map(Var(_)).toList
 
     def selectOptimiser(opt: NetworkOptimizer): Unit = {
       if (isInstance(opt)) {
         for (i <- params.indices) {
           initialValues(i) = params(i).extractor(opt)
-          paramValues.get(i) = initialValues(i)
+          paramValues(i) := initialValues(i)
           paramDirty(i) = false
         }
         dirty := false
@@ -250,43 +230,24 @@ abstract class NetworkModel[S,A,P](
     }
 
     def construct(): NetworkOptimizer = {
-      paramConstructor(paramValues.get.toArray)
+      paramConstructor(paramValues.map(_.get).toArray)
     }
 
-    private def paramUpdated(pid: String, idx: Int): Unit = {
-      val elem = getElem[html.Input](pid)
-
-      if (elem.validity.valid) {
-        val value = elem.value.toDouble
-        paramValues.get(idx) = value
-
-        if ( (value != initialValues(idx)) ^ paramDirty(idx) ) {
-          paramDirty(idx) = !paramDirty(idx)
-          dirty := paramDirty.reduce(_ || _)
-        }
-      }
+    private def paramUpdated(idx: Int, value: Double): Unit = {
+      paramDirty(idx) = value != initialValues(idx)
+      dirty := paramDirty.reduce(_ || _)
     }
 
     @dom
     lazy val handler: Binding[html.Div] = {
       <div class="optimiser-input-container">
         {
-        val indexed = Constants(params.zipWithIndex :_*)
-        val values = paramValues.bind
+          for (i <- Constants(params.indices :_*)) yield {
+            val inputHandler = new NumericInputHandler(params(i).name, paramValues(i), params(i).min, params(i).max)
+            paramUpdated(i, paramValues(i).bind)
 
-        for ((param, idx) <- indexed) yield {
-          val pid = getGUID(param.name)
-
-          <div class="input-field optimiser-input">
-            <input id={pid} class="validate" value={values(idx).toString}
-                   onchange={_:Event => paramUpdated(pid, idx)}
-                   type="number" min={param.min.toString} max={param.max.toString} step="any"
-            />
-            <label for={pid} class="active" data:data-error={s"${param.name} must be between ${param.min} and ${param.max}"}>
-              {param.name}
-            </label>
-          </div>
-        }
+            <div class="optimiser-input">{ inputHandler.content.bind }</div>
+          }
         }
       </div>
     }
@@ -386,13 +347,13 @@ abstract class NetworkModel[S,A,P](
 
               <text data:x={x.toString} data:y="60">
                 {
-                if (layer == 0) ""
-                else {
-                  activationFunctions.find(_._2 == network.activationFunctions(layer-1)) match {
-                    case Some((name, _)) => name + " activation"
-                    case None => "Unknown activation"
+                  if (layer == 0) ""
+                  else {
+                    activationFunctions.find(_._2 == network.activationFunctions(layer-1)) match {
+                      case Some((name, _)) => name + " activation"
+                      case None => "Unknown activation"
+                    }
                   }
-                }
                 }
               </text>
             </g>
@@ -497,19 +458,19 @@ abstract class NetworkModel[S,A,P](
           { optimiserSelect.handler.bind }
         </div>
 
-        <div class="col s3 offset-s1">
-          <a class={buttonClasses.bind} onclick={_:Event => undoChanges()}>Undo Changes</a>
+          <div class="col s3 offset-s1">
+            <a class={buttonClasses.bind} onclick={_:Event => undoChanges()}>Undo Changes</a>
+          </div>
+
+          <div class="col s3">
+            <a class={buttonClasses.bind} onclick={_:Event => updateOptimiser()}>Update Optimiser</a>
+          </div>
         </div>
 
-        <div class="col s3">
-          <a class={buttonClasses.bind} onclick={_:Event => updateOptimiser()}>Update Optimiser</a>
+        <div class="col s10 offset-s1">
+          { optimisers(optimiserSelect.selectedIndex.bind).handler.bind }
         </div>
-      </div>
 
-      <div class="col s10 offset-s1">
-        { optimisers(optimiserSelect.selectedIndex.bind).handler.bind }
       </div>
-
-    </div>
   }
 }

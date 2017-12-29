@@ -6,6 +6,7 @@ import org.scalajs.dom.{Event, html}
 import org.scalajs.dom.raw.HTMLElement
 import rlp._
 import rlp.agent.{Agent, QStateSpace, QTableAgent}
+import rlp.utils.NumericInputHandler
 import upickle.Js
 
 class QTableModel[O, A](
@@ -67,34 +68,24 @@ class QTableModel[O, A](
     <div>
       <h5 class="col offset-s1 s11 light">Q Table Parameters</h5>
 
-      <div class="input-field col s3 offset-s2">
-        <input id="learning-rate" class="validate" type="number" min="0" max="1" step="any" value={learningRate.bind.toString}
-               oninput={_:Event => dataChanged()} required={true} />
-        <label for="learning-rate" data:data-error="Learning rate must be between 0 and 1">Learning Rate</label>
+      <div class="col s3 offset-s2">
+        { new NumericInputHandler("Learning Rate", learningRate, 0, 1).content.bind }
       </div>
 
-      <div class="input-field col s3 offset-s2">
-        <input id="discount-factor" class="validate" type="number" min="0" max="1" step="any" value={discountFactor.bind.toString}
-               oninput={_:Event => dataChanged()} required={true} />
-        <label for="discount-factor" data:data-error="Discount factor must be between 0 and 1">Forgetting Factor</label>
+      <div class="col s3 offset-s2">
+        { new NumericInputHandler("Discount Factor", discountFactor, 0, 1).content.bind }
       </div>
 
+      {
+        dataChanged(learningRate.bind, discountFactor.bind)
+        ""
+      }
     </div>
   }
 
-  private def dataChanged(): Unit = {
-    val learningRateElem = getElem[html.Input]("learning-rate")
-    val discountFactorElem = getElem[html.Input]("discount-factor")
-
-    if (learningRateElem.validity.valid) {
-      learningRate := learningRateElem.value.toDouble
-      qTable.learningRate = learningRate.get
-    }
-
-    if (discountFactorElem.validity.valid) {
-      discountFactor := discountFactorElem.value.toDouble
-      qTable.discountFactor = discountFactor.get
-    }
+  private def dataChanged(lr: Double, df: Double): Unit = {
+    qTable.learningRate = lr
+    qTable.discountFactor = df
   }
 
   override def resetAgent(): Unit = {
