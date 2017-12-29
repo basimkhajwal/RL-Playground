@@ -22,13 +22,13 @@
     padding: 30px;
 }
 
-.param-selector {
+.distribute-container {
     padding: 20px 10%;
     display: flex;
     justify-content: space-evenly;
 }
 
-.param-checkbox {
+.distribute-item {
     display: inline-block;
     margin: 0 auto;
 }

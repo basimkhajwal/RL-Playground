@@ -46,19 +46,34 @@ class ParamSelector[A](params: Array[ModelParam[A]]) {
 
   @dom
   lazy val builder: Binding[Div] = {
-    <div class="param-selector">
+    <div class="distribute-container">
        {
-       for ((param, enabled) <- paramBindings) yield {
-          <div class="param-checkbox">
-             <input type="checkbox" id={getCheckBoxID(param)}
-                    onchange={ _:Event => checkBoxToggled(param)}
-                    checked={enabled}
-             />
-             <label for={getCheckBoxID(param)}>{param.name}</label>
-          </div>
-       }
+         for ((param, enabled) <- paramBindings) yield {
+            <div class="distribute-item">
+               <input type="checkbox" id={getCheckBoxID(param)}
+                      onchange={ _:Event => checkBoxToggled(param)}
+                      checked={enabled}
+               />
+               <label for={getCheckBoxID(param)}>{param.name}</label>
+            </div>
+         }
        }
     </div>
   }
 
+  @dom
+  lazy val viewer: Binding[Div] = {
+    <div>
+      <h5>Inputs Enabled</h5>
+      <div class="distribute-container">
+        {
+          for ((param, enabled) <- paramBindings; if enabled) yield {
+            <div class="distribute-item">
+              <h6>{param.name}</h6>
+            </div>
+          }
+        }
+      </div>
+    </div>
+  }
 }
