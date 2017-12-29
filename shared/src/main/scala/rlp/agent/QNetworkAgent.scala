@@ -9,17 +9,20 @@ import scala.reflect.ClassTag
 import scala.util.Random
 
 class QNetworkAgent(
-  val network: NeuralNetwork
+  val network: NeuralNetwork,
+  val replayBufferSize: Int = 10000,
 ) extends SteppedAgent[Array[Double], Int]{
 
   type Replay = (Array[Double], Int, Double, Array[Double])
 
-  val replayBuffer = new Array[Replay](100)
-  var replayBufferIdx = 0
-  var isFull = false
+  private val replayBuffer = new Array[Replay](replayBufferSize)
+  private var stepCount = 0
 
   var optimiser: NetworkOptimizer = new SGDMomentum(network, 0.0001)
-  val discountFactor = 0.99
+  var discountFactor = 0.99
+  var explorationEpsilon = 0.1
+  var miniBatchSize = 10
+  var updateStepInterval = 50
 
   private def sampleIndices(n: Int, k: Int): Array[Int] = {
     val arr = new Array[Int](k)
@@ -34,33 +37,23 @@ class QNetworkAgent(
     arr
   }
 
-  private def sampleItems[T : ClassTag](xs: Array[T], n: Int, k: Int): Array[T] = {
-    sampleIndices(n, k).map(xs).toArray
-  }
+  private def sampleItems[T : ClassTag](xs: Array[T], n: Int, k: Int): Array[T] = sampleIndices(n, k).map(xs)
 
   override def step(prevState: Array[Double], action: Int, reward: Double, newState: Array[Double], first: Boolean, last: Boolean): Int = {
 
     if (!first) {
 
-      /* Store replay */
-      replayBuffer(replayBufferIdx) = (prevState, action, reward, if (last) null else newState)
-      replayBufferIdx += 1
-      if (replayBufferIdx >= replayBuffer.length) {
-        replayBufferIdx = 0
-        isFull = true
-      }
+      replayBuffer(stepCount % replayBufferSize) = (prevState, action, reward, if (last) null else newState)
+      stepCount += 1
 
-      val minibatchSize = 10
-      val numItems = if (isFull) replayBuffer.length else replayBufferIdx
-
-      if (numItems >= minibatchSize) {
-        val sample = sampleItems(replayBuffer, numItems, minibatchSize)
+      if (stepCount % updateStepInterval == 0) {
+        val sample = sampleItems(replayBuffer, Math.min(stepCount, replayBufferSize), miniBatchSize)
 
         val inputs = Matrix.rows(sample.map(_._1))
 
         val returns = network.forwardProp(inputs)
 
-        for (i <- 0 until minibatchSize) {
+        for (i <- 0 until miniBatchSize) {
           val (_, a, r, n) = sample(i)
 
           if (n == null) {
@@ -76,7 +69,7 @@ class QNetworkAgent(
 
     val numActions = network.layerSizes(network.numLayers - 1)
 
-    if (math.random() < 0.005) (math.random() * numActions).toInt
+    if (math.random() < explorationEpsilon) (math.random() * numActions).toInt
     else maxAction(newState)._1
   }
 
@@ -101,14 +94,23 @@ class QNetworkAgent(
 
   override def load(data: Js.Value): Unit = {
     val keyMap = data.obj
+
     network.load(keyMap("network"))
     optimiser = NetworkOptimizer.create(network, keyMap("optimiser"))
+    discountFactor = keyMap("discountFactor").num
+    explorationEpsilon = keyMap("explorationEpsilon").num
+    miniBatchSize = keyMap("miniBatchSize").num.toInt
+    updateStepInterval = keyMap("updateStepInterval").num.toInt
   }
 
   override def store(): Js.Value = {
     Js.Obj(
       "network" -> network.store(),
-      "optimiser" -> NetworkOptimizer.store(optimiser)
+      "optimiser" -> NetworkOptimizer.store(optimiser),
+      "discountFactor" -> Js.Num(discountFactor),
+      "explorationEpsilon" -> Js.Num(explorationEpsilon),
+      "miniBatchSize" -> Js.Num(miniBatchSize),
+      "updateStepInterval" -> Js.Num(updateStepInterval)
     )
   }
 }
