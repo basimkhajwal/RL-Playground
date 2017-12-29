@@ -66,7 +66,10 @@ class QTableModel[O, A](
   @dom
   override lazy val modelViewer: Binding[HTMLElement] = {
     <div>
-      <h5 class="col offset-s1 s11 light">Q Table Parameters</h5>
+
+      <div class="col s10 offset-s1">{paramSelector.viewer.bind}</div>
+
+      <h5 class="col offset-s1 s11">Q Table Parameters</h5>
 
       <div class="col s3 offset-s2">
         { new NumericInputHandler("Learning Rate", learningRate, 0, 1).content.bind }
