@@ -44,7 +44,7 @@ class QNetworkModel[S,A](
     val inputs = for ((param, enabled) <- paramBindings.get; if enabled) yield param.value
     val network = buildNetwork()
 
-    qNetwork = new QNetworkAgent(network)
+    qNetwork = new QNetworkAgent(network, replayBufferSize.get)
     qNetwork.reset()
 
     explorationEpsilon := qNetwork.explorationEpsilon
@@ -60,6 +60,13 @@ class QNetworkModel[S,A](
   private val miniBatchSize: Var[Int] = Var(10)
   private val updateStepInterval: Var[Int] = Var(50)
 
+  private def paramsChanged(epsilon: Double, discount: Double, batchSize: Int, updateInterval: Int): Unit = {
+    qNetwork.explorationEpsilon = epsilon
+    qNetwork.discountFactor = discount
+    qNetwork.miniBatchSize = batchSize
+    qNetwork.updateStepInterval = updateInterval
+  }
+
   @dom
   override lazy val modelViewer: Binding[html.Div] = {
     <div class="row">
@@ -72,10 +79,17 @@ class QNetworkModel[S,A](
       <div class="col s3 offset-s2">
         { new NumericInputHandler("Discount Factor", discountFactor, 0, 1).content.bind }
       </div>
-      <div class="col s3 offset-s2">
+
+      <h5 class="col s11 offset-s1">Experience Replay</h5>
+
+      <div class="col s2 offset-s2">
+        <h6>Buffer Size: {qNetwork.replayBufferSize.toString}</h6>
+      </div>
+
+      <div class="col s2 offset-s1">
         { new NumericInputHandler("Mini-batch Size", miniBatchSize, 1, qNetwork.replayBufferSize).content.bind }
       </div>
-      <div class="col s3 offset-s2">
+      <div class="col s2 offset-s1">
         { new NumericInputHandler("Update Step Interval", updateStepInterval, 1, 10000).content.bind }
       </div>
 
@@ -84,6 +98,11 @@ class QNetworkModel[S,A](
       </div>
 
       <div class="col s12">{networkViewer.bind}</div>
+
+      {
+        paramsChanged(explorationEpsilon.bind, discountFactor.bind, miniBatchSize.bind, updateStepInterval.bind)
+        ""
+      }
     </div>
   }
 
