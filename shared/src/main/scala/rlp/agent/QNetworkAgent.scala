@@ -47,7 +47,7 @@ class QNetworkAgent(
       replayBuffer(stepCount % replayBufferSize) = (prevState, action, reward, if (last) null else newState)
       stepCount += 1
 
-      if (stepCount % updateStepInterval == 0) {
+      if (stepCount >= miniBatchSize && stepCount % updateStepInterval == 0) {
         val sample = sampleItems(replayBuffer, Math.min(stepCount, replayBufferSize), miniBatchSize)
 
         val inputs = Matrix.rows(sample.map(_._1))
