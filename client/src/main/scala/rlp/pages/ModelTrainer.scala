@@ -102,26 +102,33 @@ class ModelTrainer[A](
               reader.readAsText(file)
 
               reader.onload = { _ =>
-                val result = reader.result.asInstanceOf[String]
-                val store = upickle.default.read[ModelStore](result)
 
-                builders.find(_._1 == store.agentName) match {
+                try {
+                  val result = reader.result.asInstanceOf[String]
+                  val store = upickle.default.read[ModelStore](result)
 
-                  case Some((_, builder)) => {
-                    val model = builder()
-                    model.load(store)
-                    models.get += model
+                  builders.find(_._1 == store.agentName) match {
 
-                    js.Dynamic.global.$("import-modal").modal("close")
+                    case Some((_, builder)) => {
+                      val model = builder()
+                      model.load(store)
+                      models.get += model
+
+                      js.Dynamic.global.$("#import-modal").modal("close")
+                    }
+
+                    case None => importError := s"Error reading data, invalid agent ${store.agentName}"
                   }
-
-                  case None => importError := s"Error reading data, invalid agent ${store.agentName}"
+                } catch {
+                  case e: Exception => {
+                    importError := "Error parsing file: \n" + e.getMessage
+                  }
                 }
               }
 
             } catch {
               case e: Exception => {
-                importError := "Error importing: \n" + e.getMessage
+                importError := "Error reading file: \n" + e.getMessage
               }
             }
           }
