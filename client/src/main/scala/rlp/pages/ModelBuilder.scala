@@ -136,7 +136,7 @@ class ModelBuilder[A](
       <div class="col s3 offset-s2 input-field">
         <input id="model-name" class="validate" type="text"
                value={modelName.bind} onchange={_:Event => onNameChange()} required={true}/>
-        <label for="model-name" data:data-error="Model name empty or already exists">Model Name</label>
+        <label class="active" for="model-name" data:data-error="Model name empty or already exists">Model Name</label>
       </div>
 
       <div class="col s12">
