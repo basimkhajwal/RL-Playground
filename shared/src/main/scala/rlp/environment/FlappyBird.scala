@@ -139,7 +139,7 @@ class FlappyBird(val agent: FlappyBird.FlappyBirdAgent) extends Environment[Flap
     val collision = topCollision || groundCollision || blockCollision
     val transitTime = (BLOCK_SPACING + BLOCK_WIDTH) * (1.0 / BIRD_SPEED)
 
-    agent.percept(if (collision) -10 else (1.0 / transitTime) * Environment.DELTA)
+    agent.percept(if (collision) -1000 else (1.0 / transitTime) * Environment.DELTA)
 
     collision
   }
