@@ -55,6 +55,29 @@ class QNetworkModel[S,A](
     QNetworkAgent.build(qNetwork, actionMap, inputs)
   }
 
+  override def cloneBuildFrom(that: Model[Agent[S, A]]): Unit = {
+    super.cloneBuildFrom(that)
+
+    val controller = that.asInstanceOf[QNetworkModel[S, A]]
+    replayBufferSize := controller.replayBufferSize.get
+  }
+
+  override def storeBuild(): Js.Value = {
+    val networkStore = super.storeBuild()
+
+    Js.Obj(
+      "networkStore" -> networkStore,
+      "replayBufferSize" -> Js.Num(replayBufferSize.get)
+    )
+  }
+
+  override def loadBuild(build: Js.Value): Unit = {
+    val keyMap = build.obj
+
+    super.loadBuild(keyMap("networkStore"))
+    replayBufferSize := keyMap("replayBufferSize").num.toInt
+  }
+
   private val explorationEpsilon: Var[Double] = Var(0.1)
   private val discountFactor: Var[Double] = Var(0.99)
   private val miniBatchSize: Var[Int] = Var(10)
