@@ -8,7 +8,7 @@ class QTableAgent(
 
   var learningRate = 0.1
   var discountFactor = 0.9
-  var epsilon = 0.1
+  var explorationEpsilon = 0.1
 
   def this(numStates: Int, numActions: Int) {
     this(numStates, numActions, new Array[Double](numStates * numActions))
@@ -17,7 +17,7 @@ class QTableAgent(
   override def step(prevState: Int, action: Int, reward: Double, newState: Int, first: Boolean, last: Boolean): Int = {
     val (greedyAction, maxReward) = maximumAction(newState)
 
-    val newAction = if (math.random() < 0.01) (math.random() * numActions).toInt else greedyAction
+    val newAction = if (math.random() < explorationEpsilon) (math.random() * numActions).toInt else greedyAction
 
     if (!first) {
 
@@ -62,6 +62,7 @@ class QTableAgent(
 
     learningRate = keyMap("learningRate").num
     discountFactor = keyMap("discountFactor").num
+    explorationEpsilon = keyMap("explorationEpsilon").num
 
     val xs = keyMap("table").arr.map(_.num)
     for (i <- table.indices) {
@@ -73,6 +74,7 @@ class QTableAgent(
     Js.Obj(
       "learningRate" -> Js.Num(learningRate),
       "discountFactor" -> Js.Num(discountFactor),
+      "explorationEpsilon" -> Js.Num(explorationEpsilon),
       "table" -> Js.Arr(table.map(Js.Num) :_*)
     )
   }

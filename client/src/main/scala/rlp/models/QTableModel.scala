@@ -1,8 +1,7 @@
 package rlp.models
 
-import com.thoughtworks.binding.Binding.{Var, Vars}
+import com.thoughtworks.binding.Binding.Var
 import com.thoughtworks.binding.{Binding, dom}
-import org.scalajs.dom.{Event, html}
 import org.scalajs.dom.raw.HTMLElement
 import rlp._
 import rlp.agent.{Agent, QStateSpace, QTableAgent}
@@ -18,6 +17,7 @@ class QTableModel[O, A](
 
   private val learningRate = Var(0.1)
   private val discountFactor = Var(0.9)
+  private val explorationEpsilon = Var(0.1)
 
   private var qTable: QTableAgent = _
 
@@ -61,6 +61,7 @@ class QTableModel[O, A](
     /* Reset from imported file */
     learningRate := qTable.learningRate
     discountFactor := qTable.discountFactor
+    explorationEpsilon := qTable.explorationEpsilon
   }
 
   @dom
@@ -71,24 +72,29 @@ class QTableModel[O, A](
 
       <h5 class="col offset-s1 s11">Q Table Parameters</h5>
 
-      <div class="col s3 offset-s2">
+      <div class="col s2 offset-s2">
         { new NumericInputHandler("Learning Rate", learningRate, 0, 1).content.bind }
       </div>
 
-      <div class="col s3 offset-s2">
+      <div class="col s2 offset-s1">
         { new NumericInputHandler("Discount Factor", discountFactor, 0, 1).content.bind }
       </div>
 
+      <div class="col s2 offset-s1">
+        { new NumericInputHandler("Exploration Epsilon", explorationEpsilon, 0, 1).content.bind }
+      </div>
+
       {
-        dataChanged(learningRate.bind, discountFactor.bind)
+        dataChanged(learningRate.bind, discountFactor.bind, explorationEpsilon.bind)
         ""
       }
     </div>
   }
 
-  private def dataChanged(lr: Double, df: Double): Unit = {
+  private def dataChanged(lr: Double, df: Double, e: Double): Unit = {
     qTable.learningRate = lr
     qTable.discountFactor = df
+    qTable.explorationEpsilon = e
   }
 
   override def resetAgent(): Unit = {
