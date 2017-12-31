@@ -8,7 +8,7 @@ import rlp.agent.{Agent, QNetworkAgent}
 import rlp.ai.NeuralNetwork
 import rlp._
 import rlp.ai.optimizers.NetworkOptimizer
-import rlp.utils.NumericInputHandler
+import rlp.ui.NumericInputHandler
 import upickle.Js
 
 class QNetworkModel[S,A](

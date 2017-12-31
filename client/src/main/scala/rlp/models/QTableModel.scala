@@ -5,7 +5,7 @@ import com.thoughtworks.binding.{Binding, dom}
 import org.scalajs.dom.raw.HTMLElement
 import rlp._
 import rlp.agent.{Agent, QStateSpace, QTableAgent}
-import rlp.utils.NumericInputHandler
+import rlp.ui.NumericInputHandler
 import upickle.Js
 
 class QTableModel[O, A](

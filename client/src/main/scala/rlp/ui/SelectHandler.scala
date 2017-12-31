@@ -1,16 +1,14 @@
-package rlp.utils
+package rlp.ui
 
 import com.thoughtworks.binding.Binding.{BindingSeq, Constant, Constants, Var}
 import com.thoughtworks.binding.{Binding, dom}
-import org.scalajs.dom.{Event, html, window}
 import org.scalajs.dom.html.Div
 import org.scalajs.dom.raw.AnimationEvent
-
-import scala.scalajs.js.timers
+import org.scalajs.dom.{Event, html, window}
 import rlp._
 
 import scala.collection.mutable.ArrayBuffer
-import scala.scalajs.js.Dynamic
+import scala.scalajs.js.{Dynamic, timers}
 
 object SelectHandler {
 

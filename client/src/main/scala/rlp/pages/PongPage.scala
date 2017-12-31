@@ -10,7 +10,7 @@ import rlp.agent.QNetworkAgent.QNetworkSpace
 import rlp.agent.QStateSpace
 import rlp.environment.Pong.PongAgent
 import rlp.models.{Model, ModelParam, QNetworkModel, QTableModel}
-import rlp.utils.SelectHandler
+import rlp.ui.SelectHandler
 
 class PongPage extends GamePage[Pong.State, PongAgent] {
 

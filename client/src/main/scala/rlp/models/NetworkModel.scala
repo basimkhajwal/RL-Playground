@@ -7,8 +7,8 @@ import rlp.agent.Agent
 import rlp.ai.ActivationFunction.{Linear, ReLU, Sigmoid}
 import rlp.ai.{ActivationFunction, NeuralNetwork}
 import rlp.ai.optimizers.{Adam, NetworkOptimizer, RMSProp, SGDMomentum}
-import rlp.utils.{NumericInputHandler, SelectHandler}
 import rlp._
+import rlp.ui.{NumericInputHandler, SelectHandler}
 import upickle.Js
 
 abstract class NetworkModel[S,A,P](

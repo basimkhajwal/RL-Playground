@@ -1,8 +1,8 @@
-package rlp.utils
+package rlp.ui
 
 import com.thoughtworks.binding.Binding.Var
 import com.thoughtworks.binding.{Binding, dom}
-import org.scalajs.dom.{Event, html, document}
+import org.scalajs.dom.{Event, document, html}
 import rlp._
 
 class NumericInputHandler(

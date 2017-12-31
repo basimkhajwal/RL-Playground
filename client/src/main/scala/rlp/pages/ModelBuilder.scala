@@ -2,11 +2,11 @@ package rlp.pages
 
 import com.thoughtworks.binding.{Binding, dom}
 import com.thoughtworks.binding.Binding.{BindingSeq, Constant, Var, Vars}
-import org.scalajs.dom.{Event, html, document}
+import org.scalajs.dom.{Event, document, html}
 import org.scalajs.dom.html.Div
 import rlp._
 import rlp.models.Model
-import rlp.utils.SelectHandler
+import rlp.ui.SelectHandler
 
 import scala.scalajs.js
 

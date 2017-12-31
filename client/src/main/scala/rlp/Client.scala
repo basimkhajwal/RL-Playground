@@ -4,7 +4,7 @@ import com.thoughtworks.binding.Binding.Constant
 import com.thoughtworks.binding.{Binding, dom}
 import org.scalajs.dom.{Event, document, html, window}
 import rlp.pages.{FlappyBirdPage, Page, PongPage}
-import rlp.utils.SelectHandler
+import rlp.ui.SelectHandler
 
 import scala.scalajs.js.Dynamic
 
