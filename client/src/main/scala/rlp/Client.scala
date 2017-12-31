@@ -36,21 +36,52 @@ object Client {
       Dynamic.global.$("select").material_select()
     }
 
-    <div id="app">
-      <nav class="teal z-depth-0">
-        <div class="nav-wrapper page-container">
-          <a href="#" class="brand-logo left">RL-Playground</a>
-          <p id="subtitle" class="right hide-on-med-and-down">
-            An interactive reinforcement learning demonstration
-          </p>
-        </div>
-      </nav>
-
-      <div class="row page-container">
-        { pageSelect.handler.bind }
+    <div id="app" class="grey lighten-5">
+      <div class="navbar-fixed">
+        <nav class="teal">
+          <div class="nav-wrapper page-container">
+            <div class="row">
+              <div class="col s3">
+                <a href="#" class="brand-logo">RL-Playground</a>
+              </div>
+              <p id="subtitle" class="col s4 offset-s1">An interactive reinforcement learning demonstration</p>
+            </div>
+          </div>
+        </nav>
       </div>
 
+      <div class="row page-container"> { pageSelect.handler.bind } </div>
+
       { pages(pageSelect.selectedIndex.bind).content.bind }
+
+      <footer class="page-footer">
+        <div class="page-container">
+          <div class="row">
+            <div class="col l6 s12">
+              <h5 class="white-text">RL-Playground</h5>
+              <p class="grey-text text-lighten-4">
+                A reinforcement learning playground made for my A-level computing coursework.
+                Made using Scala.JS and Binding.scala.
+              </p>
+            </div>
+            <div class="col l4 offset-l2 s12">
+              <h5 class="white-text">Links</h5>
+              <ul>
+                <li><a class="grey-text text-lighten-3" href="#">Home</a></li>
+                <li><a class="grey-text text-lighten-3" href="#">Leaderboard</a></li>
+                <li>
+                  <iframe
+                    src={"https://ghbtns.com/github-btn.html?user=basimkhajwal&repo=RL-Playground&type=star&count=true"}
+                    data:frameborder="0" data:scrolling="0" width="160px" height="30px"></iframe>
+                </li>
+              </ul>
+            </div>
+          </div>
+        </div>
+        <div class="footer-copyright">
+          <div class="page-container">© 2017 Basim Khajwal</div>
+        </div>
+      </footer>
 
       {
         pageChanged(pageSelect.selectedIndex.bind)

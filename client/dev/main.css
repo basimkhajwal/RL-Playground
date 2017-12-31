@@ -135,7 +135,9 @@ select {
 @media (min-width: 1300px) {
 
     .page-container {
-        max-width: 1200px;
+        padding-left: 5%;
+        padding-right: 5%;
+        max-width: 1600px;
     }
 }
 
