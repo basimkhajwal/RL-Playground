@@ -24,19 +24,24 @@ package object rlp {
     prefix + counters(prefix)
   }
 
-  def initModal(id: String): Unit = {
-
+  def initScript(id: String, initialTimeout: Double = 0, refreshInterval: Double = 50)(init: () => Unit): Unit = {
     var refreshTimer: js.timers.SetIntervalHandle = null
 
     def checkInit(): Unit = {
       if (document.getElementById(id) != null) {
         js.timers.clearInterval(refreshTimer)
-        js.Dynamic.global.$("#" + id).modal()
+        init()
       }
     }
 
-    refreshTimer = js.timers.setInterval(50) { checkInit() }
+    def startTimer(): Unit = {
+      refreshTimer = js.timers.setInterval(refreshInterval) { checkInit() }
+    }
+
+    js.timers.setTimeout(initialTimeout) { startTimer() }
   }
+
+  def initModal(id: String): Unit = initScript(id) { () => js.Dynamic.global.$("#" + id).modal() }
 
   def getElem[T](id: String): T = document.getElementById(id).asInstanceOf[T]
 
