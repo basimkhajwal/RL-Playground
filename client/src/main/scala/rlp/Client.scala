@@ -4,7 +4,7 @@ import com.thoughtworks.binding.Binding.Constant
 import com.thoughtworks.binding.{Binding, dom}
 import org.scalajs.dom.{Event, document, html, window}
 import rlp.pages.{FlappyBirdPage, Page, PongPage}
-import rlp.ui.SelectHandler
+import rlp.ui.{TabSelectHandler, SelectHandler}
 
 import scala.scalajs.js.Dynamic
 
@@ -18,7 +18,7 @@ object Client {
   @dom
   lazy val app: Binding[html.Div] = {
 
-    val pageSelect = new SelectHandler("Select Game", pages.map(_.name), Constant(false))
+    val pageSelect = new TabSelectHandler(pages.map(_.name))
     var prevPage: Page = null
 
     def pageChanged(idx: Int): Unit = {

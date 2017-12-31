@@ -121,6 +121,12 @@
     max-width: 1200px;
 }
 
+.tab-select {
+    text-align: center;
+    margin: 15px 0;
+    background-color: inherit;
+}
+
 /* CSS trick */
 @keyframes selectInserted {
     from { opacity: 0.9999; }
