@@ -96,8 +96,9 @@ abstract class GamePage[S, A] extends Page {
     <div class="row page-container">
 
       <div class="col s12">
-        <h5 class="center-align">{name}</h5>
-        <p class="center-align">{description}</p>
+        <div class="card-panel">
+          <p class="center-align">{description}</p>
+        </div>
       </div>
 
       <div class="col s12">
