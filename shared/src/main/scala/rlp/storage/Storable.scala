@@ -11,6 +11,19 @@ trait Storable {
 
 object Storable {
 
+
+
+  def binaryStore(data: Array[Double]): Js.Str = {
+
+
+
+    ???
+  }
+
+  def binaryRead(str: String): Array[Double] = {
+
+  }
+
   def store(storable: Storable): Js.Value = {
     storable.store()
   }
