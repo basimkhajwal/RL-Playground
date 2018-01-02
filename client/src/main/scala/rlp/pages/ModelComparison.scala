@@ -27,8 +27,10 @@ class ModelComparison[A](
 
     val items: BindingSeq[js.Object] = for (model:Model[A] <- models) yield {
       val history = model.performanceHistory.bind
+      val xStep = performanceGap * model.performanceStep.bind
+
       js.Dynamic.literal(
-        "x" -> history.indices.map(performanceGap*_).toJSArray,
+        "x" -> history.indices.map(xStep*_).toJSArray,
         "y" -> history.toJSArray,
         "type" -> "scatter",
         "name" -> model.toString

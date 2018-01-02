@@ -79,7 +79,7 @@ abstract class GamePage[S, A] extends Page {
         // Asynchronously perform performance check
         if (model.gamesPlayed.get % performanceEntryGap == 0) {
           timers.setTimeout(20) {
-            model.performanceHistory.get += modelPerformance(model)
+            model.logPerformance(modelPerformance(model))
           }
         }
 
