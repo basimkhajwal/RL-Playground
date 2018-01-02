@@ -7,6 +7,7 @@ case class ModelStore(
   agentName: String,
   modelName: String,
   gamesPlayed: Int,
+  performanceStep: Int,
   performanceHistory: Seq[Double],
   buildData: String,
   agentData: String
