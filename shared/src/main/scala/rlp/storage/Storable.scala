@@ -11,17 +11,12 @@ trait Storable {
 
 object Storable {
 
-
-
   def binaryStore(data: Array[Double]): Js.Str = {
-
-
-
-    ???
+    Js.Str(Base64.encode(Base64.toByteArray(data)))
   }
 
   def binaryRead(str: String): Array[Double] = {
-
+    Base64.fromByteArray(Base64.decode(str))
   }
 
   def store(storable: Storable): Js.Value = {
