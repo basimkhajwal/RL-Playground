@@ -3,6 +3,10 @@
     max-width: 90%;
 }
 
+.title {
+    font-size: 2.1rem;
+}
+
 #buttons-container {
     text-align: center;
     margin-top: 20px;

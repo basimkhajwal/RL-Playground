@@ -1,10 +1,9 @@
 package rlp
 
-import com.thoughtworks.binding.Binding.Constant
 import com.thoughtworks.binding.{Binding, dom}
 import org.scalajs.dom.{Event, document, html, window}
 import rlp.pages.{FlappyBirdPage, Page, PongPage}
-import rlp.ui.{TabSelectHandler, SelectHandler}
+import rlp.ui.{SelectHandler, TabSelectHandler}
 
 import scala.scalajs.js.Dynamic
 
@@ -16,7 +15,57 @@ object Client {
   )
 
   @dom
-  lazy val app: Binding[html.Div] = {
+  lazy val header: Binding[html.Div] = {
+    <div class="navbar-fixed">
+      <nav class="teal">
+        <div class="nav-wrapper page-container">
+          <div class="row">
+            <a href="#" class="white-text title col s3">RL-Playground</a>
+            <p id="subtitle" class="col l4 offset-l1 hide-on-med-and-down">An interactive reinforcement learning demonstration</p>
+            <div class="col s4">
+              <a class="btn waves-effect waves-light red">Login</a>
+              <a class="btn waves-effect waves-light blue">Sign Up</a>
+            </div>
+          </div>
+        </div>
+      </nav>
+    </div>
+  }
+
+  @dom
+  lazy val footer: Binding[html.Element] = {
+    <footer class="page-footer">
+      <div class="page-container">
+        <div class="row">
+          <div class="col l6 s12">
+            <h5 class="white-text">RL-Playground</h5>
+            <p class="grey-text text-lighten-4">
+              A reinforcement learning playground made for my A-level computing coursework.
+              Made using Scala.JS and Binding.scala.
+            </p>
+          </div>
+          <div class="col l4 offset-l2 s12">
+            <h5 class="white-text">Links</h5>
+            <ul>
+              <li><a class="grey-text text-lighten-3" href="#">Home</a></li>
+              <li><a class="grey-text text-lighten-3" href="#">Leaderboard</a></li>
+              <li>
+                <iframe
+                src={"https://ghbtns.com/github-btn.html?user=basimkhajwal&repo=RL-Playground&type=star&count=true"}
+                data:frameborder="0" data:scrolling="0" width="160px" height="30px"></iframe>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
+      <div class="footer-copyright">
+        <div class="page-container">© 2017 Basim Khajwal</div>
+      </div>
+    </footer>
+  }
+
+  @dom
+  lazy val home: Binding[html.Div] = {
 
     val pageSelect = new TabSelectHandler(pages.map(_.name))
     var prevPage: Page = null
@@ -37,51 +86,14 @@ object Client {
     }
 
     <div id="app" class="grey lighten-5">
-      <div class="navbar-fixed">
-        <nav class="teal">
-          <div class="nav-wrapper page-container">
-            <div class="row">
-              <div class="col s3">
-                <a href="#" class="brand-logo">RL-Playground</a>
-              </div>
-              <p id="subtitle" class="col s4 offset-s1">An interactive reinforcement learning demonstration</p>
-            </div>
-          </div>
-        </nav>
-      </div>
+
+      { header.bind }
 
       <div class="row page-container"> { pageSelect.handler.bind } </div>
 
       { pages(pageSelect.selectedIndex.bind).content.bind }
 
-      <footer class="page-footer">
-        <div class="page-container">
-          <div class="row">
-            <div class="col l6 s12">
-              <h5 class="white-text">RL-Playground</h5>
-              <p class="grey-text text-lighten-4">
-                A reinforcement learning playground made for my A-level computing coursework.
-                Made using Scala.JS and Binding.scala.
-              </p>
-            </div>
-            <div class="col l4 offset-l2 s12">
-              <h5 class="white-text">Links</h5>
-              <ul>
-                <li><a class="grey-text text-lighten-3" href="#">Home</a></li>
-                <li><a class="grey-text text-lighten-3" href="#">Leaderboard</a></li>
-                <li>
-                  <iframe
-                    src={"https://ghbtns.com/github-btn.html?user=basimkhajwal&repo=RL-Playground&type=star&count=true"}
-                    data:frameborder="0" data:scrolling="0" width="160px" height="30px"></iframe>
-                </li>
-              </ul>
-            </div>
-          </div>
-        </div>
-        <div class="footer-copyright">
-          <div class="page-container">© 2017 Basim Khajwal</div>
-        </div>
-      </footer>
+      { footer.bind }
 
       {
         pageChanged(pageSelect.selectedIndex.bind)
@@ -91,8 +103,7 @@ object Client {
   }
 
   def main(args: Array[String]): Unit = {
-    dom.render(document.getElementById("clientContainer"), app)
-
+    dom.render(document.getElementById("clientContainer"), home)
     SelectHandler.init()
   }
 }
