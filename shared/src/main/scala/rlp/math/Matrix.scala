@@ -153,15 +153,13 @@ class Matrix(var rows: Int, var cols: Int, var data: Array[Double]) extends Stor
   }
 
   def store(): Js.Value = {
-    Js.Arr(data.map(x => Js.Num(x)) :_*)
+    Storable.binaryStore(data)
   }
 
   def load(json: Js.Value): Unit = {
-    val xs: Seq[Double] = json.arr.map(_.num)
-
+    val xs = Storable.binaryRead(json.str.toString)
     require(xs.length == data.length, s"Cannot load a $rows x $cols matrix from ${xs.length} values")
-
-    for (i <- data.indices) data(i) = xs(i)
+    data = xs
   }
 
   override def clone(): Matrix = {

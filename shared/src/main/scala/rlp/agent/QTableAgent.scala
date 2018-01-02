@@ -1,4 +1,5 @@
 package rlp.agent
+import rlp.storage.Storable
 import upickle.Js
 
 class QTableAgent(
@@ -64,10 +65,8 @@ class QTableAgent(
     discountFactor = keyMap("discountFactor").num
     explorationEpsilon = keyMap("explorationEpsilon").num
 
-    val xs = keyMap("table").arr.map(_.num)
-    for (i <- table.indices) {
-      table(i) = xs(i)
-    }
+    val xs = Storable.binaryRead(keyMap("table").str.toString)
+    for (i <- table.indices) table(i) = xs(i)
   }
 
   override def store(): Js.Value = {
@@ -75,7 +74,7 @@ class QTableAgent(
       "learningRate" -> Js.Num(learningRate),
       "discountFactor" -> Js.Num(discountFactor),
       "explorationEpsilon" -> Js.Num(explorationEpsilon),
-      "table" -> Js.Arr(table.map(Js.Num) :_*)
+      "table" -> Storable.binaryStore(table)
     )
   }
 }
