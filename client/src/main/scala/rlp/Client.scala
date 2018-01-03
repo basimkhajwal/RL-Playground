@@ -17,16 +17,15 @@ object Client {
   @dom
   lazy val header: Binding[html.Div] = {
     <div class="navbar-fixed">
-      <nav class="teal">
+      <nav class="teal darken-2">
         <div class="nav-wrapper page-container">
-          <div class="row">
-            <a href="#" class="white-text title col s3">RL-Playground</a>
-            <p id="subtitle" class="col l4 offset-l1 hide-on-med-and-down">An interactive reinforcement learning demonstration</p>
-            <div class="col s4">
-              <a class="btn waves-effect waves-light red">Login</a>
-              <a class="btn waves-effect waves-light blue">Sign Up</a>
-            </div>
-          </div>
+          <a href="#" class="white-text brand-logo">RL-Playground</a>
+          <ul class="right">
+            <li><a href="#">Home</a></li>
+            <li><a href="#">Leaderboard</a></li>
+            <li><a class="btn waves-effect waves-light red">Login</a></li>
+            <li><a class="btn waves-effect waves-light blue">Sign Up</a></li>
+          </ul>
         </div>
       </nav>
     </div>
@@ -34,7 +33,7 @@ object Client {
 
   @dom
   lazy val footer: Binding[html.Element] = {
-    <footer class="page-footer">
+    <footer class="page-footer deep-orange lighten-2">
       <div class="page-container">
         <div class="row">
           <div class="col l6 s12">
