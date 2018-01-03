@@ -85,84 +85,11 @@ class ModelTrainer[A](
 
         {
           val btnStyle = "btn waves-effect waves-light modal-trigger"
-          val importError = Var("")
-
-          def onImport(): Unit = {
-
-            val fileElem = getElem[html.Input]("import-file")
-
-            if (fileElem.files.length == 0) {
-              importError := "Error - No file specified"
-              return
-            }
-
-            try {
-              val file = fileElem.files(0)
-
-              val reader = new FileReader()
-              reader.readAsText(file)
-
-              reader.onload = { _ =>
-
-                try {
-                  val result = reader.result.asInstanceOf[String]
-                  val store = upickle.default.read[ModelStore](result)
-
-                  builders.find(_._1 == store.agentName) match {
-
-                    case Some((_, builder)) => {
-                      val model = builder()
-                      model.load(store)
-                      models.get += model
-
-                      js.Dynamic.global.$("#import-modal").modal("close")
-                    }
-
-                    case None => importError := s"Error reading data, invalid agent ${store.agentName}"
-                  }
-                } catch {
-                  case e: Exception => {
-                    importError := "Error parsing file: \n" + e.getMessage
-                  }
-                }
-              }
-
-            } catch {
-              case e: Exception => {
-                importError := "Error reading file: \n" + e.getMessage
-              }
-            }
-          }
-
-          initModal("import-modal")
-
           <div class="col s4" id="model-training-btns">
             <a class={btnStyle} href="#builder-modal">New</a>
             <a class={btnStyle} href="#import-modal">Import</a>
 
-            <div class="modal" id="import-modal">
-
-              <div class="modal-content">
-                <h4 class="center-align">Import Model</h4>
-                <form action="#">
-                  <div class="file-field input-field">
-                    <div class="btn">
-                      <span>File</span>
-                      <input type="file" id="import-file"/>
-                    </div>
-                    <div class="file-path-wrapper">
-                      <input class="file-path validate" type="text" placeholder="Choose file" />
-                    </div>
-                  </div>
-                </form>
-
-                <h5 class="center-align red-text">{importError.bind}</h5>
-              </div>
-
-              <div class="modal-footer">
-                <a class="btn waves-effect waves-light center-align" onclick={_:Event => onImport()}>Import</a>
-              </div>
-            </div>
+            { importModal.bind }
           </div>
         }
       </div>
@@ -230,7 +157,86 @@ class ModelTrainer[A](
   }
 
   @dom
-  private lazy val trainingButtons: Binding[Div] = {
+  private lazy val importModal: Binding[html.Element] = {
+
+    val importError = Var("")
+
+    def onImport(): Unit = {
+
+      val fileElem = getElem[html.Input]("import-file")
+
+      if (fileElem.files.length == 0) {
+        importError := "Error - No file specified"
+        return
+      }
+
+      try {
+        val file = fileElem.files(0)
+
+        val reader = new FileReader()
+        reader.readAsText(file)
+
+        reader.onload = { _ =>
+
+          try {
+            val result = reader.result.asInstanceOf[String]
+            val store = upickle.default.read[ModelStore](result)
+
+            builders.find(_._1 == store.agentName) match {
+
+              case Some((_, builder)) => {
+                val model = builder()
+                model.load(store)
+                models.get += model
+
+                js.Dynamic.global.$("#import-modal").modal("close")
+              }
+
+              case None => importError := s"Error reading data, invalid agent ${store.agentName}"
+            }
+          } catch {
+            case e: Exception => {
+              importError := "Error parsing file: \n" + e.getMessage
+            }
+          }
+        }
+
+      } catch {
+        case e: Exception => {
+          importError := "Error reading file: \n" + e.getMessage
+        }
+      }
+    }
+
+    initModal("import-modal")
+
+    <div class="modal" id="import-modal">
+
+      <div class="modal-content">
+        <h4 class="center-align">Import Model</h4>
+        <form action="#">
+          <div class="file-field input-field">
+            <div class="btn">
+              <span>File</span>
+              <input type="file" id="import-file"/>
+            </div>
+            <div class="file-path-wrapper">
+              <input class="file-path validate" type="text" placeholder="Choose file" />
+            </div>
+          </div>
+        </form>
+
+        <h5 class="center-align red-text">{importError.bind}</h5>
+      </div>
+
+      <div class="modal-footer">
+        <a class="btn waves-effect waves-light center-align" onclick={_:Event => onImport()}>Import</a>
+      </div>
+    </div>
+  }
+
+  @dom
+  private lazy val trainingButtons: Binding[html.Div] = {
     val buttonStyle =
       "center-align btn-floating waves-effect waves-circle " +
       (if (modelExists.bind) "" else "disabled ")
