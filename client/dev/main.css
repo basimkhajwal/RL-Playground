@@ -7,9 +7,22 @@
     font-size: 2.1rem;
 }
 
+#add-model-btn, #import-model-btn {
+    margin-top: 10px;
+    margin-left: 10px;
+}
+
+#modal-btns {
+    margin: 11px 0 0;
+    align-items: flex-start;
+}
+
+#training-btns-container {
+    margin: 0 auto;
+}
+
 #buttons-container {
     text-align: center;
-    margin-top: 20px;
 }
 
 #buttons-container > div {
@@ -37,7 +50,7 @@
     margin: 0 auto;
 }
 
-#game-row {
+.vertical-stretch-row {
     display: flex;
     align-items: stretch;
 }
@@ -50,16 +63,8 @@
     padding: 0;
 }
 
-#model-training {
+#model-training-header {
     padding: 24px;
-    display: flex;
-    align-items: stretch;
-}
-
-#model-training-btns {
-    display: flex;
-    align-items: center;
-    justify-content: space-evenly;
 }
 
 #training-speed {

@@ -107,7 +107,7 @@ abstract class GamePage[S, A] extends Page {
 
       <div class="col s12">
         <div class="card">
-          <div class="row" id="game-row">
+          <div class="row vertical-stretch-row" id="game-row">
             <div class="col s8">
               { gameContainer.bind }
             </div>

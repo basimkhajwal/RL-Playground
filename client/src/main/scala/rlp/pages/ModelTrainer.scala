@@ -74,24 +74,29 @@ class ModelTrainer[A](
 
     <div class="row" id="model-trainer">
 
-      <div class="row grey col s12 lighten-3" id="model-training">
-        <div class="col s2">
+      <div class="row grey col s12 lighten-3" id="model-training-header">
+        <div class="col s12 center-align">
           <span class="card-title">Model Training</span>
         </div>
 
-        <div class="col s3"> { modelSelect.handler.bind } </div>
-
-        <div class="col s3"> { trainingButtons.bind } </div>
-
-        {
-          val btnStyle = "btn waves-effect waves-light modal-trigger"
-          <div class="col s4" id="model-training-btns">
-            <a class={btnStyle} href="#builder-modal">New</a>
-            <a class={btnStyle} href="#import-modal">Import</a>
-
-            { importModal.bind }
+        <div class="row col s12 vertical-stretch-row">
+          <div class="col s3 offset-s1">
+            { modelSelect.handler.bind }
           </div>
-        }
+
+          <div id="modal-btns" class="col s2 valign-wrapper">
+            <a class="btn-floating waves-effect waves-light modal-trigger tooltipped red"
+               href="#builder-modal" id="add-model-btn" data:data-tooltip="New Model">
+              <i class="material-icons">add</i>
+            </a>
+            <a class="btn-floating waves-effect waves-light modal-trigger tooltipped red lighten-2"
+               href="#import-modal" id="import-model-btn" data:data-tooltip="Import Model">
+              <i class="material-icons">file_upload</i>
+            </a>
+          </div>
+
+          <div class="col s3 valign-wrapper" id="training-btns-container">{ trainingButtons.bind }</div>
+        </div>
       </div>
 
       <div class="col s10 offset-s1">
@@ -153,6 +158,7 @@ class ModelTrainer[A](
         }
       </div>
 
+      { importModal.bind }
     </div>
   }
 
