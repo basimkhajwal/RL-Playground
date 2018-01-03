@@ -26,9 +26,13 @@ class QTableModel[O, A](
 
   @dom
   override lazy val modelBuilder: Binding[HTMLElement] = {
-    <div class="row">
+    <div class="row content-section">
 
-      <h5 class="col offset-s1 s11 light">Q Table Inputs</h5>
+      <div class="col s12">
+        <h5>Q Table Inputs</h5>
+        <div class="divider"></div>
+      </div>
+
       <div class="col s12"> { paramSelector.builder.bind } </div>
       <h6 class="col offset-s3 s6 center-align">
         Table Size: {
@@ -68,20 +72,25 @@ class QTableModel[O, A](
   override lazy val modelViewer: Binding[HTMLElement] = {
     <div>
 
-      <div class="col s10 offset-s1">{paramSelector.viewer.bind}</div>
+      { paramSelector.viewer.bind }
 
-      <h5 class="col offset-s1 s11">Q Table Parameters</h5>
+      <div class="content-section">
+        <h5>Q Table Parameters</h5>
+        <div class="divider"></div>
 
-      <div class="col s2 offset-s2">
-        { new NumericInputHandler("Learning Rate", learningRate, 0, 1).content.bind }
-      </div>
+        <div class="row">
+          <div class="col s2 offset-s2">
+            { new NumericInputHandler("Learning Rate", learningRate, 0, 1).content.bind }
+          </div>
 
-      <div class="col s2 offset-s1">
-        { new NumericInputHandler("Discount Factor", discountFactor, 0, 1).content.bind }
-      </div>
+          <div class="col s2 offset-s1">
+            { new NumericInputHandler("Discount Factor", discountFactor, 0, 1).content.bind }
+          </div>
 
-      <div class="col s2 offset-s1">
-        { new NumericInputHandler("Exploration Epsilon", explorationEpsilon, 0, 1).content.bind }
+          <div class="col s2 offset-s1">
+            { new NumericInputHandler("Exploration Epsilon", explorationEpsilon, 0, 1).content.bind }
+          </div>
+        </div>
       </div>
 
       {

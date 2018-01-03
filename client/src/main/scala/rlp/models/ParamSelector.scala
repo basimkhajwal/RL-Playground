@@ -63,8 +63,10 @@ class ParamSelector[A](params: Array[ModelParam[A]]) {
 
   @dom
   lazy val viewer: Binding[Div] = {
-    <div>
+    <div class="content-section">
       <h5>Inputs Enabled</h5>
+      <div class="divider"></div>
+
       <div class="distribute-container">
         {
           for ((param, enabled) <- paramBindings; if enabled) yield {

@@ -131,6 +131,23 @@
     background-color: inherit;
 }
 
+.content-section {
+    width: 85%;
+    margin: 0 auto;
+}
+
+.content-section h5 {
+    color: #111;
+    font-weight: 300;
+    margin-top: 35px;
+    margin-bottom: 0;
+}
+
+.content-section .divider {
+    margin-top: 15px;
+    margin-bottom: 30px;
+}
+
 /* CSS trick */
 @keyframes selectInserted {
     from { opacity: 0.9999; }

@@ -28,15 +28,19 @@ class QNetworkModel[S,A](
 
   @dom
   override lazy val modelBuilder: Binding[html.Div] = {
-    <div class="row">
+    <div>
+      <div class="content-section">
+        <h5>Experience Replay</h5>
+        <div class="divider"></div>
 
-      <h5 class="col s11 offset-s1">Experience Replay</h5>
-
-      <div class="col s4 offset-s4">
-        { new NumericInputHandler("Replay Buffer Size", replayBufferSize, 1, 10000).content.bind }
+        <div class="row">
+          <div class="col s4 offset-s4">
+            { new NumericInputHandler("Replay Buffer Size", replayBufferSize, 1, 10000).content.bind }
+          </div>
+        </div>
       </div>
 
-      <div class="col s12">{networkBuilder.bind}</div>
+      {networkBuilder.bind}
     </div>
   }
 
@@ -92,35 +96,43 @@ class QNetworkModel[S,A](
 
   @dom
   override lazy val modelViewer: Binding[html.Div] = {
-    <div class="row">
+    <div>
 
-      <h5 class="col s11 offset-s1">Q Learning Parameters</h5>
+      <div class="content-section">
+        <h5>Q Learning Parameters</h5>
+        <div class="divider"></div>
 
-      <div class="col s3 offset-s2">
-        { new NumericInputHandler("Exploration Epsilon", explorationEpsilon, 0, 1).content.bind }
+        <div class="row">
+          <div class="col s3 offset-s2">
+            { new NumericInputHandler("Exploration Epsilon", explorationEpsilon, 0, 1).content.bind }
+          </div>
+          <div class="col s3 offset-s2">
+            { new NumericInputHandler("Discount Factor", discountFactor, 0, 1).content.bind }
+          </div>
+        </div>
+
+        <h5>Experience Replay</h5>
+        <div class="divider"></div>
+
+        <div class="row">
+          <div class="col s2 offset-s2">
+            <h6>Buffer Size: {qNetwork.replayBufferSize.toString}</h6>
+          </div>
+
+          <div class="col s2 offset-s1">
+            { new NumericInputHandler("Mini-batch Size", miniBatchSize, 1, qNetwork.replayBufferSize).content.bind }
+          </div>
+
+          <div class="col s2 offset-s1">
+            { new NumericInputHandler("Update Step Interval", updateStepInterval, 1, 10000).content.bind }
+          </div>
+        </div>
+
       </div>
-      <div class="col s3 offset-s2">
-        { new NumericInputHandler("Discount Factor", discountFactor, 0, 1).content.bind }
-      </div>
 
-      <h5 class="col s11 offset-s1">Experience Replay</h5>
+      { paramSelector.viewer.bind }
 
-      <div class="col s2 offset-s2">
-        <h6>Buffer Size: {qNetwork.replayBufferSize.toString}</h6>
-      </div>
-
-      <div class="col s2 offset-s1">
-        { new NumericInputHandler("Mini-batch Size", miniBatchSize, 1, qNetwork.replayBufferSize).content.bind }
-      </div>
-      <div class="col s2 offset-s1">
-        { new NumericInputHandler("Update Step Interval", updateStepInterval, 1, 10000).content.bind }
-      </div>
-
-      <div class="col s10 offset-s1">
-        { paramSelector.viewer.bind }
-      </div>
-
-      <div class="col s12">{networkViewer.bind}</div>
+      { networkViewer.bind }
 
       {
         paramsChanged(explorationEpsilon.bind, discountFactor.bind, miniBatchSize.bind, updateStepInterval.bind)

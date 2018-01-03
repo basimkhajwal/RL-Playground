@@ -115,9 +115,11 @@ abstract class NetworkModel[S,A,P](
 
   @dom
   protected final lazy val networkBuilder: Binding[html.Div] = {
-    <div class="row">
-      <h5 class="col s11 offset-s1 light">Layer Definitions</h5>
-      <div id="layer-definitions" class="col s10 offset-s1">
+    <div class="content-section">
+      <h5>Layer Definitions</h5>
+      <div class="divider"></div>
+
+      <div id="layer-definitions">
         <div class="layer-definition row" id="input-layer">
           <span class="col s3">Input Layer</span>
           <span class="col s4">{paramsEnabled.bind.map(p => paramSize(p.value)).sum.toString} neurons</span>
@@ -137,7 +139,7 @@ abstract class NetworkModel[S,A,P](
         </div>
       </div>
 
-      <div class="col s12" id="create-layer">
+      <div id="create-layer">
         <a onclick={_:Event => createLayer()}
            class={"btn light-green" + (if (layerDefinitions.length.bind >= maxHiddenLayers) " disabled" else "")}>
           <i class="material-icons left">add_circle_outline</i> Add Hidden Layer
@@ -439,38 +441,32 @@ abstract class NetworkModel[S,A,P](
 
     undoChanges()
 
-    <div class="row">
+    <div class="content-section">
 
-      <div class="col s10 offset-s1">
-        <h5>Network Structure</h5>
-      </div>
+      <h5>Network Structure</h5>
+      <div class="divider"></div>
 
-      <div class="row col s10 offset-s1">
-        { networkVisualisation(getNetwork()).bind }
-      </div>
+      { networkVisualisation(getNetwork()).bind }
 
-      <div class="col s10 offset-s1">
-        <h5>Optimiser Select</h5>
-      </div>
+      <h5>Optimiser Select</h5>
+      <div class="divider"></div>
 
-      <div class="row col s10 offset-s1 valign-wrapper">
+      <div class="row valign-wrapper">
         <div class="col s3">
           { optimiserSelect.handler.bind }
         </div>
 
-          <div class="col s3 offset-s1">
-            <a class={buttonClasses.bind} onclick={_:Event => undoChanges()}>Undo Changes</a>
-          </div>
-
-          <div class="col s3">
-            <a class={buttonClasses.bind} onclick={_:Event => updateOptimiser()}>Update Optimiser</a>
-          </div>
+        <div class="col s3 offset-s1">
+          <a class={buttonClasses.bind} onclick={_:Event => undoChanges()}>Undo Changes</a>
         </div>
 
-        <div class="col s10 offset-s1">
-          { optimisers(optimiserSelect.selectedIndex.bind).handler.bind }
+        <div class="col s3">
+          <a class={buttonClasses.bind} onclick={_:Event => updateOptimiser()}>Update Optimiser</a>
         </div>
-
       </div>
+
+      { optimisers(optimiserSelect.selectedIndex.bind).handler.bind }
+
+    </div>
   }
 }
