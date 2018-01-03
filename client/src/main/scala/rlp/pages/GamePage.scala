@@ -1,6 +1,6 @@
 package rlp.pages
 
-import com.thoughtworks.binding.Binding.{SingleMountPoint, Var, Vars}
+import com.thoughtworks.binding.Binding.{Constants, SingleMountPoint, Var, Vars}
 import com.thoughtworks.binding.{Binding, dom}
 import org.scalajs.dom.{Event, html, window}
 import org.scalajs.dom.html.{Canvas, Div}
@@ -97,7 +97,11 @@ abstract class GamePage[S, A] extends Page {
 
       <div class="col s12">
         <div class="card-panel">
-          <p class="center-align">{description}</p>
+          {
+            for (d <- Constants(description.split("\n") :_*)) yield {
+              <p>{d}</p>
+            }
+          }
         </div>
       </div>
 
