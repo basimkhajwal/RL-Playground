@@ -232,6 +232,18 @@ body {
     margin-left: 10px;
 }
 
+#import-modal form {
+    margin: 80px 50px;
+}
+
+#import-modal .modal-footer {
+    margin-bottom: 20px;
+}
+
+#import-modal .modal-footer .btn {
+    margin: 0 auto;
+}
+
 @media (min-width: 1300px) {
 
     .page-container {

@@ -251,10 +251,10 @@ class ModelTrainer[A](
     <div class="modal" id="import-modal">
 
       <div class="modal-content">
-        <h4 class="center-align">Import Model</h4>
+        <span class="card-title center-align">Import Model</span>
         <form action="#">
           <div class="file-field input-field">
-            <div class="btn">
+            <div class="btn waves-effect teal lighten-2">
               <span>File</span>
               <input type="file" id="import-file"/>
             </div>
@@ -264,11 +264,12 @@ class ModelTrainer[A](
           </div>
         </form>
 
-        <h5 class="center-align red-text">{importError.bind}</h5>
+        <h5 class="center-align red-text">{ if (importError.bind != "") "Error" else "" }</h5>
+        <h6 class="center-align red-text lighten-2">{importError.bind}</h6>
       </div>
 
-      <div class="modal-footer">
-        <a class="btn waves-effect waves-light center-align" onclick={_:Event => onImport()}>Import</a>
+      <div class="modal-footer valign-wrapper">
+        <a class="btn waves-effect waves-light deep-orange lighten-2" onclick={_:Event => onImport()}>Import</a>
       </div>
     </div>
   }
