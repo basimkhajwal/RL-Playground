@@ -65,6 +65,15 @@
 
 #model-training-header {
     padding: 24px;
+    margin-bottom: 0px;
+}
+
+#model-info {
+    padding-top: 30px;
+}
+
+#episode-label {
+    font-weight: 300;
 }
 
 #training-speed {
@@ -211,8 +220,16 @@ body {
     margin-top: 22px;
 }
 
-#optimiser-btns .btn {
+#optimiser-btns .btn-floating {
     margin-left: 5px;
+}
+
+#model-option-btns {
+    margin-top: 10px;
+}
+
+#model-option-btns .btn-floating {
+    margin-left: 10px;
 }
 
 @media (min-width: 1300px) {

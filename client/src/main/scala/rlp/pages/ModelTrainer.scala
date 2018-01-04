@@ -99,7 +99,7 @@ class ModelTrainer[A](
         </div>
       </div>
 
-      <div class="col s10 offset-s1">
+      <div class="col s12 grey lighten-4 row" id="model-info">
         {
           selectedModel.bind match {
             case Some(model) => {
@@ -129,19 +129,51 @@ class ModelTrainer[A](
                 js.Dynamic.global.saveAs(fileBlob, model.toString + ".json")
               }
 
-              <div class="row">
+              def onSave(): Unit = {
+                // TODO
+              }
+
+              def onSubmitLeaderboard(): Unit = {
+                // TODO
+              }
+
+              initScript("model-option-btns") { () => js.Dynamic.global.$(".tooltipped").tooltip() }
+
+              <div class="row col s10 offset-s1">
                 <div class="input-field col s3">
                   <input id="model-name-train" class="validate" type="text"
                          value={model.modelName.bind} onchange={_:Event => onNameChange()} required={true}/>
                   <label for="model-name-train" data:data-error="Model name empty or already exists">Model Name</label>
                 </div>
 
-                <h6 class="center-align col s3">{s"Games Played: ${model.gamesPlayed.bind}"}</h6>
+                <div class="col s3 center-align">
+                  <h6 id="episode-label">Episodes Trained</h6>
+                  <h6><strong>{model.gamesPlayed.bind.toString}</strong></h6>
+                </div>
 
-                <a class="btn waves-effect waves-light col s3"
-                   onclick={_:Event => onExport()}>Export</a>
-                <a class="btn waves-effect waves-light col s3"
-                   onclick={_:Event => onDelete() }>Delete</a>
+                <div id="model-option-btns" class="col s4 offset-s1">
+                  <a class="btn-floating waves-effect waves-light tooltipped red lighten-2"
+                     data:data-tooltip="Save to cloud"
+                     onclick={_:Event => onSave()}>
+                    <i class="material-icons">cloud_upload</i>
+                  </a>
+                  <a class="btn-floating waves-effect waves-light tooltipped brown lighten-1"
+                     data:data-tooltip="Submit to leaderboard"
+                     onclick={_:Event => onSubmitLeaderboard()}>
+                    <i class="material-icons">publish</i>
+                  </a>
+                  <a class="btn-floating waves-effect waves-light tooltipped blue-grey"
+                     data:data-tooltip="Export file"
+                     onclick={_:Event => onExport()}>
+                    <i class="material-icons">file_download</i>
+                  </a>
+                  <a class="btn-floating waves-effect waves-light tooltipped red"
+                     data:data-tooltip="Delete model"
+                     onclick={_:Event => onDelete() }>
+                    <i class="material-icons">delete</i>
+                  </a>
+                </div>
+
               </div>
             }
             case None => <!-- -->
