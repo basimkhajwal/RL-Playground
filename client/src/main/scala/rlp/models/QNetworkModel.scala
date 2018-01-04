@@ -116,7 +116,10 @@ class QNetworkModel[S,A](
 
         <div class="row">
           <div class="col s2 offset-s2">
-            <h6>Buffer Size: {qNetwork.replayBufferSize.toString}</h6>
+            <div class="input-field">
+              <input type="number" disabled={true} value={qNetwork.replayBufferSize.toString}/>
+              <label for="buffer-size-view" class="active">Buffer Size</label>
+            </div>
           </div>
 
           <div class="col s2 offset-s1">

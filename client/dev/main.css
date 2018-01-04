@@ -207,6 +207,14 @@ body {
     top: 30%;
 }
 
+#optimiser-btns {
+    margin-top: 22px;
+}
+
+#optimiser-btns .btn {
+    margin-left: 5px;
+}
+
 @media (min-width: 1300px) {
 
     .page-container {

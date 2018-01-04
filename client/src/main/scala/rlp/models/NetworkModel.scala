@@ -11,6 +11,8 @@ import rlp._
 import rlp.ui.{NumericInputHandler, SelectHandler}
 import upickle.Js
 
+import scala.scalajs.js
+
 abstract class NetworkModel[S,A,P](
   environment: String,
   name: String,
@@ -423,7 +425,7 @@ abstract class NetworkModel[S,A,P](
     }
 
     val buttonClasses = Binding {
-      "btn" + (if (dirty.bind) "" else " disabled")
+      "btn-floating waves-effect waves-light tooltipped teal" + (if (dirty.bind) "" else " disabled")
     }
 
     def undoChanges(): Unit = {
@@ -439,6 +441,8 @@ abstract class NetworkModel[S,A,P](
       undoChanges()
     }
 
+    initScript("optimiser-btns") { () => js.Dynamic.global.$(".tooltipped").tooltip() }
+
     undoChanges()
 
     <div class="content-section">
@@ -451,21 +455,26 @@ abstract class NetworkModel[S,A,P](
       <h5>Optimiser Select</h5>
       <div class="divider"></div>
 
-      <div class="row valign-wrapper">
+      <div class="row">
         <div class="col s3">
           { optimiserSelect.handler.bind }
         </div>
 
-        <div class="col s3 offset-s1">
-          <a class={buttonClasses.bind} onclick={_:Event => undoChanges()}>Undo Changes</a>
+        <div class="col s2" id="optimiser-btns">
+          <a class={buttonClasses.bind}
+            onclick={_:Event => undoChanges()} data:data-tooltip="Undo Changes">
+            <i class="material-icons">undo</i>
+          </a>
+          <a class={buttonClasses.bind + " lighten-2"}
+            onclick={_:Event => updateOptimiser()} data:data-tooltip="Save Changes">
+            <i class="material-icons">save</i>
+          </a>
         </div>
 
-        <div class="col s3">
-          <a class={buttonClasses.bind} onclick={_:Event => updateOptimiser()}>Update Optimiser</a>
+        <div class="col s7">
+          { optimisers(optimiserSelect.selectedIndex.bind).handler.bind }
         </div>
       </div>
-
-      { optimisers(optimiserSelect.selectedIndex.bind).handler.bind }
 
     </div>
   }
