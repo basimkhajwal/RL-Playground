@@ -17,13 +17,15 @@ class PongPage extends GamePage[Pong.State, PongAgent] {
   import Pong._
 
   override val name: String = "Pong"
-  override val description: String =
-    "Pong is a classic arcade game consisting of two opponents each controlling a paddle to hit" +
-      "the ball past the other opponent.\n" +
-      "Actions: Move paddle up, Move paddle down\n" +
-      "Inputs: Ball coordinates, Ball angle of motion, Current paddle y, Opponent's paddle y\n" +
-      "Rewards: +1 for winning episode, -1 for losing episode, 0 for all other states\n" +
-      "An episode is terminated once the ball passes either paddle."
+  override val gameDescription: String =
+    "Pong is a classic arcade game in which two opponents control paddles to hit" +
+      "a ball past the other opponent. An episode is terminated once the ball passes either paddle."
+
+  override val inputDescription: String =
+    "Ball coordinates, Ball angle of motion, Paddle height, Opponent paddle height"
+
+  override val actionDescription: String = "Paddle Up, Paddle Down"
+  override val rewardDescription: String = "+1 for winning episode, -1 for losing episode"
 
   private var gameEnvironment: Pong = _
 

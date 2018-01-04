@@ -44,6 +44,11 @@ abstract class GamePage[S, A] extends Page {
 
   private val renderProcess = new BackgroundProcess(() => render(ctx), "Rendering")
 
+  val gameDescription: String
+  val inputDescription: String
+  val actionDescription: String
+  val rewardDescription: String
+
   override def start(): Unit = {
     renderProcess.start(Environment.FPS)
     window.onresize = { _:Event => pageResized() }
@@ -97,9 +102,21 @@ abstract class GamePage[S, A] extends Page {
 
       <div class="col s12">
         <div class="card-panel">
+          <span class="flow-text">{gameDescription}</span>
+          <br />
+          <br />
           {
-            for (d <- Constants(description.split("\n") :_*)) yield {
-              <p>{d}</p>
+            val descriptions = List(
+              "Input" -> inputDescription,
+              "Actions" -> actionDescription,
+              "Rewards" -> rewardDescription
+            )
+
+            for ((name, desc) <- Constants(descriptions :_*)) yield {
+              <div class="row">
+                <h6 class="col s3 offset-s2"><strong>{name}</strong></h6>
+                <h6 class="col s5">{desc}</h6>
+              </div>
             }
           }
         </div>

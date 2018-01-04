@@ -10,7 +10,6 @@ trait Page {
   def stop(): Unit
 
   val name: String
-  val description: String
 
   @dom
   lazy val content: Binding[html.Div] = {
