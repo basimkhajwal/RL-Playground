@@ -172,6 +172,39 @@ body {
 
 #content-wrapper {
     flex: 1 0 auto;
+    display: flex;
+    flex-direction: column;
+}
+
+.form-container {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+}
+
+.form-container .card {
+    padding-left: 50px;
+    padding-right: 50px;
+    padding-top: 20px;
+    width: 80%;
+    max-width: 1000px;
+    margin: 50px auto;
+    flex-grow: 1;
+}
+
+.form-container h4 {
+    margin-bottom: 20px;
+}
+
+.form-container button {
+    margin-top: 50px;
+}
+
+.preloader-wrapper {
+    position: absolute;
+    left: 50%;
+    top: 30%;
 }
 
 @media (min-width: 1300px) {
