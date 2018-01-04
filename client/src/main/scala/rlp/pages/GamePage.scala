@@ -101,7 +101,7 @@ abstract class GamePage[S, A] extends Page {
     <div class="row page-container">
 
       <div class="col s12">
-        <div class="card-panel">
+        <div class="description card-panel">
           <span class="flow-text">{gameDescription}</span>
           <br />
           <br />
@@ -113,9 +113,9 @@ abstract class GamePage[S, A] extends Page {
             )
 
             for ((name, desc) <- Constants(descriptions :_*)) yield {
-              <div class="row">
-                <h6 class="col s3 offset-s2"><strong>{name}</strong></h6>
-                <h6 class="col s5">{desc}</h6>
+              <div class="description-item row">
+                <h6 class="col s1 offset-s1"><strong>{name}</strong></h6>
+                <h6 class="col s7">{desc}</h6>
               </div>
             }
           }

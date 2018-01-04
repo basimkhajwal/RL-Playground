@@ -244,6 +244,23 @@ body {
     margin: 0 auto;
 }
 
+.description .flow-text {
+    font-size: 20px;
+}
+
+.description-item {
+    margin-bottom: 5px;
+}
+
+.description-item h6 {
+    font-size: 18px;
+    font-weight: 300;
+}
+
+.description-item strong {
+    font-weight: 400!important;
+}
+
 @media (min-width: 1300px) {
 
     .page-container {

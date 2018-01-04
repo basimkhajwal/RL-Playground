@@ -11,12 +11,16 @@ class FlappyBirdPage extends GamePage[FlappyBird.State, FlappyBird.FlappyBirdAge
   import FlappyBird._
 
   override val name: String = "Flappy Bird"
-  override val gameDescription: String = "TODO: Flappy bird description"
-  override val inputDescription: String =
-    "Ball coordinates, Ball angle of motion, Paddle height, Opponent paddle height"
+  override val gameDescription: String =
+    "Flappy bird is a single-player side-scrolling game with the objective to travel as far as possible" +
+      " whilst avoiding collisions, and the only control being able to jump."
 
-  override val actionDescription: String = "Paddle Up, Paddle Down"
-  override val rewardDescription: String = "+1 for winning episode, -1 for losing episode"
+  override val inputDescription: String =
+    "Bird height, vertical speed, distance to next gap, height of next gap"
+
+  override val actionDescription: String = "Jump, No Action"
+  override val rewardDescription: String =
+    "+1 spread across passing each gap, -1000 for hitting the top, bottom or a pipe"
 
   override protected val MAX_EPISODE_LENGTH: Int = 5000
 
