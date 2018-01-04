@@ -6,7 +6,9 @@ import rlp.pages.{FlappyBirdPage, Page, PongPage}
 import rlp.ui.{SelectHandler, TabSelectHandler}
 
 import scala.scalajs.js.Dynamic
+import scala.scalajs.js.annotation.{JSExport, JSExportTopLevel}
 
+@JSExportTopLevel("Client")
 object Client {
 
   val pages: List[Page] = List(
@@ -19,12 +21,12 @@ object Client {
     <div class="navbar-fixed">
       <nav class="teal darken-2">
         <div class="nav-wrapper page-container">
-          <a href="#" class="white-text brand-logo">RL-Playground</a>
+          <a href="index.html" class="white-text brand-logo">RL-Playground</a>
           <ul class="right">
-            <li><a href="#">Home</a></li>
+            <li><a href="index.html">Home</a></li>
             <li><a href="#">Leaderboard</a></li>
-            <li><a class="btn waves-effect waves-light red">Login</a></li>
-            <li><a class="btn waves-effect waves-light blue">Sign Up</a></li>
+            <li><a href="login.html" class="btn waves-effect waves-light red">Login</a></li>
+            <li><a href="signup.html" class="btn waves-effect waves-light blue">Sign Up</a></li>
           </ul>
         </div>
       </nav>
@@ -101,8 +103,25 @@ object Client {
     </div>
   }
 
-  def main(args: Array[String]): Unit = {
-    dom.render(document.getElementById("clientContainer"), home)
+  private def init(): Unit = {
     SelectHandler.init()
+  }
+
+  @JSExport
+  def homePage(): Unit = {
+    dom.render(document.getElementById("clientContainer"), home)
+    init()
+  }
+
+  @JSExport
+  def loginPage(): Unit = {
+    dom.render(document.getElementById("clientContainer"), home)
+    init()
+  }
+
+  @JSExport
+  def signUpPage(): Unit = {
+    dom.render(document.getElementById("clientContainer"), home)
+    init()
   }
 }
