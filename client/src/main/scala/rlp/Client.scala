@@ -50,5 +50,8 @@ object Client {
   def main(args: Array[String]): Unit = {
     dom.render(document.getElementById("clientContainer"), app)
     SelectHandler.init()
+
+    /* Hide pre-loader */
+    getElem[html.Div]("loader").classList.remove("active")
   }
 }
