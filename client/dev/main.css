@@ -164,6 +164,16 @@ select {
     animation-name: selectInserted;
 }
 
+body {
+    display: flex;
+    min-height: 100vh;
+    flex-direction: column;
+}
+
+#content-wrapper {
+    flex: 1 0 auto;
+}
+
 @media (min-width: 1300px) {
 
     .page-container {

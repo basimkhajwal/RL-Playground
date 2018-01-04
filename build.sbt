@@ -14,7 +14,7 @@ lazy val server = (project in file("server")).settings(commonSettings).settings(
   dependsOn(sharedJvm)
 
 lazy val client = (project in file("client")).settings(commonSettings).settings(
-  // scalaJSUseMainModuleInitializer := true,
+  scalaJSUseMainModuleInitializer := true,
   libraryDependencies ++= Seq(
     "org.scala-js" %%% "scalajs-dom" % "0.9.3",
     "com.thoughtworks.binding" %%% "dom" % "10.0.3",
