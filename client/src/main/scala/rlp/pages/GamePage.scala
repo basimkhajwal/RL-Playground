@@ -165,15 +165,18 @@ abstract class GamePage[S, A] extends Page {
   @dom
   protected lazy val controlsSection: Binding[Div] = {
     <div id="control-section">
-      <span class="card-title">Game Options</span>
+      <div class="center-align">
+        <span class="card-title">Game Options</span>
+      </div>
+      <br />
       <br />
 
       <div class="switch center-align">
         <label>
-          Play Game
-          <input type="checkbox" checked={renderTraining.bind} onchange={ _:Event => toggleRenderTraining() } />
-          <span class="lever"></span>
           Render Training
+          <input type="checkbox" checked={!renderTraining.bind} onchange={ _:Event => toggleRenderTraining() } />
+          <span class="lever"></span>
+          Play Game
         </label>
       </div>
 
