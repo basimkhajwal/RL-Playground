@@ -1,5 +1,6 @@
 package rlp
 
+import com.thoughtworks.binding.Binding.Var
 import com.thoughtworks.binding.{Binding, dom}
 import org.scalajs.dom.{Event, document, html, window}
 import rlp.pages.{FlappyBirdPage, Page, PongPage}
@@ -18,17 +19,17 @@ object Client {
   lazy val app: Binding[html.Div] = {
 
     val pageSelect = new TabSelectHandler(pages.map(_.name))
-    var prevPage: Page = null
+    val currentPage = Var[Page](null)
 
     def pageChanged(idx: Int): Unit = {
-      if (prevPage != null) {
-        prevPage.stop()
-        prevPage = pages(idx)
-        prevPage.start()
+      if (currentPage.get != null) {
+        currentPage.get.stop()
+        currentPage := pages(idx)
+        currentPage.get.start()
       } else {
         window.onload = { _:Event =>
-          prevPage = pages(idx)
-          prevPage.start()
+          currentPage := pages(idx)
+          currentPage.get.start()
         }
       }
 
@@ -38,7 +39,10 @@ object Client {
     <div id="app" class="grey lighten-5">
       <div class="row page-container"> { pageSelect.handler.bind } </div>
 
-      { pages(pageSelect.selectedIndex.bind).content.bind }
+      {
+        val page = currentPage.bind
+        if (page != null) page.content.bind else <!-- -->
+      }
 
       {
         pageChanged(pageSelect.selectedIndex.bind)
