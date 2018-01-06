@@ -4,6 +4,9 @@
 
 # Home page
 GET        /                             rlp.controllers.Application.index
+GET        /index.html                   rlp.controllers.Application.index
+GET        /login.html                   rlp.controllers.Application.login
+GET        /signup.html                  rlp.controllers.Application.signUp
 
 # Prefix must match `play.assets.urlPrefix`
 GET        /assets/*file                 controllers.Assets.at(file)

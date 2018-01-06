@@ -1,12 +1,25 @@
 @main("RL-Playground") {
-    <nav class="orange" role="navigation">
-        <div class="nav-wrapper container">
-            <a href="#" class="brand-logo left">RL-Playground</a>
-            <p id="subtitle" class="right hide-on-med-and-down">
-                An interactive reinforcement learning demonstration
-            </p>
+    <div id="loader" class="preloader-wrapper active">
+        <div class="spinner-layer spinner-red-only">
+            <div class="circle-clipper left">
+                <div class="circle"></div>
+            </div>
+            <div class="gap-patch">
+                <div class="circle"></div>
+            </div>
+            <div class="circle-clipper right">
+                <div class="circle"></div>
+            </div>
         </div>
-    </nav>
+    </div>
 
-    <div class="container" id="clientContainer"></div>
+    <div id="clientContainer"></div>
+} {
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+    <script src="@routes.Assets.versioned("scripts/FileSaver.min.js")"></script>
+    @scalajs.html.scripts(
+        "client",
+        routes.Assets.versioned(_).toString,
+        name => getClass.getResource(s"/public/$name") != null
+    )
 }
