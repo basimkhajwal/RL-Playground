@@ -19,7 +19,10 @@ object Base64 {
   }
 
   def fromByteArray(arr: Array[Byte]): Array[Double] = {
-    ByteBuffer.wrap(arr).asDoubleBuffer().array()
+    val buffer = ByteBuffer.wrap(arr).asDoubleBuffer()
+    val doubleArr = new Array[Double](buffer.limit())
+    buffer.get(doubleArr)
+    doubleArr
   }
 
   def encode(arr: Array[Byte]): String = {
