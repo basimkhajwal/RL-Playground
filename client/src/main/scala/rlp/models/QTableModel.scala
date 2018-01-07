@@ -5,6 +5,7 @@ import com.thoughtworks.binding.{Binding, dom}
 import org.scalajs.dom.raw.HTMLElement
 import rlp._
 import rlp.agent.{Agent, QStateSpace, QTableAgent}
+import rlp.storage.ModelStore
 import rlp.ui.NumericInputHandler
 import upickle.Js
 

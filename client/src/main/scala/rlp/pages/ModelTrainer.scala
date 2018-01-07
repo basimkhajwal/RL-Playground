@@ -6,9 +6,10 @@ import org.scalajs.dom.{Blob, Event, html}
 import org.scalajs.dom.html.Div
 import org.scalajs.dom.raw.{BlobPropertyBag, FileReader}
 import rlp.environment.Environment
-import rlp.models.{Model, ModelStore}
+import rlp.models.Model
 import rlp.utils.BackgroundProcess
 import rlp._
+import rlp.storage.ModelStore
 import rlp.ui.SelectHandler
 
 import scala.scalajs.js

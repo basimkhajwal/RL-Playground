@@ -5,6 +5,7 @@ import com.thoughtworks.binding.Binding.{BindingSeq, Constant, Var, Vars}
 import org.scalajs.dom.raw.HTMLElement
 import org.scalajs.dom.window.performance
 import rlp._
+import rlp.storage.ModelStore
 import upickle.{Js, json}
 
 import scala.collection.mutable.ArrayBuffer
