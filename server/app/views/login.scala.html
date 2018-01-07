@@ -1,20 +1,28 @@
-@form("Login") {
+@import rlp.forms.LoginForm
+@(data: Form[LoginForm])
 
-    <h4 class="card-title center-align">Login</h4>
+@form("Login", data) {
 
-    <form>
+    <script>
+        validateForm = function () {
+            validateElement("password", passwordValidation);
+        };
+    </script>
+
+    <form method="post" action="/login">
         <div class="row">
+
             <div class="input-field col s8 offset-s2">
-                <input id="email" type="email" class="validate" />
+                <input id="email" name="email" type="email" class="validate" value="@data("email").value.getOrElse("")" />
                 <label for="email">Email Address</label>
             </div>
 
             <div class="input-field col s8 offset-s2">
-                <input id="password" type="password" class="validate" />
-                <label for="password">Password</label>
+                <input id="password" name="password" type="password" class="validate"
+                    value="@data("password").value.getOrElse("")"/>
+                <label for="password" class="active">Password</label>
             </div>
         </div>
-
         <div class="center-align">
             <button class="btn waves-effect waves-light red" type="submit" name="action">Login</button>
         </div>
