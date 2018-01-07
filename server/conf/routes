@@ -2,12 +2,15 @@
 # This file defines all application routes (Higher priority routes first)
 # ~~~~
 
-# Home page
 GET        /                             rlp.controllers.Application.index
-GET        /index.html                   rlp.controllers.Application.index
-GET        /login.html                   rlp.controllers.Application.login
-GET        /signup.html                  rlp.controllers.Application.signUp
+GET        /index                        rlp.controllers.Application.index
+GET        /login                        rlp.controllers.Application.login
+GET        /signup                       rlp.controllers.Application.signUp
+
+POST       /login                        rlp.controllers.Application.loginPost
+POST       /signup                       rlp.controllers.Application.signUpPost
 
 # Prefix must match `play.assets.urlPrefix`
 GET        /assets/*file                 controllers.Assets.at(file)
 GET        /versionedAssets/*file        controllers.Assets.versioned(path="/public", file: Asset)
+
