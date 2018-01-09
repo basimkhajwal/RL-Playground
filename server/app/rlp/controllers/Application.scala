@@ -4,9 +4,12 @@ import javax.inject._
 
 import play.api.mvc._
 import rlp.forms.{LoginForm, SignUpForm}
+import rlp.service.UserService
+
+import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
-class Application @Inject()(cc: ControllerComponents) extends AbstractController(cc) {
+class Application @Inject()(userService: UserService, cc: ControllerComponents)(implicit ec: ExecutionContext) extends AbstractController(cc) {
 
   def index = Action { implicit request => Ok(views.html.index()) }
 
@@ -21,10 +24,14 @@ class Application @Inject()(cc: ControllerComponents) extends AbstractController
 
   def signUp = Action { implicit request => Ok(views.html.signup(SignUpForm.form)) }
 
-  def signUpPost = Action { implicit request =>
+  def signUpPost = Action.async { implicit request =>
     SignUpForm.form.bindFromRequest.fold(
-      formError => BadRequest(views.html.signup(formError)),
-      _ => Ok(views.html.index())
+      formError => Future.successful(BadRequest(views.html.signup(formError))),
+      signUpForm => {
+        for {
+          _ <- userService.createUser(signUpForm)
+        } yield Ok(views.html.index())
+      }
     )
   }
 }
