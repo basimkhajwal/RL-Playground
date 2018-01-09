@@ -7,10 +7,10 @@ import rlp.models.{EmailAccount, GoogleAccount, LoginInfo, User}
 import slick.jdbc.JdbcProfile
 import slick.jdbc.meta.MTable
 
-import scala.concurrent.Future
+import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
-class UserDAO @Inject()(protected val dbConfigProvider: DatabaseConfigProvider)
+class UserDAO @Inject()(protected val dbConfigProvider: DatabaseConfigProvider)(implicit ec: ExecutionContext)
   extends HasDatabaseConfigProvider[JdbcProfile] {
 
   import profile.api._
@@ -28,9 +28,9 @@ class UserDAO @Inject()(protected val dbConfigProvider: DatabaseConfigProvider)
     }
   }
 
-  def save(user: User): Future[User] = {
-    val query = (users returning users) += user
-    db.run(query)
+  def insert(user: User): Future[User] = {
+    val query = (users returning users.map(_.id)) += user
+    db.run(query).map { newId => user.copy(id = newId) }
   }
 
   class UserTable(tag: Tag) extends Table[User](tag, "user") {

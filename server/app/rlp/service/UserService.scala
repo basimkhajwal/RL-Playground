@@ -8,10 +8,10 @@ import rlp.dao.UserDAO
 import rlp.forms.SignUpForm
 import rlp.models.{EmailAccount, User}
 
-import scala.concurrent.Future
+import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
-class UserService @Inject()(userDAO: UserDAO) {
+class UserService @Inject()(userDAO: UserDAO)(implicit ec: ExecutionContext) {
 
   def createUser(signUpForm: SignUpForm): Future[User] = {
 
@@ -25,6 +25,6 @@ class UserService @Inject()(userDAO: UserDAO) {
       EmailAccount(signUpForm.email, hash, salt)
     )
 
-    userDAO.save(preInitUser)
+    userDAO.insert(preInitUser)
   }
 }
