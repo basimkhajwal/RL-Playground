@@ -1,4 +1,5 @@
-@(title: String)(content: Html)(scripts: Html)
+@import rlp.models.User
+@(title: String, user: Option[User])(content: Html)(scripts: Html)
 
 <html>
     <head>
@@ -25,8 +26,18 @@
                         <ul class="right">
                             <li><a href="/index">Home</a></li>
                             <li><a href="#">Leaderboard</a></li>
-                            <li><a href="/login" class="btn waves-effect waves-light red">Login</a></li>
-                            <li><a href="/signup" class="btn waves-effect waves-light blue">Sign Up</a></li>
+                            @{
+                                user match {
+
+                                    case Some(User(_, username, _)) =>
+                                        <li><a href="/profile"><strong>{Html(username)}</strong></a></li>
+                                        <li><a href="/logout">Log Out</a></li>
+
+                                    case None =>
+                                        <li><a href="/login" class="btn waves-effect waves-light red">Login</a></li>
+                                        <li><a href="/signup" class="btn waves-effect waves-light blue">Sign Up</a></li>
+                                }
+                            }
                         </ul>
                     </div>
                 </nav>
