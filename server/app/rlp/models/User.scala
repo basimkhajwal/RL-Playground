@@ -1,7 +1,5 @@
 package rlp.models
 
-import rlp.forms.SignUpForm
-
 case class User(
   id: Long,
   username: String,

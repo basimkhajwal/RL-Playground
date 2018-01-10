@@ -33,6 +33,11 @@ class UserDAO @Inject()(protected val dbConfigProvider: DatabaseConfigProvider)(
     db.run(query).map { newId => user.copy(id = newId) }
   }
 
+  def findByUsername(username: String): Future[Seq[User]] = {
+    val query = users.filter(_.username == username).result
+    db.run(query)
+  }
+
   class UserTable(tag: Tag) extends Table[User](tag, "user") {
 
     def id = column[Long]("id", O.PrimaryKey, O.AutoInc)

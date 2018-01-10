@@ -27,4 +27,6 @@ class UserService @Inject()(userDAO: UserDAO)(implicit ec: ExecutionContext) {
 
     userDAO.insert(preInitUser)
   }
+
+  def findByUsername(username: String): Future[Seq[User]] = userDAO.findByUsername(username)
 }
