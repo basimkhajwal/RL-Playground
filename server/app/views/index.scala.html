@@ -1,4 +1,7 @@
-@main("RL-Playground") {
+@import rlp.models.User
+@(user: Option[User])
+
+@main("RL-Playground", user) {
     <div id="loader" class="preloader-wrapper active">
         <div class="spinner-layer spinner-red-only">
             <div class="circle-clipper left">

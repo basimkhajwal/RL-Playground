@@ -1,7 +1,7 @@
 @import rlp.forms.SignUpForm
 @(data: Form[SignUpForm])
 
-@form("Sign Up", data) {
+@form("Sign Up", None, data) {
     <script>
         validateForm = function () {
             validateElement("password", passwordValidation);

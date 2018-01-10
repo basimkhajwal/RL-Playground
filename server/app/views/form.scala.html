@@ -1,6 +1,7 @@
-@(title: String, data: Form[_])(content: Html)
+@import rlp.models.User
+@(title: String, user: Option[User], data: Form[_])(content: Html)
 
-@main(title) {
+@main(title, user) {
     <script type="text/javascript">
         function get(id) { return document.getElementById(id); }
 

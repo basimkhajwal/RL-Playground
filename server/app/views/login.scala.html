@@ -1,7 +1,7 @@
 @import rlp.forms.LoginForm
 @(data: Form[LoginForm])
 
-@form("Login", data) {
+@form("Login", None, data) {
 
     <script>
         validateForm = function () {
