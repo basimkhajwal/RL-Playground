@@ -39,6 +39,10 @@ class Application @Inject()(userService: UserService, cc: ControllerComponents, 
     )
   }
 
+  def logOut = Action { implicit request =>
+    Redirect(routes.Application.index()).withNewSession
+  }
+
   def signUp = Action { implicit request => Ok(views.html.signup(SignUpForm.form)) }
 
   def signUpPost = Action.async { implicit request =>

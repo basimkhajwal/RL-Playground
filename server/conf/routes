@@ -9,8 +9,8 @@ GET        /signup                       rlp.controllers.Application.signUp
 
 POST       /login                        rlp.controllers.Application.loginPost
 POST       /signup                       rlp.controllers.Application.signUpPost
+GET        /logout                       rlp.controllers.Application.logOut
 
 # Prefix must match `play.assets.urlPrefix`
 GET        /assets/*file                 controllers.Assets.at(file)
 GET        /versionedAssets/*file        controllers.Assets.versioned(path="/public", file: Asset)
-
