@@ -18,7 +18,7 @@ class PongPage extends GamePage[Pong.State, PongAgent] {
 
   override val name: String = "Pong"
   override val gameDescription: String =
-    "Pong is a classic arcade game in which two opponents control paddles to hit" +
+    "Pong is a classic arcade game in which two opponents control paddles to hit " +
       "a ball past the other opponent. An episode is terminated once the ball passes either paddle."
 
   override val inputDescription: String =
