@@ -34,3 +34,5 @@ bin/
 client/rlp.zip
 
 client/dev-send/*
+
+*.zip
