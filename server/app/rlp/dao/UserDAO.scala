@@ -34,7 +34,12 @@ class UserDAO @Inject()(protected val dbConfigProvider: DatabaseConfigProvider)(
   }
 
   def findByUsername(username: String): Future[Seq[User]] = {
-    val query = users.filter(_.username == username).result
+    val query = users.filter(_.username === username).result
+    db.run(query)
+  }
+
+  def findByEmail(email: String): Future[Seq[User]] = {
+    val query = users.filter(_.email === email).result
     db.run(query)
   }
 
