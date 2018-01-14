@@ -21,6 +21,19 @@ abstract class Model[A](
   val modelName: Var[String] = Var("")
   val gamesPlayed: Var[Int] = Var(0)
 
+  private val _viewDirty: Var[Boolean] = Var(false)
+
+  val viewDirtyBinding: Binding[Boolean] = _viewDirty
+  def viewDirty: Boolean = _viewDirty.get
+
+  protected def viewChanged(): Unit = {
+    _viewDirty := true
+  }
+
+  def resetViewDirty(): Unit = {
+    _viewDirty := false
+  }
+
   private val historyStep: Var[Int] = Var(1)
   private val history: Vars[Double] = Vars()
   private var recentHistoryTotal: Double = 0
