@@ -28,7 +28,7 @@ abstract class GamePage[S, A] extends Page {
   private var model: Model[A] = _
 
   lazy val modelBuilder = new ModelBuilder(modelBuilders, models)
-  lazy val modelTrainer = new ModelTrainer(models, modelBuilders, trainStep)
+  lazy val modelTrainer = new ModelTrainer(models, modelBuilders, modelDAO, trainStep)
   lazy val modelComparison = new ModelComparison(models, performanceEntryGap)
 
   protected val aspectRatio: Double = 3.0/4
@@ -151,7 +151,7 @@ abstract class GamePage[S, A] extends Page {
 
       {
         modelTrainer.selectedModel.bind match {
-          case Some(newModel) => {
+          case Some(newModel : Model[A]) => {
             this.model = newModel
             trainingEnvironment = createEnvironment(model)
           }

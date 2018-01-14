@@ -2,13 +2,14 @@ package rlp.pages
 
 import com.thoughtworks.binding.{Binding, dom}
 import com.thoughtworks.binding.Binding.{Var, Vars}
-import org.scalajs.dom.{Blob, Event, html}
+import org.scalajs.dom.{Blob, Event, html, window}
 import org.scalajs.dom.html.Div
 import org.scalajs.dom.raw.{BlobPropertyBag, FileReader}
 import rlp.environment.Environment
 import rlp.models.Model
-import rlp.utils.BackgroundProcess
+import rlp.utils.{BackgroundProcess, Logger}
 import rlp._
+import rlp.dao.ModelDAO
 import rlp.storage.ModelStore
 import rlp.ui.SelectHandler
 
@@ -17,6 +18,7 @@ import scala.scalajs.js
 class ModelTrainer[A](
   models: Vars[Model[A]],
   builders: List[Model.Builder[A]],
+  modelDAO: ModelDAO,
   trainStep: () => Unit,
 ) {
 
@@ -130,8 +132,37 @@ class ModelTrainer[A](
                 js.Dynamic.global.saveAs(fileBlob, model.toString + ".json")
               }
 
-              def onSave(): Unit = {
-                // TODO
+              val MIN_SAVE_DELAY = 10000
+              var lastSaveTime: Double = 0
+              var saveScheduled: Boolean = true
+              var forceSave: Boolean = true
+
+              def checkSave(): Unit = {
+                if (forceSave || model.viewDirty) {
+                  modelDAO.persist(model)
+                  model.resetViewDirty()
+
+                  saveScheduled = false
+                  forceSave = false
+                  lastSaveTime = window.performance.now()
+
+                  Logger.log("ModelTrainer", model.toString + " saved")
+                }
+              }
+
+              def scheduleSave(force: Boolean = false): Unit = {
+                if (!saveScheduled) {
+                  val timeOutDelay = Math.max(20, (MIN_SAVE_DELAY + lastSaveTime) - window.performance.now())
+                  js.timers.setTimeout(timeOutDelay) { checkSave() }
+                  saveScheduled = true
+                }
+                forceSave |= force
+              }
+
+              def trainingChanged(isTraining: Boolean): Unit = {
+                if (!isTraining) {
+                  scheduleSave(true)
+                }
               }
 
               def onSubmitLeaderboard(): Unit = {
@@ -153,11 +184,6 @@ class ModelTrainer[A](
                 </div>
 
                 <div id="model-option-btns" class="col s4 offset-s1">
-                  <a class="btn-floating waves-effect waves-light tooltipped red lighten-2"
-                     data:data-tooltip="Save to cloud"
-                     onclick={_:Event => onSave()}>
-                    <i class="material-icons">cloud_upload</i>
-                  </a>
                   <a class="btn-floating waves-effect waves-light tooltipped brown lighten-1"
                      data:data-tooltip="Submit to leaderboard"
                      onclick={_:Event => onSubmitLeaderboard()}>
@@ -173,6 +199,12 @@ class ModelTrainer[A](
                      onclick={_:Event => onDelete() }>
                     <i class="material-icons">delete</i>
                   </a>
+
+                  {
+                    trainingChanged(isTraining.bind)
+                    ""
+                  }
+
                 </div>
 
               </div>
