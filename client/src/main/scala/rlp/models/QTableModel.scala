@@ -105,6 +105,8 @@ class QTableModel[O, A](
     qTable.learningRate = lr
     qTable.discountFactor = df
     qTable.explorationEpsilon = e
+
+    viewChanged()
   }
 
   override def resetAgent(): Unit = {

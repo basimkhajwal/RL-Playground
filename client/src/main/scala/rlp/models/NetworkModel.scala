@@ -439,6 +439,8 @@ abstract class NetworkModel[S,A,P](
       val optimiserBuilder = optimisers(optimiserSelect.selectedIndex.get)
       setOptimiser(optimiserBuilder.construct())
       undoChanges()
+
+      viewChanged()
     }
 
     initScript("optimiser-btns") { () => js.Dynamic.global.$(".tooltipped").tooltip() }

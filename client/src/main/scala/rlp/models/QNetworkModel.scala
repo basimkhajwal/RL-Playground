@@ -93,6 +93,8 @@ class QNetworkModel[S,A](
     qNetwork.discountFactor = discount
     qNetwork.miniBatchSize = batchSize
     qNetwork.updateStepInterval = updateInterval
+
+    viewChanged()
   }
 
   @dom
