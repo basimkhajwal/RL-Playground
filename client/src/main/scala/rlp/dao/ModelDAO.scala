@@ -1,12 +1,14 @@
 package rlp.dao
 
-import rlp.models.Model
+import rlp.storage.ModelStore
+
+import scala.concurrent.Future
 
 trait ModelDAO {
 
-  def getAll[A](): Seq[Model[A]]
+  def getAll[A](): Future[Seq[ModelStore]]
 
-  def persist(model: Model[_]): Boolean
+  def persist(model: ModelStore): Future[Boolean]
 
-  def delete(model: Model[_]): Boolean
+  def delete(model: ModelStore): Future[Boolean]
 }
