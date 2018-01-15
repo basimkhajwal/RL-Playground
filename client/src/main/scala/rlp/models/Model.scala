@@ -3,18 +3,13 @@ package rlp.models
 import com.thoughtworks.binding.{Binding, dom}
 import com.thoughtworks.binding.Binding.{BindingSeq, Constant, Var, Vars}
 import org.scalajs.dom.raw.HTMLElement
-import org.scalajs.dom.window.performance
 import rlp._
 import rlp.storage.ModelStore
 import upickle.{Js, json}
 
 import scala.collection.mutable.ArrayBuffer
 
-abstract class Model[A](
-  val environmentName: String,
-  val agentName: String,
-  val id: Long = (1000 * performance.now()).toLong
-) {
+abstract class Model[A](val environmentName: String, val agentName: String) {
 
   final val MAX_HISTORY = 2000
 
@@ -33,7 +28,6 @@ abstract class Model[A](
   def resetViewDirty(): Unit = {
     _viewDirty := false
   }
-
   private val historyStep: Var[Int] = Var(1)
   private val history: Vars[Double] = Vars()
   private var recentHistoryTotal: Double = 0
@@ -79,6 +73,15 @@ abstract class Model[A](
     }
   }
 
+  private var _id: Long = 0
+
+  def id: Long = _id
+
+  def setId(newId: Long): Unit = {
+    _id = newId
+  }
+
+
   @dom
   lazy val modelBuilder: Binding[HTMLElement] = <div></div>
 
@@ -107,6 +110,8 @@ abstract class Model[A](
     require(agentName == modelStore.agentName,
       s"Invalid agent, expected $agentName, but given ${modelStore.agentName}")
 
+    setId(modelStore.id)
+
     modelName := modelStore.modelName
     gamesPlayed := modelStore.gamesPlayed
 
@@ -121,6 +126,8 @@ abstract class Model[A](
 
   final def store(): ModelStore = {
     ModelStore(
+      id,
+      System.currentTimeMillis(),
       environmentName,
       agentName,
       modelName.get,
