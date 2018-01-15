@@ -139,7 +139,7 @@ class ModelTrainer[A](
 
               def checkSave(): Unit = {
                 if (forceSave || model.viewDirty) {
-                  modelDAO.persist(model)
+                  modelDAO.persist(model.store())
                   model.resetViewDirty()
 
                   saveScheduled = false

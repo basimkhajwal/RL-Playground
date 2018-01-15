@@ -3,7 +3,7 @@ package rlp
 import com.thoughtworks.binding.Binding.Var
 import com.thoughtworks.binding.{Binding, dom}
 import org.scalajs.dom.{Event, document, html, window}
-import rlp.dao.LocalModelStore
+import rlp.dao.LocalModelDAO
 import rlp.pages.{FlappyBirdPage, Page, PongPage}
 import rlp.ui.{SelectHandler, TabSelectHandler}
 
@@ -22,7 +22,7 @@ object Client {
     val pageSelect = new TabSelectHandler(pages.map(_.name))
     val currentPage = Var[Page](null)
 
-    pages foreach { _ setModelDAO LocalModelStore }
+    pages foreach { _ setModelDAO LocalModelDAO }
 
     def pageChanged(idx: Int): Unit = {
       if (currentPage.get != null) {
