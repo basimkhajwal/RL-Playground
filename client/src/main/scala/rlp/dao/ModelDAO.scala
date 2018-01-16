@@ -10,7 +10,7 @@ trait ModelDAO {
 
   def create(model: ModelStore): Future[Long]
 
-  def update(model: ModelStore): Future[Boolean]
+  def update(model: ModelStore): Future[Unit]
 
-  def delete(model: ModelStore): Future[Boolean]
+  def delete(model: ModelStore): Future[Unit]
 }
