@@ -55,7 +55,7 @@ object LocalModelDAO extends ModelDAO {
     }
   }
 
-  override def persist(model: ModelStore): Future[Boolean] = {
+  override def update(model: ModelStore): Future[Boolean] = {
     Future(false)
   }
 

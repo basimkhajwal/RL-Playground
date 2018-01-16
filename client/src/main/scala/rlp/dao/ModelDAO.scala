@@ -8,7 +8,9 @@ trait ModelDAO {
 
   def getAll[A](): Future[Seq[ModelStore]]
 
-  def persist(model: ModelStore): Future[Boolean]
+  def create(model: ModelStore): Future[Long]
+
+  def update(model: ModelStore): Future[Boolean]
 
   def delete(model: ModelStore): Future[Boolean]
 }

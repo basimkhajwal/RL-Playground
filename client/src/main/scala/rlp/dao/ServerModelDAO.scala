@@ -8,7 +8,7 @@ object ServerModelDAO extends ModelDAO {
 
   override def getAll[A](): Future[Seq[ModelStore]] = ???
 
-  override def persist(model: ModelStore): Future[Boolean] = ???
+  override def update(model: ModelStore): Future[Boolean] = ???
 
   override def delete(model: ModelStore): Future[Boolean] = ???
 }
