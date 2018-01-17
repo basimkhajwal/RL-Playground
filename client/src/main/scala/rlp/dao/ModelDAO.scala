@@ -6,7 +6,7 @@ import scala.concurrent.Future
 
 trait ModelDAO {
 
-  def getAll[A](): Future[Seq[ModelStore]]
+  def getAll(): Future[Seq[ModelStore]]
 
   def create(model: ModelStore): Future[Long]
 

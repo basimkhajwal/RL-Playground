@@ -5,11 +5,10 @@ import upickle.default
 import scala.concurrent.Future
 import scala.scalajs.js
 import scala.concurrent.ExecutionContext.Implicits.global
-import scala.scalajs.js.annotation.{JSExportTopLevel, ScalaJSDefined}
 
 object LocalModelDAO extends ModelDAO {
 
-  override def getAll[A](): Future[Seq[ModelStore]] = {
+  override def getAll(): Future[Seq[ModelStore]] = {
     IndexedDB.getAll[ModelStoreItem](IndexedDB.MODEL_STORE) map { items =>
       items map { item => ModelStoreItem.extract(item) }
     }

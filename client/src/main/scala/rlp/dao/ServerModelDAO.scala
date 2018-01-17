@@ -6,7 +6,7 @@ import scala.concurrent.Future
 
 object ServerModelDAO extends ModelDAO {
 
-  override def getAll[A](): Future[Seq[ModelStore]] = ???
+  override def getAll(): Future[Seq[ModelStore]] = ???
 
   override def create(model: ModelStore): Future[Long] = ???
 
