@@ -105,110 +105,7 @@ class ModelTrainer[A](
       <div class="col s12 grey lighten-4 row" id="model-info">
         {
           selectedModel.bind match {
-            case Some(model) => {
-
-              def onNameChange(): Unit = {
-                val modelNames = models.get.map(_.modelName.get)
-                val modelNameElem = getElem[html.Input]("model-name-train")
-
-                if (modelNames contains modelNameElem.value) {
-                  modelNameElem.setCustomValidity("Invalid")
-                } else {
-                  modelNameElem.setCustomValidity("")
-                  model.modelName := modelNameElem.value
-                }
-              }
-
-              def onDelete(): Unit = {
-                modelSelect.selectedIndex := 0
-                models.get.remove(models.get.indexOf(model))
-              }
-
-              def onExport(): Unit = {
-                import upickle.default._
-                val fileStore = write(model.store())
-                val fileBlob = new Blob(js.Array(fileStore))
-
-                js.Dynamic.global.saveAs(fileBlob, model.toString + ".json")
-              }
-
-              val MIN_SAVE_DELAY = 10000
-              var lastSaveTime: Double = 0
-              var saveScheduled: Boolean = true
-              var forceSave: Boolean = true
-
-              def checkSave(): Unit = {
-                if (forceSave || model.viewDirty) {
-                  modelDAO.update(model.store())
-                  model.resetViewDirty()
-
-                  saveScheduled = false
-                  forceSave = false
-                  lastSaveTime = window.performance.now()
-
-                  Logger.log("ModelTrainer", model.toString + " saved")
-                }
-              }
-
-              def scheduleSave(force: Boolean = false): Unit = {
-                if (!saveScheduled) {
-                  val timeOutDelay = Math.max(20, (MIN_SAVE_DELAY + lastSaveTime) - window.performance.now())
-                  js.timers.setTimeout(timeOutDelay) { checkSave() }
-                  saveScheduled = true
-                }
-                forceSave |= force
-              }
-
-              def trainingChanged(isTraining: Boolean): Unit = {
-                if (!isTraining) {
-                  scheduleSave(true)
-                }
-              }
-
-              def onSubmitLeaderboard(): Unit = {
-                // TODO
-              }
-
-              initScript("model-option-btns") { () => js.Dynamic.global.$(".tooltipped").tooltip() }
-
-              <div class="row col s10 offset-s1">
-                <div class="input-field col s3">
-                  <input id="model-name-train" class="validate" type="text"
-                         value={model.modelName.bind} onchange={_:Event => onNameChange()} required={true}/>
-                  <label for="model-name-train" data:data-error="Model name empty or already exists">Model Name</label>
-                </div>
-
-                <div class="col s3 center-align">
-                  <h6 id="episode-label">Episodes Trained</h6>
-                  <h6><strong>{model.gamesPlayed.bind.toString}</strong></h6>
-                </div>
-
-                <div id="model-option-btns" class="col s4 offset-s1">
-                  <a class="btn-floating waves-effect waves-light tooltipped brown lighten-1"
-                     data:data-tooltip="Submit to leaderboard"
-                     onclick={_:Event => onSubmitLeaderboard()}>
-                    <i class="material-icons">publish</i>
-                  </a>
-                  <a class="btn-floating waves-effect waves-light tooltipped blue-grey"
-                     data:data-tooltip="Export file"
-                     onclick={_:Event => onExport()}>
-                    <i class="material-icons">file_download</i>
-                  </a>
-                  <a class="btn-floating waves-effect waves-light tooltipped red"
-                     data:data-tooltip="Delete model"
-                     onclick={_:Event => onDelete() }>
-                    <i class="material-icons">delete</i>
-                  </a>
-
-                  {
-                    trainingChanged(isTraining.bind)
-                    ""
-                  }
-
-                </div>
-
-              </div>
-            }
+            case Some(model) => modelEditPane(model).bind
             case None => <!-- -->
           }
         }
@@ -224,6 +121,112 @@ class ModelTrainer[A](
       </div>
 
       { importModal.bind }
+    </div>
+  }
+
+  @dom
+  private def modelEditPane(model: Model[A]): Binding[html.Element] = {
+
+    def onNameChange(): Unit = {
+      val modelNames = models.get.map(_.modelName.get)
+      val modelNameElem = getElem[html.Input]("model-name-train")
+
+      if (modelNames contains modelNameElem.value) {
+        modelNameElem.setCustomValidity("Invalid")
+      } else {
+        modelNameElem.setCustomValidity("")
+        model.modelName := modelNameElem.value
+      }
+    }
+
+    def onDelete(): Unit = {
+      modelSelect.selectedIndex := 0
+      models.get.remove(models.get.indexOf(model))
+    }
+
+    def onExport(): Unit = {
+      import upickle.default._
+      val fileStore = write(model.store())
+      val fileBlob = new Blob(js.Array(fileStore))
+
+      js.Dynamic.global.saveAs(fileBlob, model.toString + ".json")
+    }
+
+    val MIN_SAVE_DELAY = 10000
+    var lastSaveTime: Double = 0
+    var saveScheduled: Boolean = true
+    var forceSave: Boolean = true
+
+    def checkSave(): Unit = {
+      if (forceSave || model.viewDirty) {
+        modelDAO.update(model.store())
+        model.resetViewDirty()
+
+        saveScheduled = false
+        forceSave = false
+        lastSaveTime = window.performance.now()
+
+        Logger.log("ModelTrainer", model.toString + " saved")
+      }
+    }
+
+    def scheduleSave(force: Boolean = false): Unit = {
+      if (!saveScheduled) {
+        val timeOutDelay = Math.max(20, (MIN_SAVE_DELAY + lastSaveTime) - window.performance.now())
+        js.timers.setTimeout(timeOutDelay) { checkSave() }
+        saveScheduled = true
+      }
+      forceSave |= force
+    }
+
+    def trainingChanged(isTraining: Boolean): Unit = {
+      if (!isTraining) {
+        scheduleSave(true)
+      }
+    }
+
+    def onSubmitLeaderboard(): Unit = {
+      // TODO
+    }
+
+    initScript("model-option-btns") { () => js.Dynamic.global.$(".tooltipped").tooltip() }
+
+    <div class="row col s10 offset-s1">
+      <div class="input-field col s3">
+        <input id="model-name-train" class="validate" type="text"
+               value={model.modelName.bind} onchange={_:Event => onNameChange()} required={true}/>
+        <label for="model-name-train" data:data-error="Model name empty or already exists">Model Name</label>
+      </div>
+
+      <div class="col s3 center-align">
+        <h6 id="episode-label">Episodes Trained</h6>
+        <h6><strong>{model.gamesPlayed.bind.toString}</strong></h6>
+      </div>
+
+      <div id="model-option-btns" class="col s4 offset-s1">
+        <a class="btn-floating waves-effect waves-light tooltipped brown lighten-1"
+           data:data-tooltip="Submit to leaderboard"
+           onclick={_:Event => onSubmitLeaderboard()}>
+          <i class="material-icons">publish</i>
+        </a>
+        <a class="btn-floating waves-effect waves-light tooltipped blue-grey"
+           data:data-tooltip="Export file"
+           onclick={_:Event => onExport()}>
+          <i class="material-icons">file_download</i>
+        </a>
+        <a class="btn-floating waves-effect waves-light tooltipped red"
+           data:data-tooltip="Delete model"
+           onclick={_:Event => onDelete() }>
+          <i class="material-icons">delete</i>
+        </a>
+
+        {
+          trainingChanged(isTraining.bind)
+          ""
+        }
+
+      </div>
+
     </div>
   }
 
