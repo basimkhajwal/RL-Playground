@@ -5,14 +5,18 @@ import com.thoughtworks.binding.Binding.{BindingSeq, Constant, Var, Vars}
 import org.scalajs.dom.{Event, document, html}
 import org.scalajs.dom.html.Div
 import rlp._
+import rlp.dao.ModelDAO
 import rlp.models.Model
 import rlp.ui.SelectHandler
+
+import scala.concurrent.ExecutionContext.Implicits.global
 
 import scala.scalajs.js
 
 class ModelBuilder[A](
   builders: List[Model.Builder[A]],
-  models: Vars[Model[A]]
+  models: Vars[Model[A]],
+  modelDAO: ModelDAO
 ) {
 
   private val modelSelect = new SelectHandler("Model Type", builders.map(_._1), Constant(false))
@@ -64,11 +68,15 @@ class ModelBuilder[A](
 
   @dom
   private def onCreate(): Unit = {
+
     val model = modelBinding.bind
     model.agent // Call build model
     model.modelName := modelName.get
 
-    models.get += model
+    modelDAO.create(model.store()) map { id =>
+      model.setId(id)
+      models.get += model
+    }
 
     reset()
     onClose()

@@ -8,7 +8,9 @@ import org.scalajs.dom.raw.CanvasRenderingContext2D
 import rlp.environment.Environment
 import rlp._
 import rlp.models.Model
-import rlp.utils.{BackgroundProcess, KeyboardHandler}
+import rlp.utils.{BackgroundProcess, KeyboardHandler, Logger}
+
+import scala.concurrent.ExecutionContext.Implicits.global
 
 import scala.scalajs.js.timers
 
@@ -27,7 +29,7 @@ abstract class GamePage[S, A] extends Page {
   protected val models: Vars[Model[A]] = Vars()
   private var model: Model[A] = _
 
-  lazy val modelBuilder = new ModelBuilder(modelBuilders, models)
+  lazy val modelBuilder = new ModelBuilder(modelBuilders, models, modelDAO)
   lazy val modelTrainer = new ModelTrainer(models, modelBuilders, modelDAO, trainStep)
   lazy val modelComparison = new ModelComparison(models, performanceEntryGap)
 
@@ -49,6 +51,8 @@ abstract class GamePage[S, A] extends Page {
   val actionDescription: String
   val rewardDescription: String
 
+  private var initialised: Boolean = false
+
   override def start(): Unit = {
     renderProcess.start(Environment.FPS)
     window.onresize = { _:Event => pageResized() }
@@ -57,6 +61,33 @@ abstract class GamePage[S, A] extends Page {
     val game = getElem[Div]("game-row")
     game.tabIndex = 0
     keyboardHandler.register(game)
+
+    if (!initialised) {
+      initialised = true
+
+      modelDAO.getAll() map { modelStores =>
+
+        modelStores foreach { store =>
+          try {
+
+            modelBuilders.find(_._1 == store.agentName) match {
+              case Some((_, builder)) => {
+
+                val model = builder()
+                model.load(store)
+                models.get += model
+              }
+
+              case None =>
+            }
+
+          } catch {
+            case e: Exception => Logger.log("GamePage", "Loading error - " + e.getMessage)
+          }
+        }
+      }
+    }
+
   }
 
   override def stop(): Unit = {
