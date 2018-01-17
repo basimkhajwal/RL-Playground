@@ -1,20 +1,14 @@
 package rlp.models
 
 import com.thoughtworks.binding.{Binding, dom}
-import com.thoughtworks.binding.Binding.{BindingSeq, Constant, Var, Vars}
+import com.thoughtworks.binding.Binding.{BindingSeq, Constant, Var}
 import org.scalajs.dom.raw.HTMLElement
 import rlp._
 import rlp.storage.ModelStore
+import rlp.utils.HistoryBuffer
 import upickle.{Js, json}
 
-import scala.collection.mutable.ArrayBuffer
-
 abstract class Model[A](val environmentName: String, val agentName: String) {
-
-  final val MAX_HISTORY = 2000
-
-  val modelName: Var[String] = Var("")
-  val gamesPlayed: Var[Int] = Var(0)
 
   private val _viewDirty: Var[Boolean] = Var(false)
 
@@ -28,50 +22,6 @@ abstract class Model[A](val environmentName: String, val agentName: String) {
   def resetViewDirty(): Unit = {
     _viewDirty := false
   }
-  private val historyStep: Var[Int] = Var(1)
-  private val history: Vars[Double] = Vars()
-  private var recentHistoryTotal: Double = 0
-  private var recentHistoryCount: Int = 0
-
-  final val performanceStep: Binding[Int] = historyStep
-  final val performanceHistory: BindingSeq[Double] = history
-
-  final def clearHistory(): Unit = {
-    historyStep := 1
-    history.get.clear()
-    recentHistoryCount = 0
-    recentHistoryTotal = 0
-  }
-
-  private final def collateHistory(): Unit = {
-    val currentHistory = history.get
-    val newHistory = ArrayBuffer[Double]()
-
-    newHistory += currentHistory(0)
-    for (i <- 2 until currentHistory.length by 2) {
-      newHistory += (currentHistory(i) + currentHistory(i-1)) / 2
-    }
-
-    historyStep := historyStep.get * 2
-    history.get.clear()
-    history.get.appendAll(newHistory)
-  }
-
-  final def logPerformance(performance: Double): Unit = {
-    recentHistoryTotal += performance
-    recentHistoryCount += 1
-
-    if (recentHistoryCount == historyStep.get) {
-      history.get += recentHistoryTotal / historyStep.get
-
-      recentHistoryTotal = 0
-      recentHistoryCount = 0
-
-      if (history.get.length >= MAX_HISTORY) {
-        collateHistory()
-      }
-    }
-  }
 
   private var _id: Long = 0
 
@@ -81,6 +31,19 @@ abstract class Model[A](val environmentName: String, val agentName: String) {
     _id = newId
   }
 
+  final val MAX_HISTORY = 2000
+
+  val modelName: Var[String] = Var("")
+  val gamesPlayed: Var[Int] = Var(0)
+
+  private val historyBuffer = new HistoryBuffer(MAX_HISTORY)
+
+  final val performanceStep: Binding[Int] = historyBuffer.historyStep
+  final val performanceHistory: BindingSeq[Double] = historyBuffer.history
+
+  def logPerformance(performance: Double): Unit = {
+    historyBuffer.add(performance)
+  }
 
   @dom
   lazy val modelBuilder: Binding[HTMLElement] = <div></div>
@@ -94,7 +57,7 @@ abstract class Model[A](val environmentName: String, val agentName: String) {
 
   def cloneBuildFrom(controller: Model[A]): Unit
 
-  def buildAgent(): A
+  protected def buildAgent(): A
 
   protected def storeBuild(): Js.Value
 
@@ -115,9 +78,9 @@ abstract class Model[A](val environmentName: String, val agentName: String) {
     modelName := modelStore.modelName
     gamesPlayed := modelStore.gamesPlayed
 
-    clearHistory()
-    history.get.appendAll(modelStore.performanceHistory)
-    historyStep := modelStore.performanceStep
+    historyBuffer.clear()
+    historyBuffer.history.get.appendAll(modelStore.performanceHistory)
+    historyBuffer.historyStep := modelStore.performanceStep
 
     loadBuild(json.read(modelStore.buildData))
     agent
@@ -132,8 +95,8 @@ abstract class Model[A](val environmentName: String, val agentName: String) {
       agentName,
       modelName.get,
       gamesPlayed.get,
-      historyStep.get,
-      history.get,
+      historyBuffer.historyStep.get,
+      historyBuffer.history.get,
       json.write(storeBuild()),
       json.write(storeAgent())
     )
@@ -141,7 +104,7 @@ abstract class Model[A](val environmentName: String, val agentName: String) {
 
   def resetAgent(): Unit = {
     gamesPlayed := 0
-    clearHistory()
+    historyBuffer.clear()
   }
 
   override def toString: String = agentName + " - " + modelName.get
