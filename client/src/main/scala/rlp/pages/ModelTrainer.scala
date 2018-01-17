@@ -152,9 +152,9 @@ class ModelTrainer[A](
       js.Dynamic.global.saveAs(fileBlob, model.toString + ".json")
     }
 
-    val MIN_SAVE_DELAY = 10000
+    val MIN_SAVE_DELAY = 1000
     var lastSaveTime: Double = 0
-    var saveScheduled: Boolean = true
+    var saveScheduled: Boolean = false
     var forceSave: Boolean = true
 
     def checkSave(): Unit = {
@@ -172,9 +172,11 @@ class ModelTrainer[A](
 
     def scheduleSave(force: Boolean = false): Unit = {
       if (!saveScheduled) {
-        val timeOutDelay = Math.max(20, (MIN_SAVE_DELAY + lastSaveTime) - window.performance.now())
+        val timeOutDelay = Math.max(50, (MIN_SAVE_DELAY + lastSaveTime) - window.performance.now())
         js.timers.setTimeout(timeOutDelay) { checkSave() }
         saveScheduled = true
+
+        Logger.log("ModelTrainer", "Save scheduled in " + timeOutDelay + "ms")
       }
       forceSave |= force
     }

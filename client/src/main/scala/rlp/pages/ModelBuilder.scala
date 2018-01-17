@@ -8,9 +8,9 @@ import rlp._
 import rlp.dao.ModelDAO
 import rlp.models.Model
 import rlp.ui.SelectHandler
+import rlp.utils.Logger
 
 import scala.concurrent.ExecutionContext.Implicits.global
-
 import scala.scalajs.js
 
 class ModelBuilder[A](
@@ -72,6 +72,8 @@ class ModelBuilder[A](
     val model = modelBinding.bind
     model.agent // Call build model
     model.modelName := modelName.get
+
+    Logger.log("ModelBuilder", "Creating model " + model.toString)
 
     modelDAO.create(model.store()) map { id =>
       model.setId(id)

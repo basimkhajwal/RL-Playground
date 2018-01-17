@@ -67,9 +67,10 @@ abstract class GamePage[S, A] extends Page {
 
       modelDAO.getAll() map { modelStores =>
 
+        Logger.log("GamePage", s"Loading ${modelStores.length} model stores from database")
+
         modelStores foreach { store =>
           try {
-
             modelBuilders.find(_._1 == store.agentName) match {
               case Some((_, builder)) => {
 
@@ -82,9 +83,11 @@ abstract class GamePage[S, A] extends Page {
             }
 
           } catch {
-            case e: Exception => Logger.log("GamePage", "Loading error - " + e.getMessage)
+            case e: Exception => Logger.log("GamePage", s"Error loading modelStore ${store.id} - " + e.getMessage)
           }
         }
+      } recover {
+        case error:Throwable => Logger.log("GamePage", "DB access error - " + error.getMessage)
       }
     }
 

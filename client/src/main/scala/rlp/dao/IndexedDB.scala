@@ -2,6 +2,7 @@ package rlp.dao
 
 import org.scalajs.dom.idb.{Database, ObjectStore, Request}
 import org.scalajs.dom._
+import rlp.utils.Logger
 
 import scala.concurrent.{Future, Promise}
 import scala.scalajs.js
@@ -17,29 +18,32 @@ object IndexedDB {
 
     val dBRequest = window.indexedDB.open(DB_NAME, 1)
 
-    dBRequest.onupgradeneeded = { event =>
+    dBRequest.onupgradeneeded = { _ =>
       val db = dBRequest.result.asInstanceOf[Database]
 
-      val modelStore = db.createObjectStore(MODEL_STORE, js.Dynamic.literal("keyPath" -> "id"))
+      Logger.log("IndexedDB", s"Upgrading database with $MODEL_STORE and $FAIL_SAFE")
 
-      val failSafe = db.createObjectStore(FAIL_SAFE, js.Dynamic.literal("keyPath" -> "id"))
-      failSafe.createIndex("uid", "uid", js.Dynamic.literal("unique" -> false))
+      db.createObjectStore(MODEL_STORE, js.Dynamic.literal("keyPath" -> "id"))
+
+      db.createObjectStore(FAIL_SAFE, js.Dynamic.literal("keyPath" -> "id"))
+        .createIndex("uid", "uid", js.Dynamic.literal("unique" -> false))
     }
 
-    requestPromise(dBRequest) { _ =>
+    requestPromise[Database](dBRequest) { _ =>
       dBRequest.result.asInstanceOf[Database]
     }
   }
 
   def objectStore(storeName: String, readOnly: Boolean = true): Future[ObjectStore] = {
     getDatabase() map { db =>
-      db.transaction(storeName, if (readOnly) "readonly" else "readwrite").objectStore(storeName)
+      db.transaction(storeName, if (readOnly) "readonly" else "readwrite")
+        .objectStore(storeName)
     }
   }
 
   def create(storeName: String, item: js.Any): Future[Unit] = {
     objectStore(storeName, readOnly = false) flatMap { store =>
-      requestPromise(store.add(item)) { _ => () }
+      requestPromise(store.add(item))
     }
   }
 
@@ -55,13 +59,13 @@ object IndexedDB {
 
   def update(storeName: String, item: js.Any): Future[Unit] = {
     objectStore(storeName, readOnly = false) flatMap { store =>
-      requestPromise(store.put(item)) { _ => () }
+      requestPromise(store.put(item))
     }
   }
 
   def delete(storeName: String, key: js.Any): Future[Unit] = {
     objectStore(storeName, readOnly = false) flatMap { store =>
-      requestPromise(store.delete(key)) { _ => () }
+      requestPromise(store.delete(key))
     }
   }
 
@@ -72,7 +76,8 @@ object IndexedDB {
       val promise = Promise[Seq[A]]()
       val cursor = store.openCursor()
 
-      cursor.onerror = { e:ErrorEvent =>
+      cursor.onerror = { _ =>
+        Logger.log("IndexedDB", "Cursor get failed: " + cursor.error.toString)
         promise.failure(new Exception(cursor.error.toString))
       }
 
@@ -90,8 +95,19 @@ object IndexedDB {
     }
   }
 
+  def requestPromise(request: Request): Future[Unit] = {
+    requestPromise[Unit](request) { _ => () }
+  }
+
   def requestPromise[A](request: Request)(success: Event => A): Future[A] = {
-    requestPromise(request, success, err => new Exception(err.toString))
+    requestPromise(
+      request,
+      success,
+      err => {
+        Logger.log("IndexedDB", "Error: " + err.toString)
+        new Exception(err.toString)
+      }
+    )
   }
 
   def requestPromise[A](request: Request, success: Event => A, error: DOMError => Throwable): Future[A] = {

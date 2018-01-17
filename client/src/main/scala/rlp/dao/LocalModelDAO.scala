@@ -1,5 +1,6 @@
 package rlp.dao
 import rlp.storage.ModelStore
+import rlp.utils.Logger
 import upickle.default
 
 import scala.concurrent.Future
@@ -8,8 +9,14 @@ import scala.concurrent.ExecutionContext.Implicits.global
 
 object LocalModelDAO extends ModelDAO {
 
+  private def log(msg: String): Unit = {
+    Logger.log("LocalModelDAO", msg)
+  }
+
   override def getAll(): Future[Seq[ModelStore]] = {
+    log("Retrieving model stores")
     IndexedDB.getAll[ModelStoreItem](IndexedDB.MODEL_STORE) map { items =>
+      log(items.length + " items retrieved")
       items map { item => ModelStoreItem.extract(item) }
     }
   }
@@ -20,6 +27,8 @@ object LocalModelDAO extends ModelDAO {
     val item = ModelStoreItem.fromStore(model)
     item.id = modelID
 
+    log(s"Creating model store id $modelID from ${model.agentName} - ${model.modelName}")
+
     IndexedDB
       .create(IndexedDB.MODEL_STORE, item)
       .map { _ => modelID }
@@ -29,11 +38,14 @@ object LocalModelDAO extends ModelDAO {
     IndexedDB.retrieve[ModelStoreItem](IndexedDB.MODEL_STORE, model.id) flatMap { item =>
       item.modelStore = default.write(model)
 
+      log(s"Updating model store id ${model.id}")
+
       IndexedDB.update(IndexedDB.MODEL_STORE, item)
     }
   }
 
   override def delete(model: ModelStore): Future[Unit] = {
+    log(s"Deleting model store id ${model.id}")
     IndexedDB.delete(IndexedDB.MODEL_STORE, model.id)
   }
 
