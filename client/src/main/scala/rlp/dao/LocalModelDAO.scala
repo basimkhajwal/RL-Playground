@@ -35,18 +35,17 @@ object LocalModelDAO extends ModelDAO {
   }
 
   override def update(model: ModelStore): Future[Unit] = {
-    IndexedDB.retrieve[ModelStoreItem](IndexedDB.MODEL_STORE, model.id) flatMap { item =>
+    log(s"Updating model store id ${model.id}")
+
+    IndexedDB.retrieve[ModelStoreItem](IndexedDB.MODEL_STORE, model.id.toDouble) flatMap { item =>
       item.modelStore = default.write(model)
-
-      log(s"Updating model store id ${model.id}")
-
       IndexedDB.update(IndexedDB.MODEL_STORE, item)
     }
   }
 
-  override def delete(model: ModelStore): Future[Unit] = {
-    log(s"Deleting model store id ${model.id}")
-    IndexedDB.delete(IndexedDB.MODEL_STORE, model.id)
+  override def delete(id: Long): Future[Unit] = {
+    log(s"Deleting model store id $id")
+    IndexedDB.delete(IndexedDB.MODEL_STORE, id.toDouble)
   }
 
   @js.native

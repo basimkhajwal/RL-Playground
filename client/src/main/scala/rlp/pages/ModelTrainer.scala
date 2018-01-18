@@ -13,6 +13,8 @@ import rlp.dao.ModelDAO
 import rlp.storage.ModelStore
 import rlp.ui.SelectHandler
 
+import scala.concurrent.ExecutionContext.Implicits.global
+
 import scala.scalajs.js
 
 class ModelTrainer[A](
@@ -127,6 +129,12 @@ class ModelTrainer[A](
   @dom
   private def modelEditPane(model: Model[A]): Binding[html.Element] = {
 
+    val MIN_SAVE_DELAY = 1000
+    var lastSaveTime: Double = 0
+    var saveScheduled: Boolean = false
+    var forceSave: Boolean = true
+    var deleteIssued: Boolean = false
+
     def onNameChange(): Unit = {
       val modelNames = models.get.map(_.modelName.get)
       val modelNameElem = getElem[html.Input]("model-name-train")
@@ -140,8 +148,21 @@ class ModelTrainer[A](
     }
 
     def onDelete(): Unit = {
+
+      Logger.log("ModelTrainer", "Deleting model - " + model.toString)
+
       modelSelect.selectedIndex := 0
       models.get.remove(models.get.indexOf(model))
+
+      deleteIssued = true
+
+      modelDAO.delete(model.id) recover {
+        case e:Throwable => Logger.log("ModelTrainer", "Delete error - " + e.getMessage)
+      }
+
+      js.timers.setTimeout(100) {
+        js.Dynamic.global.$(".material-tooltip").attr("style", "")
+      }
     }
 
     def onExport(): Unit = {
@@ -152,14 +173,12 @@ class ModelTrainer[A](
       js.Dynamic.global.saveAs(fileBlob, model.toString + ".json")
     }
 
-    val MIN_SAVE_DELAY = 1000
-    var lastSaveTime: Double = 0
-    var saveScheduled: Boolean = false
-    var forceSave: Boolean = true
-
     def checkSave(): Unit = {
-      if (forceSave || model.viewDirty) {
-        modelDAO.update(model.store())
+      if ((forceSave || model.viewDirty) && !deleteIssued) {
+        modelDAO.update(model.store()) recover {
+          case e:Throwable => Logger.log("ModelTrainer", "Save error " + e.getMessage)
+        }
+
         model.resetViewDirty()
 
         saveScheduled = false
@@ -172,8 +191,10 @@ class ModelTrainer[A](
 
     def scheduleSave(force: Boolean = false): Unit = {
       if (!saveScheduled) {
+
         val timeOutDelay = Math.max(50, (MIN_SAVE_DELAY + lastSaveTime) - window.performance.now())
         js.timers.setTimeout(timeOutDelay) { checkSave() }
+
         saveScheduled = true
 
         Logger.log("ModelTrainer", "Save scheduled in " + timeOutDelay + "ms")
@@ -184,6 +205,12 @@ class ModelTrainer[A](
     def trainingChanged(isTraining: Boolean): Unit = {
       if (!isTraining) {
         scheduleSave(true)
+      }
+    }
+
+    def viewChanged(viewDirty: Boolean): Unit = {
+      if (viewDirty) {
+        scheduleSave(false)
       }
     }
 
@@ -223,6 +250,7 @@ class ModelTrainer[A](
         </a>
 
         {
+          viewChanged(model.viewDirtyBinding.bind)
           trainingChanged(isTraining.bind)
           ""
         }

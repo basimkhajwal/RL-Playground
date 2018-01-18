@@ -12,5 +12,5 @@ trait ModelDAO {
 
   def update(model: ModelStore): Future[Unit]
 
-  def delete(model: ModelStore): Future[Unit]
+  def delete(id: Long): Future[Unit]
 }

@@ -12,5 +12,5 @@ object ServerModelDAO extends ModelDAO {
 
   override def update(model: ModelStore): Future[Unit] = ???
 
-  override def delete(model: ModelStore): Future[Unit] = ???
+  override def delete(id: Long): Future[Unit] = ???
 }
