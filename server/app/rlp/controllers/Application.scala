@@ -21,7 +21,9 @@ class Application @Inject()(userService: UserService, cc: ControllerComponents, 
     result.withSession("username" -> user.username)
   }
 
-  def login = Action { implicit request => Ok(views.html.login(LoginForm.form)) }
+  def login = Action { implicit request =>
+    Ok(views.html.login(LoginForm.form))
+  }
 
   def loginPost = Action.async { implicit request =>
     LoginForm.form.bindFromRequest.fold(
@@ -43,7 +45,9 @@ class Application @Inject()(userService: UserService, cc: ControllerComponents, 
     Redirect(routes.Application.index()).withNewSession
   }
 
-  def signUp = Action { implicit request => Ok(views.html.signup(SignUpForm.form)) }
+  def signUp = Action { implicit request =>
+    Ok(views.html.signup(SignUpForm.form))
+  }
 
   def signUpPost = Action.async { implicit request =>
     SignUpForm.form.bindFromRequest.fold(
@@ -55,4 +59,21 @@ class Application @Inject()(userService: UserService, cc: ControllerComponents, 
       }
     )
   }
+
+  def createModel = userAction.async { implicit request =>
+    ???
+  }
+
+  def retrieveModels = userAction.async { implicit request =>
+    ???
+  }
+
+  def updateModel = userAction.async { implicit request =>
+    ???
+  }
+
+  def deleteModel = userAction.async { implicit request =>
+    ???
+  }
+
 }

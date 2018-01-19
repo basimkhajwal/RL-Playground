@@ -11,6 +11,11 @@ POST       /login                        rlp.controllers.Application.loginPost
 POST       /signup                       rlp.controllers.Application.signUpPost
 GET        /logout                       rlp.controllers.Application.logOut
 
+PUT        /model                        rlp.controllers.Application.createModel
+GET        /model                        rlp.controllers.Application.retrieveModels
+POST       /model                        rlp.controllers.Application.updateModel
+DELETE     /model                        rlp.controllers.Application.deleteModel
+
 # Prefix must match `play.assets.urlPrefix`
 GET        /assets/*file                 controllers.Assets.at(file)
 GET        /versionedAssets/*file        controllers.Assets.versioned(path="/public", file: Asset)
