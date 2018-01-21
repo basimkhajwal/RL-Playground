@@ -2,6 +2,7 @@ import com.thoughtworks.binding.Binding
 import com.thoughtworks.binding.dom.Runtime.TagsAndTags2
 import org.scalajs.dom.raw
 import org.scalajs.dom.document
+import upickle.Js
 
 import scala.collection.mutable
 import scala.scalajs.js
@@ -41,7 +42,11 @@ package object rlp {
     js.timers.setTimeout(initialTimeout) { startTimer() }
   }
 
-  def initModal(id: String): Unit = initScript(id) { () => js.Dynamic.global.$("#" + id).modal() }
+  def initModal(id: String, opts: js.Any = js.Dynamic.literal()): Unit = {
+    initScript(id) { () =>
+      js.Dynamic.global.$("#" + id).modal(opts)
+    }
+  }
 
   def getElem[T](id: String): T = document.getElementById(id).asInstanceOf[T]
 
