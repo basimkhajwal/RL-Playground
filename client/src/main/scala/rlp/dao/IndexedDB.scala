@@ -12,21 +12,16 @@ object IndexedDB {
 
   val DB_NAME = "rlp"
   val MODEL_STORE = "modelStore"
-  val FAIL_SAFE = "failSafe"
 
   def getDatabase(): Future[Database] = {
 
     val dBRequest = window.indexedDB.open(DB_NAME, 1)
 
     dBRequest.onupgradeneeded = { _ =>
+      Logger.log("IndexedDB", s"Upgrading database with $MODEL_STORE database")
+
       val db = dBRequest.result.asInstanceOf[Database]
-
-      Logger.log("IndexedDB", s"Upgrading database with $MODEL_STORE and $FAIL_SAFE")
-
       db.createObjectStore(MODEL_STORE, js.Dynamic.literal("keyPath" -> "id"))
-
-      db.createObjectStore(FAIL_SAFE, js.Dynamic.literal("keyPath" -> "id"))
-        .createIndex("uid", "uid", js.Dynamic.literal("unique" -> false))
     }
 
     requestPromise[Database](dBRequest) { _ =>
