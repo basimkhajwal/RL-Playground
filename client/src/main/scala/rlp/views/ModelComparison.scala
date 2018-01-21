@@ -1,10 +1,10 @@
-package rlp.pages
+package rlp.views
 
 import com.thoughtworks.binding.Binding.{BindingSeq, Vars}
 import com.thoughtworks.binding.{Binding, dom}
 import org.scalajs.dom.{Event, html, window}
-import rlp.models.Model
 import rlp._
+import rlp.models.Model
 
 import scala.scalajs.js
 import scala.scalajs.js.JSConverters._

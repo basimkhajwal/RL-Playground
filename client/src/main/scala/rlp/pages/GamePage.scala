@@ -9,9 +9,9 @@ import rlp.environment.Environment
 import rlp._
 import rlp.models.Model
 import rlp.utils.{BackgroundProcess, KeyboardHandler, Logger}
+import rlp.views.{ModelBuilder, ModelComparison, ModelTrainer}
 
 import scala.concurrent.ExecutionContext.Implicits.global
-
 import scala.scalajs.js.timers
 
 abstract class GamePage[S, A] extends Page {

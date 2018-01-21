@@ -1,20 +1,19 @@
-package rlp.pages
+package rlp.views
 
-import com.thoughtworks.binding.{Binding, dom}
 import com.thoughtworks.binding.Binding.{Var, Vars}
-import org.scalajs.dom.{Blob, Event, html, window}
+import com.thoughtworks.binding.{Binding, dom}
 import org.scalajs.dom.html.Div
-import org.scalajs.dom.raw.{BlobPropertyBag, FileReader}
-import rlp.environment.Environment
-import rlp.models.Model
-import rlp.utils.{BackgroundProcess, Logger}
+import org.scalajs.dom.raw.FileReader
+import org.scalajs.dom.{Blob, Event, html, window}
 import rlp._
 import rlp.dao.ModelDAO
+import rlp.environment.Environment
+import rlp.models.Model
 import rlp.storage.ModelStore
 import rlp.ui.SelectHandler
+import rlp.utils.{BackgroundProcess, Logger}
 
 import scala.concurrent.ExecutionContext.Implicits.global
-
 import scala.scalajs.js
 
 class ModelTrainer[A](

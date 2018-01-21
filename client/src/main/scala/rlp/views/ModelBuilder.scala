@@ -1,9 +1,9 @@
-package rlp.pages
+package rlp.views
 
+import com.thoughtworks.binding.Binding.{Constant, Var, Vars}
 import com.thoughtworks.binding.{Binding, dom}
-import com.thoughtworks.binding.Binding.{BindingSeq, Constant, Var, Vars}
-import org.scalajs.dom.{Event, document, html}
 import org.scalajs.dom.html.Div
+import org.scalajs.dom.{Event, html}
 import rlp._
 import rlp.dao.ModelDAO
 import rlp.models.Model
