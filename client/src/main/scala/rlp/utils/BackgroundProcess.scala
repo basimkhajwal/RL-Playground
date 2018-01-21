@@ -82,3 +82,19 @@ class BackgroundProcess(
   }
 
 }
+
+object BackgroundProcess {
+
+  /**
+    * Utility function to instantiate a background process with a more convenient
+    * syntax for block expressions
+    *
+    * @param name
+    * @param benchmarkRuns
+    * @param step
+    * @return
+    */
+  def apply(name: String = "", benchmarkRuns: Int = 1000)(step: () => Unit): BackgroundProcess = {
+    new BackgroundProcess(step, name, benchmarkRuns)
+  }
+}
