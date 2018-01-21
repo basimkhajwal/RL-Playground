@@ -20,6 +20,7 @@ class ModelTrainer[A](
   models: Vars[Model[A]],
   builders: List[Model.Builder[A]],
   modelDAO: ModelDAO,
+  modelPerformance: (Model[A]) => Double,
   trainStep: () => Unit,
 ) {
 
@@ -213,10 +214,6 @@ class ModelTrainer[A](
       }
     }
 
-    def onSubmitLeaderboard(): Unit = {
-      // TODO
-    }
-
     initScript("model-option-btns") { () => js.Dynamic.global.$(".tooltipped").tooltip() }
 
     <div class="row col s10 offset-s1">
@@ -232,9 +229,8 @@ class ModelTrainer[A](
       </div>
 
       <div id="model-option-btns" class="col s4 offset-s1">
-        <a class="btn-floating waves-effect waves-light tooltipped brown lighten-1"
-           data:data-tooltip="Submit to leaderboard"
-           onclick={_:Event => onSubmitLeaderboard()}>
+        <a class="btn-floating waves-effect waves-light tooltipped brown lighten-1 modal-trigger"
+           data:data-tooltip="Submit to leaderboard" href="#leaderboard-modal">
           <i class="material-icons">publish</i>
         </a>
         <a class="btn-floating waves-effect waves-light tooltipped blue-grey"
@@ -248,12 +244,116 @@ class ModelTrainer[A](
           <i class="material-icons">delete</i>
         </a>
 
+        { leaderboardModal(model).bind }
+
         {
           viewChanged(model.viewDirtyBinding.bind)
           trainingChanged(isTraining.bind)
           ""
         }
 
+      </div>
+
+    </div>
+  }
+
+  @dom
+  private def leaderboardModal(model: Model[A]): Binding[html.Element] = {
+
+    val numRuns = 200
+
+    val modelScore = Var[Double](Double.NaN)
+    var totalScore = 0.0
+    val runsCompleted = Var[Int](0)
+    val completed = Var(false)
+
+    val submitError = Var("")
+
+    var scoreProcess: BackgroundProcess = null
+
+    def onSubmit(): Unit = {
+      // TODO: Submit score to server
+    }
+
+    def stepScore(): Unit = {
+      totalScore += modelPerformance(model)
+
+      runsCompleted := runsCompleted.get + 1
+      runsCompletedChanged()
+
+      if (runsCompleted.get == numRuns) {
+        scoreProcess.stop()
+        modelScore := totalScore / numRuns
+        completed := true
+      }
+    }
+
+    def runsCompletedChanged(): Unit = {
+      js.Dynamic.global.$("#leaderboard-progress").width((100 * runsCompleted.get)/numRuns + "%")
+    }
+
+    val onOpen: js.Function = { () =>
+      scoreProcess.start(40)
+    }
+
+    val onClose: js.Function = { () =>
+      if (runsCompleted.get != numRuns) {
+        scoreProcess.stop()
+      }
+      totalScore = 0
+      runsCompleted := 0
+      completed := false
+      submitError := ""
+      runsCompletedChanged()
+    }
+
+    initModal("leaderboard-modal",
+      js.Dynamic.literal(
+        "ready" -> onOpen,
+        "complete" -> onClose
+      )
+    )
+
+    scoreProcess = new BackgroundProcess(stepScore, "Leaderboard Score")
+
+    <div class="modal" id="leaderboard-modal">
+      <div class="modal-content">
+        <span class="card-title center-align">Submit to Leaderboard</span>
+
+        <br />
+        <h6 class="center-align black-text lighten-1">
+          Model Entry - <strong>{model.toString}</strong>
+        </h6>
+        <br />
+        <br />
+
+        <h6 class="center-align">
+          {
+            if (completed.bind) "Score: " + modelScore.bind.toString
+            else "Calculating score..."
+          }
+        </h6>
+
+        <div class="progress">
+          <div class="determinate" id="leaderboard-progress"></div>
+        </div>
+
+        {
+          submitError.bind match {
+            case "" => <!-- -->
+            case error =>
+              <h6 class="center-align red-text lighten-1"><strong>Error - </strong>{error}</h6>
+          }
+        }
+
+      </div>
+
+      <div class="modal-footer valign-wrapper">
+        <a class={
+             "btn waves-effect waves-light red lighten-2" +
+             (if (completed.bind) "" else " disabled")
+           }
+           onclick={_:Event => onSubmit()}>Submit</a>
       </div>
 
     </div>
@@ -329,8 +429,13 @@ class ModelTrainer[A](
           </div>
         </form>
 
-        <h5 class="center-align red-text">{ if (importError.bind != "") "Error" else "" }</h5>
-        <h6 class="center-align red-text lighten-2">{importError.bind}</h6>
+        {
+          importError.bind match {
+            case "" => <!-- -->
+            case error =>
+              <h6 class="center-align red-text lighten-1"><strong>Error - </strong>{error}</h6>
+          }
+        }
       </div>
 
       <div class="modal-footer valign-wrapper">

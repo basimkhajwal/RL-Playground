@@ -236,12 +236,18 @@ body {
     margin: 80px 50px;
 }
 
-#import-modal .modal-footer {
+#import-modal .modal-footer, #leaderboard-modal .modal-footer {
     margin-bottom: 20px;
 }
 
-#import-modal .modal-footer .btn {
+#import-modal .modal-footer .btn, #leaderboard-modal .modal-footer .btn {
     margin: 0 auto;
+}
+
+#leaderboard-modal .progress {
+    width: 70%;
+    margin-left: 15%;
+    margin-top: 25px;
 }
 
 .description .flow-text {
