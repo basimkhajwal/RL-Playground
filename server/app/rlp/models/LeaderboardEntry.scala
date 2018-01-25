@@ -9,7 +9,7 @@ case class LeaderboardEntry(
   modelName: String,
   gamesPlayed: Int,
   performanceStep: Int,
-  performanceHistory: Seq[Double],
+  performanceHistory: Array[Double],
   buildData: String,
   agentData: String,
   score: Double

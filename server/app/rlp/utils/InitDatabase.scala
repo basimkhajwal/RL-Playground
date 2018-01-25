@@ -1,7 +1,7 @@
 package rlp.utils
 
 import play.api._
-import rlp.dao.UserDAO
+import rlp.dao.{LeaderboardDAO, UserDAO}
 
 object InitDatabase {
 
@@ -20,8 +20,10 @@ object InitDatabase {
 
     /* Get schema instances */
     val userDAO = app.injector.instanceOf[UserDAO]
+    val leaderboardDAO = app.injector.instanceOf[LeaderboardDAO]
 
     // Init schema
     userDAO.createSchema()
+    leaderboardDAO.createSchema()
   }
 }
