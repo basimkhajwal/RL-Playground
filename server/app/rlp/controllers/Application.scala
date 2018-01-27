@@ -60,20 +60,7 @@ class Application @Inject()(userService: UserService, cc: ControllerComponents, 
     )
   }
 
-  def createModel = userAction.async { implicit request =>
-    ???
+  def addLeaderboardEntry = userAction { implicit request =>
+    Ok("TODO")
   }
-
-  def retrieveModels = userAction.async { implicit request =>
-    ???
-  }
-
-  def updateModel = userAction.async { implicit request =>
-    ???
-  }
-
-  def deleteModel = userAction.async { implicit request =>
-    ???
-  }
-
 }
