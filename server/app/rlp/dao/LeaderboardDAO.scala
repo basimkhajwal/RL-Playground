@@ -1,11 +1,9 @@
 package rlp.dao
 
-import java.sql.Blob
 import javax.inject._
 
 import play.api.db.slick.{DatabaseConfigProvider, HasDatabaseConfigProvider}
-import rlp.models.{EmailAccount, GoogleAccount, LeaderboardEntry, User}
-import rlp.storage.Base64
+import rlp.models.LeaderboardEntry
 import slick.jdbc.JdbcProfile
 import slick.jdbc.meta.MTable
 
@@ -46,47 +44,11 @@ class LeaderboardDAO @Inject()(protected val dbConfigProvider: DatabaseConfigPro
     def modelName = column[String]("modelName")
 
     def gamesPlayed = column[Int]("gamesPlayed")
-    def performanceStep = column[Int]("performanceStep")
-    def performanceHistory = column[Array[Byte]]("performanceHistory")
-
-    def buildData = column[String]("buildData")
-    def agentData = column[String]("agentData")
-
     def score = column[Double]("score")
-
-    type TableColumns = (Long, Long, Long, String, String, String, Int, Int, Array[Byte], String, String, Double)
-
-    def buildLeaderboard(columns: TableColumns): LeaderboardEntry = {
-
-      val (
-        id, userId, timeStamp, environmentName,
-        agentName, modelName, gamesPlayed,
-        performanceStep, performanceHistory,
-        buildData, agentData, score
-      ) = columns
-
-      LeaderboardEntry(
-        id, userId, timeStamp, environmentName,
-        agentName, modelName, gamesPlayed,
-        performanceStep, Base64.fromByteArray(performanceHistory),
-        buildData, agentData, score
-      )
-    }
-
-    def extractColumns(e: LeaderboardEntry): Option[TableColumns] = {
-      Some((
-        e.id, e.userId, e.timeStamp, e.environmentName,
-        e.agentName, e.modelName, e.gamesPlayed,
-        e.performanceStep, Base64.toByteArray(e.performanceHistory),
-        e.buildData, e.agentData, e.score
-      ))
-    }
 
     override def * = (
       id, userId, timeStamp, environmentName,
-      agentName, modelName, gamesPlayed,
-      performanceStep, performanceHistory,
-      buildData, agentData, score
-    ) <> (buildLeaderboard, extractColumns)
+      agentName, modelName, gamesPlayed, score
+    ) <> (LeaderboardEntry.tupled, LeaderboardEntry.unapply)
   }
 }

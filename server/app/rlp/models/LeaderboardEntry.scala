@@ -8,9 +8,5 @@ case class LeaderboardEntry(
   agentName: String,
   modelName: String,
   gamesPlayed: Int,
-  performanceStep: Int,
-  performanceHistory: Array[Double],
-  buildData: String,
-  agentData: String,
   score: Double
 )
