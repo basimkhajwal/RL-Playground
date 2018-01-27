@@ -8,8 +8,7 @@ import org.scalajs.dom.{Blob, Event, html, window}
 import rlp._
 import rlp.dao.ModelDAO
 import rlp.environment.Environment
-import rlp.models.Model
-import rlp.storage.ModelStore
+import rlp.models.{Model, ModelStore}
 import rlp.ui.SelectHandler
 import rlp.utils.{BackgroundProcess, Logger}
 

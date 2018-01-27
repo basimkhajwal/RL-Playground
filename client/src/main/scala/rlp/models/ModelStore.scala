@@ -1,4 +1,4 @@
-package rlp.storage
+package rlp.models
 
 import upickle.default._
 

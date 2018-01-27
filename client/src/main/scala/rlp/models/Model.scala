@@ -4,7 +4,6 @@ import com.thoughtworks.binding.{Binding, dom}
 import com.thoughtworks.binding.Binding.{BindingSeq, Constant, Var}
 import org.scalajs.dom.raw.HTMLElement
 import rlp._
-import rlp.storage.ModelStore
 import rlp.utils.HistoryBuffer
 import upickle.{Js, json}
 
