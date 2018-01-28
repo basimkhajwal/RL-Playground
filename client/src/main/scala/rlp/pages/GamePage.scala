@@ -69,11 +69,14 @@ abstract class GamePage[S, A] extends Page {
 
         Logger.log("GamePage", s"Loading ${modelStores.length} model stores from database")
 
-        modelStores foreach { store =>
+        for {
+          store <- modelStores
+          if store.environmentName == name
+        } {
           try {
+
             modelBuilders.find(_._1 == store.agentName) match {
               case Some((_, builder)) => {
-
                 val model = builder()
                 model.load(store)
                 models.get += model
@@ -83,9 +86,11 @@ abstract class GamePage[S, A] extends Page {
             }
 
           } catch {
-            case e: Exception => Logger.log("GamePage", s"Error loading modelStore ${store.id} - " + e.getMessage)
+            case e: Exception =>
+              Logger.log("GamePage", s"Error loading modelStore ${store.id} - " + e.getMessage)
           }
         }
+
       } recover {
         case error:Throwable => Logger.log("GamePage", "DB access error - " + error.getMessage)
       }
