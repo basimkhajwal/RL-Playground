@@ -7,7 +7,7 @@
     font-size: 2.1rem;
 }
 
-#add-model-btn, #import-model-btn {
+#add-agent-btn, #import-agent-btn {
     margin-top: 10px;
     margin-left: 10px;
 }
@@ -55,11 +55,11 @@
     align-items: stretch;
 }
 
-#model-select {
+#agent-select {
     min-height: 400px;
 }
 
-#model-select > .card-content{
+#agent-select > .card-content{
     padding: 0;
 }
 
@@ -224,11 +224,11 @@ body {
     margin-left: 5px;
 }
 
-#model-option-btns {
+#agent-option-btns {
     margin-top: 10px;
 }
 
-#model-option-btns .btn-floating {
+#agent-option-btns .btn-floating {
     margin-left: 10px;
 }
 

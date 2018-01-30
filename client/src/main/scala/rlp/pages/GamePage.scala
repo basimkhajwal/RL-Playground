@@ -29,9 +29,9 @@ abstract class GamePage[S, A] extends Page {
   protected val presenters: Vars[AgentPresenter[A]] = Vars()
   private var presenter: AgentPresenter[A] = _
 
-  lazy val modelBuilder = new AgentBuildView(presenterBuilders, presenters, modelDAO)
-  lazy val modelTrainer = new AgentTrainView(presenters, presenterBuilders, modelDAO, agentPerformance, trainStep)
-  lazy val modelComparison = new AgentComparisonView(presenters, performanceEntryGap)
+  lazy val buildView = new AgentBuildView(presenterBuilders, presenters, modelDAO)
+  lazy val trainView = new AgentTrainView(presenters, presenterBuilders, modelDAO, agentPerformance, trainStep)
+  lazy val comparisonView = new AgentComparisonView(presenters, performanceEntryGap)
 
   protected val aspectRatio: Double = 3.0/4
   protected val targetGameWidth = 800
@@ -100,7 +100,7 @@ abstract class GamePage[S, A] extends Page {
 
   override def stop(): Unit = {
     renderProcess.stop()
-    if (modelTrainer.isTraining.get) modelTrainer.pauseTraining()
+    if (trainView.isTraining.get) trainView.pauseTraining()
   }
 
   protected def toggleRenderTraining(): Unit = {
@@ -175,23 +175,23 @@ abstract class GamePage[S, A] extends Page {
       </div>
 
       <div class="col s12">
-        <div class="card" id="model-select">
+        <div class="card" id="agent-select">
           <div class="card-content">
-            { modelTrainer.content.bind }
+            { trainView.content.bind }
           </div>
 
-          { modelBuilder.content.bind }
+          { buildView.content.bind }
         </div>
       </div>
 
       <div class="col s12">
-        { modelComparison.content.bind }
+        { comparisonView.content.bind }
       </div>
 
       {
-        modelTrainer.selectedAgent.bind match {
-          case Some(newModel : AgentPresenter[A]) => {
-            this.presenter = newModel
+        trainView.selectedAgent.bind match {
+          case Some(presenter : AgentPresenter[A]) => {
+            this.presenter = presenter
             trainingEnvironment = createEnvironment(presenter)
           }
           case None => /* Do nothing */

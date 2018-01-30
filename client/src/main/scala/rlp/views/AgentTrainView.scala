@@ -90,11 +90,11 @@ class AgentTrainView[A](
 
           <div id="modal-btns" class="col s2 valign-wrapper">
             <a class="btn-floating waves-effect waves-light modal-trigger tooltipped red"
-               href="#builder-modal" id="add-model-btn" data:data-tooltip="New Agent">
+               href="#builder-modal" id="add-agent-btn" data:data-tooltip="New Agent">
               <i class="material-icons">add</i>
             </a>
             <a class="btn-floating waves-effect waves-light modal-trigger tooltipped red lighten-2"
-               href="#import-modal" id="import-model-btn" data:data-tooltip="Import Agent">
+               href="#import-modal" id="import-agent-btn" data:data-tooltip="Import Agent">
               <i class="material-icons">file_upload</i>
             </a>
           </div>
@@ -106,7 +106,7 @@ class AgentTrainView[A](
       <div class="col s12 grey lighten-4 row" id="agent-info">
         {
           selectedAgent.bind match {
-            case Some(model) => modelEditPane(model).bind
+            case Some(agent) => agentEditPane(agent).bind
             case None => <!-- -->
           }
         }
@@ -115,7 +115,7 @@ class AgentTrainView[A](
       <div class="col s12">
         {
           selectedAgent.bind match {
-            case Some(model) => model.agentViewer.bind
+            case Some(agent) => agent.agentViewer.bind
             case None => <!-- -->
           }
         }
@@ -126,7 +126,7 @@ class AgentTrainView[A](
   }
 
   @dom
-  private def modelEditPane(model: AgentPresenter[A]): Binding[html.Element] = {
+  private def agentEditPane(agent: AgentPresenter[A]): Binding[html.Element] = {
 
     val MIN_SAVE_DELAY = 1000
     var lastSaveTime: Double = 0
@@ -135,28 +135,28 @@ class AgentTrainView[A](
     var deleteIssued: Boolean = false
 
     def onNameChange(): Unit = {
-      val modelNames = agents.get.map(_.name.get)
-      val modelNameElem = getElem[html.Input]("model-name-train")
+      val agentNames = agents.get.map(_.name.get)
+      val nameElem = getElem[html.Input]("agent-name-train")
 
-      if (modelNames contains modelNameElem.value) {
-        modelNameElem.setCustomValidity("Invalid")
+      if (agentNames contains nameElem.value) {
+        nameElem.setCustomValidity("Invalid")
       } else {
-        modelNameElem.setCustomValidity("")
-        model.name := modelNameElem.value
+        nameElem.setCustomValidity("")
+        agent.name := nameElem.value
       }
     }
 
     def onDelete(): Unit = {
 
-      Logger.log("ModelTrainer", "Deleting model - " + model.toString)
+      Logger.log("AgentTrainView", "Deleting agent - " + agent.toString)
 
       agentSelect.selectedIndex := 0
-      agents.get.remove(agents.get.indexOf(model))
+      agents.get.remove(agents.get.indexOf(agent))
 
       deleteIssued = true
 
-      modelDAO.delete(model.id) recover {
-        case e:Throwable => Logger.log("ModelTrainer", "Delete error - " + e.getMessage)
+      modelDAO.delete(agent.id) recover {
+        case e:Throwable => Logger.log("AgentTrainView", "Delete error - " + e.getMessage)
       }
 
       js.timers.setTimeout(100) {
@@ -166,25 +166,25 @@ class AgentTrainView[A](
 
     def onExport(): Unit = {
       import upickle.default._
-      val fileStore = write(model.store())
+      val fileStore = write(agent.store())
       val fileBlob = new Blob(js.Array(fileStore))
 
-      js.Dynamic.global.saveAs(fileBlob, model.toString + ".json")
+      js.Dynamic.global.saveAs(fileBlob, agent.toString + ".json")
     }
 
     def checkSave(): Unit = {
-      if ((forceSave || model.viewDirty) && !deleteIssued) {
-        modelDAO.update(model.store()) recover {
-          case e:Throwable => Logger.log("ModelTrainer", "Save error " + e.getMessage)
+      if ((forceSave || agent.viewDirty) && !deleteIssued) {
+        modelDAO.update(agent.store()) recover {
+          case e:Throwable => Logger.log("AgentTrainView", "Save error " + e.getMessage)
         }
 
-        model.resetViewDirty()
+        agent.resetViewDirty()
 
         saveScheduled = false
         forceSave = false
         lastSaveTime = window.performance.now()
 
-        Logger.log("ModelTrainer", model.toString + " saved")
+        Logger.log("AgentTrainView", agent.toString + " saved")
       }
     }
 
@@ -196,7 +196,7 @@ class AgentTrainView[A](
 
         saveScheduled = true
 
-        Logger.log("ModelTrainer", "Save scheduled in " + timeOutDelay + "ms")
+        Logger.log("AgentTrainView", "Save scheduled in " + timeOutDelay + "ms")
       }
       forceSave |= force
     }
@@ -213,21 +213,21 @@ class AgentTrainView[A](
       }
     }
 
-    initScript("model-option-btns") { () => js.Dynamic.global.$(".tooltipped").tooltip() }
+    initScript("agent-option-btns") { () => js.Dynamic.global.$(".tooltipped").tooltip() }
 
     <div class="row col s10 offset-s1">
       <div class="input-field col s3">
-        <input id="model-name-train" class="validate" type="text"
-               value={model.name.bind} onchange={_:Event => onNameChange()} required={true}/>
-        <label for="model-name-train" data:data-error="Model name empty or already exists">Model Name</label>
+        <input id="agent-name-train" class="validate" type="text"
+               value={agent.name.bind} onchange={_:Event => onNameChange()} required={true}/>
+        <label for="agent-name-train" data:data-error="Agent name empty or already exists">Agent Name</label>
       </div>
 
       <div class="col s3 center-align">
         <h6 id="episode-label">Episodes Trained</h6>
-        <h6><strong>{model.gamesPlayed.bind.toString}</strong></h6>
+        <h6><strong>{agent.gamesPlayed.bind.toString}</strong></h6>
       </div>
 
-      <div id="model-option-btns" class="col s4 offset-s1">
+      <div id="agent-option-btns" class="col s4 offset-s1">
         <a class="btn-floating waves-effect waves-light tooltipped brown lighten-1 modal-trigger"
            data:data-tooltip="Submit to leaderboard" href="#leaderboard-modal">
           <i class="material-icons">publish</i>
@@ -238,15 +238,15 @@ class AgentTrainView[A](
           <i class="material-icons">file_download</i>
         </a>
         <a class="btn-floating waves-effect waves-light tooltipped red"
-           data:data-tooltip="Delete model"
+           data:data-tooltip="Delete agent"
            onclick={_:Event => onDelete() }>
           <i class="material-icons">delete</i>
         </a>
 
-        { leaderboardModal(model).bind }
+        { leaderboardModal(agent).bind }
 
         {
-          viewChanged(model.viewDirtyBinding.bind)
+          viewChanged(agent.viewDirtyBinding.bind)
           trainingChanged(isTraining.bind)
           ""
         }
@@ -257,11 +257,11 @@ class AgentTrainView[A](
   }
 
   @dom
-  private def leaderboardModal(model: AgentPresenter[A]): Binding[html.Element] = {
+  private def leaderboardModal(presenter: AgentPresenter[A]): Binding[html.Element] = {
 
     val numRuns = 200
 
-    val modelScore = Var[Double](Double.NaN)
+    val agentScore = Var[Double](Double.NaN)
     var totalScore = 0.0
     val runsCompleted = Var[Int](0)
     val completed = Var(false)
@@ -275,14 +275,14 @@ class AgentTrainView[A](
     }
 
     def stepScore(): Unit = {
-      totalScore += agentPerformance(model)
+      totalScore += agentPerformance(presenter)
 
       runsCompleted := runsCompleted.get + 1
       runsCompletedChanged()
 
       if (runsCompleted.get == numRuns) {
         scoreProcess.stop()
-        modelScore := totalScore / numRuns
+        agentScore := totalScore / numRuns
         completed := true
       }
     }
@@ -321,14 +321,14 @@ class AgentTrainView[A](
 
         <br />
         <h6 class="center-align black-text lighten-1">
-          Model Entry - <strong>{model.toString}</strong>
+          Agent Entry - <strong>{presenter.toString}</strong>
         </h6>
         <br />
         <br />
 
         <h6 class="center-align">
           {
-            if (completed.bind) "Score: " + modelScore.bind.toString
+            if (completed.bind) "Score: " + agentScore.bind.toString
             else "Calculating score..."
           }
         </h6>
@@ -387,9 +387,9 @@ class AgentTrainView[A](
             builders.find(_._1 == store.agentName) match {
 
               case Some((_, builder)) => {
-                val model = builder()
-                model.load(store)
-                agents.get += model
+                val agent = builder()
+                agent.load(store)
+                agents.get += agent
 
                 js.Dynamic.global.$("#import-modal").modal("close")
               }
@@ -415,7 +415,7 @@ class AgentTrainView[A](
     <div class="modal" id="import-modal">
 
       <div class="modal-content">
-        <span class="card-title center-align">Import Model</span>
+        <span class="card-title center-align">Import Agent</span>
         <form action="#">
           <div class="file-field input-field">
             <div class="btn waves-effect teal lighten-2">
