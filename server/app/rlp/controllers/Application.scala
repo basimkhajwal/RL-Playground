@@ -5,7 +5,6 @@ import javax.inject._
 import play.api.mvc._
 import rlp.actions.UserAction
 import rlp.forms.{LoginForm, SignUpForm}
-import rlp.models.User
 import rlp.service.UserService
 
 import scala.concurrent.{ExecutionContext, Future}

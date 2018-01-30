@@ -3,7 +3,6 @@ package rlp.service
 import javax.inject._
 
 import rlp.dao.LeaderboardDAO
-import rlp.models.LeaderboardEntry
 
 import scala.concurrent.{ExecutionContext, Future}
 

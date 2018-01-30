@@ -6,7 +6,6 @@ import javax.inject._
 import org.apache.commons.codec.digest.Crypt
 import rlp.dao.UserDAO
 import rlp.forms.{LoginForm, SignUpForm}
-import rlp.models.{EmailAccount, User}
 
 import scala.concurrent.{ExecutionContext, Future}
 

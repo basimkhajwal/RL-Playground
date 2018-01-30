@@ -3,7 +3,6 @@ package rlp.dao
 import javax.inject._
 
 import play.api.db.slick.{DatabaseConfigProvider, HasDatabaseConfigProvider}
-import rlp.models.LeaderboardEntry
 import slick.jdbc.JdbcProfile
 import slick.jdbc.meta.MTable
 

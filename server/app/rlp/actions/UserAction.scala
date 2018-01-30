@@ -3,7 +3,6 @@ package rlp.actions
 import javax.inject._
 
 import play.api.mvc._
-import rlp.models.User
 import rlp.service.UserService
 
 import scala.concurrent.{ExecutionContext, Future}
