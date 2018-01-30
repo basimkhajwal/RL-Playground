@@ -16,6 +16,10 @@ class Matrix(var rows: Int, var cols: Int, var data: Array[Double]) extends Stor
   require(cols > 0)
   require(data.length == rows*cols, "Incorrect data supplied")
 
+  for (i <- data.indices) {
+    if (data(i).isNaN) throw new Exception("Invalid NAN!")
+  }
+
   def this(rows: Int, cols: Int) = {
     this(rows, cols, new Array[Double](rows * cols))
   }
@@ -79,11 +83,13 @@ class Matrix(var rows: Int, var cols: Int, var data: Array[Double]) extends Stor
 
   def update(index: Int, value: Double): Unit = {
     require(index < data.length, "Invalid index")
+    require(!value.isNaN, "Value is NaN")
     data(index) = value
   }
 
   def update(row: Int, col: Int, value: Double): Unit = {
     require(0 <= row && 0 <= col && row < rows && col < cols, s"Index $row $col does not exist")
+    require(!value.isNaN, "Value is NaN")
     data(row*cols + col) = value
   }
 
