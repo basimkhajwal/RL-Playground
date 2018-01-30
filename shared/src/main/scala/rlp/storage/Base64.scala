@@ -29,10 +29,10 @@ object Base64 {
     val padding = (3 - arr.length % 3) % 3
     val builder = new StringBuilder(4*(arr.length + padding)/3 + 1)
 
-    def getItem(index: Int): Byte = if (index < arr.length) arr(index) else 0
+    def getItem(index: Int): Int = if (index < arr.length) arr(index) & 0xFF else 0
 
     for (i <- 0 until (arr.length + padding) by 3) {
-      val z = (getItem(i).toInt << 16) | (getItem(i+1).toInt << 8) | getItem(i+2).toInt
+      val z = (getItem(i) << 16) | (getItem(i+1) << 8) | getItem(i+2)
       builder += base64((z >> 18) & 0x3f)
       builder += base64((z >> 12) & 0x3f)
       builder += base64((z >> 6) & 0x3f)
