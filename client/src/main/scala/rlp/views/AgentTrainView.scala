@@ -8,7 +8,6 @@ import org.scalajs.dom.{Blob, Event, html, window}
 import rlp._
 import rlp.dao.ModelDAO
 import rlp.environment.Environment
-import rlp.models.ModelStore
 import rlp.presenters.{AgentPresenter, AgentStore}
 import rlp.ui.SelectHandler
 import rlp.utils.{BackgroundProcess, Logger}
@@ -16,11 +15,11 @@ import rlp.utils.{BackgroundProcess, Logger}
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.scalajs.js
 
-class ModelTrainer[A](
-  models: Vars[AgentPresenter[A]],
+class AgentTrainView[A](
+  agents: Vars[AgentPresenter[A]],
   builders: List[AgentPresenter.Builder[A]],
   modelDAO: ModelDAO,
-  modelPerformance: (AgentPresenter[A]) => Double,
+  agentPerformance: (AgentPresenter[A]) => Double,
   trainStep: () => Unit,
 ) {
 
@@ -30,17 +29,17 @@ class ModelTrainer[A](
   val isTraining: Var[Boolean] = Var(false)
   val gameSpeed: Var[Int] = Var(0)
 
-  val modelSelect = new SelectHandler("Model Select",
-    models.mapBinding(m => Binding { m.agentName + " - " + m.name.bind })
+  val agentSelect = new SelectHandler("Agent Select",
+    agents.mapBinding(a => Binding { a.agentName + " - " + a.name.bind })
   )
 
-  val modelExists = Binding { models.bind.nonEmpty }
+  val agentExists = Binding { agents.bind.nonEmpty }
 
-  val selectedModel: Binding[Option[AgentPresenter[A]]] = Binding {
-    if (modelExists.bind) {
-      val model = models.bind(modelSelect.selectedIndex.bind)
-      modelSelected(model)
-      Some(model)
+  val selectedAgent: Binding[Option[AgentPresenter[A]]] = Binding {
+    if (agentExists.bind) {
+      val agent = agents.bind(agentSelect.selectedIndex.bind)
+      agentSelected(agent)
+      Some(agent)
     } else {
       None
     }
@@ -58,14 +57,14 @@ class ModelTrainer[A](
     isTraining := false
   }
 
-  private def modelSelected(model: AgentPresenter[A]): Unit = {
+  private def agentSelected(agent: AgentPresenter[A]): Unit = {
     if (isTraining.get) pauseTraining()
     js.timers.setTimeout(100) { js.Dynamic.global.Materialize.updateTextFields() }
   }
 
   @dom
   private def resetTraining(): Unit = {
-    selectedModel.bind.get.resetAgent()
+    selectedAgent.bind.get.resetAgent()
   }
 
   private def fastForwardTraining(): Unit = {
@@ -77,25 +76,25 @@ class ModelTrainer[A](
   @dom
   lazy val content: Binding[Div] = {
 
-    <div class="row" id="model-trainer">
+    <div class="row" id="agent-trainer">
 
-      <div class="row grey col s12 lighten-3" id="model-training-header">
+      <div class="row grey col s12 lighten-3" id="agent-training-header">
         <div class="col s12 center-align">
-          <span class="card-title">Model Training</span>
+          <span class="card-title">Agent Training</span>
         </div>
 
         <div class="row col s12 vertical-stretch-row">
           <div class="col s3 offset-s1">
-            { modelSelect.handler.bind }
+            { agentSelect.handler.bind }
           </div>
 
           <div id="modal-btns" class="col s2 valign-wrapper">
             <a class="btn-floating waves-effect waves-light modal-trigger tooltipped red"
-               href="#builder-modal" id="add-model-btn" data:data-tooltip="New Model">
+               href="#builder-modal" id="add-model-btn" data:data-tooltip="New Agent">
               <i class="material-icons">add</i>
             </a>
             <a class="btn-floating waves-effect waves-light modal-trigger tooltipped red lighten-2"
-               href="#import-modal" id="import-model-btn" data:data-tooltip="Import Model">
+               href="#import-modal" id="import-model-btn" data:data-tooltip="Import Agent">
               <i class="material-icons">file_upload</i>
             </a>
           </div>
@@ -104,9 +103,9 @@ class ModelTrainer[A](
         </div>
       </div>
 
-      <div class="col s12 grey lighten-4 row" id="model-info">
+      <div class="col s12 grey lighten-4 row" id="agent-info">
         {
-          selectedModel.bind match {
+          selectedAgent.bind match {
             case Some(model) => modelEditPane(model).bind
             case None => <!-- -->
           }
@@ -115,7 +114,7 @@ class ModelTrainer[A](
 
       <div class="col s12">
         {
-          selectedModel.bind match {
+          selectedAgent.bind match {
             case Some(model) => model.agentViewer.bind
             case None => <!-- -->
           }
@@ -136,7 +135,7 @@ class ModelTrainer[A](
     var deleteIssued: Boolean = false
 
     def onNameChange(): Unit = {
-      val modelNames = models.get.map(_.name.get)
+      val modelNames = agents.get.map(_.name.get)
       val modelNameElem = getElem[html.Input]("model-name-train")
 
       if (modelNames contains modelNameElem.value) {
@@ -151,8 +150,8 @@ class ModelTrainer[A](
 
       Logger.log("ModelTrainer", "Deleting model - " + model.toString)
 
-      modelSelect.selectedIndex := 0
-      models.get.remove(models.get.indexOf(model))
+      agentSelect.selectedIndex := 0
+      agents.get.remove(agents.get.indexOf(model))
 
       deleteIssued = true
 
@@ -276,7 +275,7 @@ class ModelTrainer[A](
     }
 
     def stepScore(): Unit = {
-      totalScore += modelPerformance(model)
+      totalScore += agentPerformance(model)
 
       runsCompleted := runsCompleted.get + 1
       runsCompletedChanged()
@@ -390,7 +389,7 @@ class ModelTrainer[A](
               case Some((_, builder)) => {
                 val model = builder()
                 model.load(store)
-                models.get += model
+                agents.get += model
 
                 js.Dynamic.global.$("#import-modal").modal("close")
               }
@@ -448,7 +447,7 @@ class ModelTrainer[A](
   private lazy val trainingButtons: Binding[html.Div] = {
     val buttonStyle =
       "center-align btn-floating waves-effect waves-circle " +
-      (if (modelExists.bind) "" else "disabled ")
+      (if (agentExists.bind) "" else "disabled ")
     val training = isTraining.bind
 
     <div class="center-align" id="buttons-container">

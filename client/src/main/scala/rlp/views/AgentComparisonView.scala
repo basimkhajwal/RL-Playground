@@ -9,8 +9,8 @@ import rlp.presenters.AgentPresenter
 import scala.scalajs.js
 import scala.scalajs.js.JSConverters._
 
-class ModelComparison[A](
-  models: Vars[AgentPresenter[A]],
+class AgentComparisonView[A](
+  agents: Vars[AgentPresenter[A]],
   performanceGap: Int
 ) {
 
@@ -25,15 +25,15 @@ class ModelComparison[A](
       "showlegend" -> true
     )
 
-    val items: BindingSeq[js.Object] = for (model:AgentPresenter[A] <- models) yield {
-      val history = model.performanceHistory.bind
-      val xStep = performanceGap * model.performanceStep.bind
+    val items: BindingSeq[js.Object] = for (agent:AgentPresenter[A] <- agents) yield {
+      val history = agent.performanceHistory.bind
+      val xStep = performanceGap * agent.performanceStep.bind
 
       js.Dynamic.literal(
         "x" -> history.indices.map(xStep*_).toJSArray,
         "y" -> history.toJSArray,
         "type" -> "scatter",
-        "name" -> model.toString
+        "name" -> agent.toString
       )
     }
 
@@ -55,9 +55,9 @@ class ModelComparison[A](
     window.addEventListener("resize", { _:Event => pageResized() })
     js.timers.setTimeout(100) { pageResized() }
 
-    <div class="card" id="model-comparison">
+    <div class="card" id="agent-comparison">
       <div class="row">
-        <span class="card-title col s12 center-align grey lighten-3">Model Comparison</span>
+        <span class="card-title col s12 center-align grey lighten-3">Agent Comparison</span>
         <div class="col s10 offset-s1">
           { graph.bind }
         </div>

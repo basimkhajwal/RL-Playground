@@ -13,55 +13,56 @@ import rlp.utils.Logger
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.scalajs.js
 
-class ModelBuilder[A](
+class AgentBuildView[A](
   builders: List[AgentPresenter.Builder[A]],
-  models: Vars[AgentPresenter[A]],
+  agents: Vars[AgentPresenter[A]],
   modelDAO: ModelDAO
 ) {
 
-  private val modelSelect = new SelectHandler("Model Type", builders.map(_._1), Constant(false))
+  private val builderSelect = new SelectHandler("Agent Type", builders.map(_._1), Constant(false))
 
-  private val modelCache: Vars[AgentPresenter[A]] = Vars()
+  private val presenterCache: Vars[AgentPresenter[A]] = Vars()
 
-  private val modelBinding = Binding {
-    val idx = modelSelect.selectedIndex.bind
+  private val presenterBinding = Binding {
+
+    val idx = builderSelect.selectedIndex.bind
     val (name, builder) = builders(idx)
-    val cache = modelCache.bind
+    val cache = presenterCache.bind
 
     cache.find(_.agentName equals name) match {
-      case Some(model) => model
+      case Some(agent) => agent
       case None => {
-        val model = builder()
-        modelCache.get += model
-        model
+        val presenter = builder()
+        presenterCache.get += presenter
+        presenter
       }
     }
   }
 
-  private val modelName: Var[String] = Var(findUnusedName())
+  private val name: Var[String] = Var(findUnusedName())
 
   private val validName: Var[Boolean] = Var(true)
   private val valid: Binding[Boolean] = Binding {
-    validName.bind && modelBinding.bind.buildValid.bind
+    validName.bind && presenterBinding.bind.buildValid.bind
   }
 
   private def findUnusedName(): String = {
-    val names = models.get.map(_.name.get)
+    val names = agents.get.map(_.name.get)
     var idx = 1
-    while (names contains ("Model"+idx)) idx += 1
-    "Model"+idx
+    while (names contains ("Agent"+idx)) idx += 1
+    "Agent"+idx
   }
 
   private def onNameChange(): Unit = {
-    val modelNames = models.get.map(_.name.get)
-    val modelNameElem = getElem[html.Input]("model-name")
+    val agentNames = agents.get.map(_.name.get)
+    val nameElem = getElem[html.Input]("agent-name")
 
-    if (modelNames contains modelNameElem.value) {
-      modelNameElem.setCustomValidity("Invalid")
+    if (agentNames contains nameElem.value) {
+      nameElem.setCustomValidity("Invalid")
       validName := false
     } else {
-      modelNameElem.setCustomValidity("")
-      modelName := modelNameElem.value
+      nameElem.setCustomValidity("")
+      name := nameElem.value
       validName := true
     }
   }
@@ -69,15 +70,15 @@ class ModelBuilder[A](
   @dom
   private def onCreate(): Unit = {
 
-    val model = modelBinding.bind
-    model.agent // Call build model
-    model.name := modelName.get
+    val presenter = presenterBinding.bind
+    presenter.agent // Call build
+    presenter.name := name.get
 
-    Logger.log("ModelBuilder", "Creating model " + model.toString)
+    Logger.log("AgentBuildView", "Creating agent " + presenter.toString)
 
-    modelDAO.create(model.store()) map { id =>
-      model.setId(id)
-      models.get += model
+    modelDAO.create(presenter.store()) map { id =>
+      presenter.setId(id)
+      agents.get += presenter
     }
 
     reset()
@@ -85,9 +86,9 @@ class ModelBuilder[A](
   }
 
   private def reset(): Unit = {
-    modelCache.get.clear()
-    modelSelect.selectedIndex := 0
-    modelName := findUnusedName()
+    presenterCache.get.clear()
+    builderSelect.selectedIndex := 0
+    name := findUnusedName()
     validName := true
   }
 
@@ -95,13 +96,13 @@ class ModelBuilder[A](
     js.Dynamic.global.$("#builder-modal").modal("close")
   }
 
-  private def cloneModel(model: AgentPresenter[A]): Unit = {
+  private def clonePresenter(presenter: AgentPresenter[A]): Unit = {
 
-    val builderIdx = builders.indexWhere(_._1 equals model.agentName)
-    modelSelect.selectedIndex := builderIdx
+    val builderIdx = builders.indexWhere(_._1 equals presenter.agentName)
+    builderSelect.selectedIndex := builderIdx
 
-    val newModel = modelCache.get.find(_.agentName equals model.agentName).get
-    newModel.cloneBuildFrom(model)
+    val newPresenter = presenterCache.get.find(_.agentName equals presenter.agentName).get
+    newPresenter.cloneBuildFrom(presenter)
 
     onNameChange()
   }
@@ -110,11 +111,11 @@ class ModelBuilder[A](
   private lazy val innerContent: Binding[Div] = {
     <div class="row">
       <div class="col s2 offset-s5">
-        <span class="card-title center-align" onclick={_:Event => onClose()}>Create Model</span>
+        <span class="card-title center-align" onclick={_:Event => onClose()}>Create Agent</span>
       </div>
 
       <div class="col s3 offset-s1">
-        <a class={"dropdown-button btn-flat" + (if (models.bind.isEmpty) " disabled" else "")}
+        <a class={"dropdown-button btn-flat" + (if (agents.bind.isEmpty) " disabled" else "")}
            href="#"
            data:data-activates="clone-dropdown" data:data-constrainwidth="false">
           <i class="material-icons left">arrow_drop_down_circle</i>Clone Existing
@@ -122,9 +123,9 @@ class ModelBuilder[A](
 
         <ul id="clone-dropdown" class="dropdown-content">
           {
-          for (model <- models) yield {
+          for (agent <- agents) yield {
             <li>
-              <a href="#" onclick={_:Event => cloneModel(model)}>{model.toString}</a>
+              <a href="#" onclick={_:Event => clonePresenter(agent)}>{agent.toString}</a>
             </li>
           }
           }
@@ -140,17 +141,17 @@ class ModelBuilder[A](
       <div class="col s12" style={"height:20px"}></div>
 
       <div class="col s3 offset-s2">
-        { modelSelect.handler.bind }
+        { builderSelect.handler.bind }
       </div>
 
       <div class="col s3 offset-s2 input-field">
-        <input id="model-name" class="validate" type="text"
-               value={modelName.bind} onchange={_:Event => onNameChange()} required={true}/>
-        <label class="active" for="model-name" data:data-error="Model name empty or already exists">Model Name</label>
+        <input id="agent-name" class="validate" type="text"
+               value={name.bind} onchange={_:Event => onNameChange()} required={true}/>
+        <label class="active" for="agent-name" data:data-error="Agent name empty or already exists">Agent Name</label>
       </div>
 
       <div class="col s12">
-        { modelBinding.bind.agentBuilder.bind }
+        { presenterBinding.bind.agentBuilder.bind }
       </div>
     </div>
   }

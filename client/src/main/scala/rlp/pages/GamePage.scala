@@ -9,29 +9,29 @@ import rlp.environment.Environment
 import rlp._
 import rlp.presenters.AgentPresenter
 import rlp.utils.{BackgroundProcess, KeyboardHandler, Logger}
-import rlp.views.{ModelBuilder, ModelComparison, ModelTrainer}
+import rlp.views.{AgentBuildView, AgentComparisonView, AgentTrainView}
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.scalajs.js.timers
 
 abstract class GamePage[S, A] extends Page {
 
-  protected val modelBuilders: List[AgentPresenter.Builder[A]]
+  protected val presenterBuilders: List[AgentPresenter.Builder[A]]
 
-  protected def createEnvironment(model: AgentPresenter[A]): Environment[S]
+  protected def createEnvironment(agentPresenter: AgentPresenter[A]): Environment[S]
   protected def render(ctx: CanvasRenderingContext2D): Unit
 
   protected val performanceEntryGap: Int = 100
-  protected def modelPerformance(model: AgentPresenter[A]): Double
+  protected def agentPerformance(presenter: AgentPresenter[A]): Double
 
   protected val renderTraining: Var[Boolean] = Var(true)
 
-  protected val models: Vars[AgentPresenter[A]] = Vars()
-  private var model: AgentPresenter[A] = _
+  protected val presenters: Vars[AgentPresenter[A]] = Vars()
+  private var presenter: AgentPresenter[A] = _
 
-  lazy val modelBuilder = new ModelBuilder(modelBuilders, models, modelDAO)
-  lazy val modelTrainer = new ModelTrainer(models, modelBuilders, modelDAO, modelPerformance, trainStep)
-  lazy val modelComparison = new ModelComparison(models, performanceEntryGap)
+  lazy val modelBuilder = new AgentBuildView(presenterBuilders, presenters, modelDAO)
+  lazy val modelTrainer = new AgentTrainView(presenters, presenterBuilders, modelDAO, agentPerformance, trainStep)
+  lazy val modelComparison = new AgentComparisonView(presenters, performanceEntryGap)
 
   protected val aspectRatio: Double = 3.0/4
   protected val targetGameWidth = 800
@@ -75,11 +75,11 @@ abstract class GamePage[S, A] extends Page {
         } {
           try {
 
-            modelBuilders.find(_._1 == store.agentName) match {
+            presenterBuilders.find(_._1 == store.agentName) match {
               case Some((_, builder)) => {
                 val model = builder()
                 model.load(store)
-                models.get += model
+                presenters.get += model
               }
 
               case None =>
@@ -121,13 +121,13 @@ abstract class GamePage[S, A] extends Page {
       if (episodeLength <= MAX_EPISODE_LENGTH) {
 
         // Asynchronously perform performance check
-        if (model.gamesPlayed.get % performanceEntryGap == 0) {
+        if (presenter.gamesPlayed.get % performanceEntryGap == 0) {
           timers.setTimeout(20) {
-            model.logPerformance(modelPerformance(model))
+            presenter.logPerformance(agentPerformance(presenter))
           }
         }
 
-        model.gamesPlayed := model.gamesPlayed.get + 1
+        presenter.gamesPlayed := presenter.gamesPlayed.get + 1
       }
       trainingEnvironment.reset()
       episodeLength = 0
@@ -189,10 +189,10 @@ abstract class GamePage[S, A] extends Page {
       </div>
 
       {
-        modelTrainer.selectedModel.bind match {
+        modelTrainer.selectedAgent.bind match {
           case Some(newModel : AgentPresenter[A]) => {
-            this.model = newModel
-            trainingEnvironment = createEnvironment(model)
+            this.presenter = newModel
+            trainingEnvironment = createEnvironment(presenter)
           }
           case None => /* Do nothing */
         }

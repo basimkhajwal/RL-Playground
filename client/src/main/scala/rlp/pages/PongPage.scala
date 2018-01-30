@@ -9,8 +9,7 @@ import org.scalajs.dom.html.Div
 import rlp.agent.QNetworkAgent.QNetworkSpace
 import rlp.agent.QStateSpace
 import rlp.environment.Pong.PongAgent
-import rlp.models.{ModelParam, QNetworkModel, QTableModel}
-import rlp.presenters.{AgentPresenter, QNetworkPresenter, QTablePresenter}
+import rlp.presenters.{AgentParam, AgentPresenter, QNetworkPresenter, QTablePresenter}
 import rlp.ui.SelectHandler
 
 class PongPage extends GamePage[Pong.State, PongAgent] {
@@ -33,7 +32,7 @@ class PongPage extends GamePage[Pong.State, PongAgent] {
   private val agentNames: BindingSeq[String] = {
     val defaultNames = Constants("Rule-based computer", "Player (W/S)", "Player (Up/Down)")
     for {
-      seq <- Constants(defaultNames, models.map(_.toString))
+      seq <- Constants(defaultNames, presenters.map(_.toString))
       x <- seq
     } yield x
   }
@@ -44,28 +43,28 @@ class PongPage extends GamePage[Pong.State, PongAgent] {
 
   override val performanceEntryGap: Int = 200
 
-  override val modelBuilders = List(
+  override val presenterBuilders = List(
 
     QTablePresenter.builder(
       name,
       2, { a => if (a == 0) UpAction else DownAction },
-      ModelParam("Ball X", QStateSpace.boxed[AgentState](0, SCREEN_WIDTH, 20, _.ballPos.x)),
-      ModelParam("Ball Y", QStateSpace.boxed[AgentState](0, SCREEN_HEIGHT, 10, _.ballPos.y)),
-      ModelParam("Paddle Y", QStateSpace.boxed[AgentState](0, SCREEN_HEIGHT, 10, _.currentPaddle)),
-      ModelParam("Ball Angle", QStateSpace.boxed[AgentState](0, 2 * Math.PI, 10, _.ballDir.angle()), false),
-      ModelParam("Opponent Y", QStateSpace.boxed[AgentState](0, SCREEN_HEIGHT, 10, _.otherPaddle), false)
+      AgentParam("Ball X", QStateSpace.boxed[AgentState](0, SCREEN_WIDTH, 20, _.ballPos.x)),
+      AgentParam("Ball Y", QStateSpace.boxed[AgentState](0, SCREEN_HEIGHT, 10, _.ballPos.y)),
+      AgentParam("Paddle Y", QStateSpace.boxed[AgentState](0, SCREEN_HEIGHT, 10, _.currentPaddle)),
+      AgentParam("Ball Angle", QStateSpace.boxed[AgentState](0, 2 * Math.PI, 10, _.ballDir.angle()), false),
+      AgentParam("Opponent Y", QStateSpace.boxed[AgentState](0, SCREEN_HEIGHT, 10, _.otherPaddle), false)
     ),
 
     QNetworkPresenter.builder(
       name,
       2, { a => if (a == 0) UpAction else DownAction },
-      ModelParam("Ball X", QNetworkSpace[AgentState](1, s => Array(s.ballPos.x / SCREEN_WIDTH))),
-      ModelParam("Ball Y", QNetworkSpace[AgentState](1, s => Array(s.ballPos.y / SCREEN_HEIGHT))),
-      ModelParam("Paddle Y", QNetworkSpace[AgentState](1, s => Array(s.currentPaddle / SCREEN_HEIGHT)))
+      AgentParam("Ball X", QNetworkSpace[AgentState](1, s => Array(s.ballPos.x / SCREEN_WIDTH))),
+      AgentParam("Ball Y", QNetworkSpace[AgentState](1, s => Array(s.ballPos.y / SCREEN_HEIGHT))),
+      AgentParam("Paddle Y", QNetworkSpace[AgentState](1, s => Array(s.currentPaddle / SCREEN_HEIGHT)))
     )
   )
 
-  override protected def modelPerformance(model: AgentPresenter[PongAgent]): Double = {
+  override protected def agentPerformance(model: AgentPresenter[PongAgent]): Double = {
 
     val numRuns = 10
     val naivePongAgent = new NaivePongAgent()
@@ -96,7 +95,7 @@ class PongPage extends GamePage[Pong.State, PongAgent] {
     case 0 => new NaivePongAgent
     case 1 => new PongUserAgent("w", "s")
     case 2 => new PongUserAgent("ArrowUp", "ArrowDown")
-    case _ => models.get(idx - 3).agent.clone()
+    case _ => presenters.get(idx - 3).agent.clone()
   }
 
   private def createGameEnvironment(leftAgentIdx: Int, rightAgentIdx: Int): Unit = {

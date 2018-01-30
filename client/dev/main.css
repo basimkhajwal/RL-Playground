@@ -63,12 +63,12 @@
     padding: 0;
 }
 
-#model-training-header {
+#agent-training-header {
     padding: 24px;
     margin-bottom: 0px;
 }
 
-#model-info {
+#agent-info {
     padding-top: 30px;
 }
 
@@ -108,7 +108,7 @@
     display: inline-block;
 }
 
-#model-comparison .card-title {
+#agent-comparison .card-title {
     font-size: 24px;
     line-height: 32px;
     font-weight: 300;

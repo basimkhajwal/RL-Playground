@@ -4,8 +4,7 @@ import org.scalajs.dom.raw.CanvasRenderingContext2D
 import rlp.agent.QNetworkAgent.QNetworkSpace
 import rlp.agent.QStateSpace
 import rlp.environment.{Environment, FlappyBird}
-import rlp.models.{ModelParam, QNetworkModel, QTableModel}
-import rlp.presenters.{AgentPresenter, QNetworkPresenter, QTablePresenter}
+import rlp.presenters.{AgentParam, AgentPresenter, QNetworkPresenter, QTablePresenter}
 
 class FlappyBirdPage extends GamePage[FlappyBird.State, FlappyBird.FlappyBirdAgent]{
 
@@ -25,20 +24,20 @@ class FlappyBirdPage extends GamePage[FlappyBird.State, FlappyBird.FlappyBirdAge
 
   override protected val MAX_EPISODE_LENGTH: Int = 5000
 
-  override protected val modelBuilders: List[(String, () => AgentPresenter[FlappyBirdAgent])] = List(
+  override protected val presenterBuilders: List[(String, () => AgentPresenter[FlappyBirdAgent])] = List(
     QTablePresenter.builder(name,
       2, { a => if (a == 0) NoAction else JumpAction },
-      ModelParam("Height", QStateSpace.boxed[AgentState](0, SCREEN_HEIGHT - GROUND_HEIGHT, 20, _.y)),
-      ModelParam("Vertical Speed", QStateSpace.boxed[AgentState](-MAX_SPEED, MAX_SPEED, 10, _.vy)),
-      ModelParam("Next Block Distance", QStateSpace.boxed[AgentState](0, BLOCK_SPACING + BLOCK_WIDTH, 30, _.blockDist)),
-      ModelParam("Gap Height", QStateSpace.boxed[AgentState](0, SCREEN_HEIGHT - GROUND_HEIGHT, 20, _.gapMid)),
+      AgentParam("Height", QStateSpace.boxed[AgentState](0, SCREEN_HEIGHT - GROUND_HEIGHT, 20, _.y)),
+      AgentParam("Vertical Speed", QStateSpace.boxed[AgentState](-MAX_SPEED, MAX_SPEED, 10, _.vy)),
+      AgentParam("Next Block Distance", QStateSpace.boxed[AgentState](0, BLOCK_SPACING + BLOCK_WIDTH, 30, _.blockDist)),
+      AgentParam("Gap Height", QStateSpace.boxed[AgentState](0, SCREEN_HEIGHT - GROUND_HEIGHT, 20, _.gapMid)),
     ),
     QNetworkPresenter.builder(name,
       2, { a => if (a == 0) NoAction else JumpAction },
-      ModelParam("Height", QNetworkSpace.bounded[AgentState](0, SCREEN_HEIGHT - GROUND_HEIGHT, _.y)),
-      ModelParam("Vertical Speed", QNetworkSpace.bounded[AgentState](-MAX_SPEED, MAX_SPEED,  _.vy)),
-      ModelParam("Next Block Distance", QNetworkSpace.bounded[AgentState](0, BLOCK_SPACING + BLOCK_WIDTH,  _.blockDist)),
-      ModelParam("Gap Height", QNetworkSpace.bounded[AgentState](0, SCREEN_HEIGHT - GROUND_HEIGHT, _.gapMid)),
+      AgentParam("Height", QNetworkSpace.bounded[AgentState](0, SCREEN_HEIGHT - GROUND_HEIGHT, _.y)),
+      AgentParam("Vertical Speed", QNetworkSpace.bounded[AgentState](-MAX_SPEED, MAX_SPEED,  _.vy)),
+      AgentParam("Next Block Distance", QNetworkSpace.bounded[AgentState](0, BLOCK_SPACING + BLOCK_WIDTH,  _.blockDist)),
+      AgentParam("Gap Height", QNetworkSpace.bounded[AgentState](0, SCREEN_HEIGHT - GROUND_HEIGHT, _.gapMid)),
     )
   )
 
@@ -76,7 +75,7 @@ class FlappyBirdPage extends GamePage[FlappyBird.State, FlappyBird.FlappyBirdAge
     ctx.restore()
   }
 
-  override protected def modelPerformance(model: AgentPresenter[FlappyBirdAgent]): Double = {
+  override protected def agentPerformance(model: AgentPresenter[FlappyBirdAgent]): Double = {
     val testEnv = new FlappyBird(model.agent.clone())
     val testRuns = 10
     var totalDistance = 0.0
