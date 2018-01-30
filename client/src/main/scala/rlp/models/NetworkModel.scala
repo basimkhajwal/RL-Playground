@@ -27,7 +27,7 @@ abstract class NetworkModel[S,A,P](
     "Linear" -> Linear
   )
 
-  protected val outputActivation = Sigmoid
+  protected val outputActivation = Linear
 
   protected val maxHiddenLayers = 5
 

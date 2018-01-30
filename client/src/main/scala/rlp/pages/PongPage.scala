@@ -88,7 +88,7 @@ class PongPage extends GamePage[Pong.State, PongAgent] {
   }
 
   override def createEnvironment(model: Model[PongAgent]): Pong = {
-    new Pong(model.agent, model.agent.clone())
+    new Pong(model.agent, new NaivePongAgent)
   }
 
   private def createAgent(idx: Int): PongAgent = idx match {
