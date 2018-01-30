@@ -9,7 +9,7 @@ import rlp._
 import rlp.dao.ModelDAO
 import rlp.environment.Environment
 import rlp.models.ModelStore
-import rlp.presenters.{AgentPresenter, ModelStore}
+import rlp.presenters.{AgentPresenter, AgentStore}
 import rlp.ui.SelectHandler
 import rlp.utils.{BackgroundProcess, Logger}
 
@@ -31,7 +31,7 @@ class ModelTrainer[A](
   val gameSpeed: Var[Int] = Var(0)
 
   val modelSelect = new SelectHandler("Model Select",
-    models.mapBinding(m => Binding { m.agentName + " - " + m.modelName.bind })
+    models.mapBinding(m => Binding { m.agentName + " - " + m.name.bind })
   )
 
   val modelExists = Binding { models.bind.nonEmpty }
@@ -116,7 +116,7 @@ class ModelTrainer[A](
       <div class="col s12">
         {
           selectedModel.bind match {
-            case Some(model) => model.modelViewer.bind
+            case Some(model) => model.agentViewer.bind
             case None => <!-- -->
           }
         }
@@ -136,14 +136,14 @@ class ModelTrainer[A](
     var deleteIssued: Boolean = false
 
     def onNameChange(): Unit = {
-      val modelNames = models.get.map(_.modelName.get)
+      val modelNames = models.get.map(_.name.get)
       val modelNameElem = getElem[html.Input]("model-name-train")
 
       if (modelNames contains modelNameElem.value) {
         modelNameElem.setCustomValidity("Invalid")
       } else {
         modelNameElem.setCustomValidity("")
-        model.modelName := modelNameElem.value
+        model.name := modelNameElem.value
       }
     }
 
@@ -219,7 +219,7 @@ class ModelTrainer[A](
     <div class="row col s10 offset-s1">
       <div class="input-field col s3">
         <input id="model-name-train" class="validate" type="text"
-               value={model.modelName.bind} onchange={_:Event => onNameChange()} required={true}/>
+               value={model.name.bind} onchange={_:Event => onNameChange()} required={true}/>
         <label for="model-name-train" data:data-error="Model name empty or already exists">Model Name</label>
       </div>
 
@@ -383,7 +383,7 @@ class ModelTrainer[A](
 
           try {
             val result = reader.result.asInstanceOf[String]
-            val store = upickle.default.read[ModelStore](result)
+            val store = upickle.default.read[AgentStore](result)
 
             builders.find(_._1 == store.agentName) match {
 

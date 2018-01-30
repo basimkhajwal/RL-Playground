@@ -1,6 +1,6 @@
 package rlp.presenters
 
-case class ModelParam[T](
+case class AgentParam[T](
   name: String,
   value: T,
   defaultEnabled: Boolean = true

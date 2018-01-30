@@ -16,7 +16,7 @@ import scala.scalajs.js
 abstract class NetworkPresenter[S,A,P](
   environment: String,
   name: String,
-  params: Array[ModelParam[P]],
+  params: Array[AgentParam[P]],
   paramSize: P => Int,
   outputSize: Int
 ) extends AgentPresenter[Agent[S,A]](environment, name) {

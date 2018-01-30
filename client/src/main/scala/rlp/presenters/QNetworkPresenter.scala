@@ -15,7 +15,7 @@ class QNetworkPresenter[S,A](
   environment: String,
   numActions: Int,
   actionMap: Int => A,
-  params: Array[ModelParam[QNetworkSpace[S]]]
+  params: Array[AgentParam[QNetworkSpace[S]]]
 ) extends NetworkPresenter[S, A, QNetworkSpace[S]](
   environment, QNetworkPresenter.name,
   params,
@@ -27,7 +27,7 @@ class QNetworkPresenter[S,A](
   private val replayBufferSize: Var[Int] = Var(1000)
 
   @dom
-  override lazy val modelBuilder: Binding[html.Div] = {
+  override lazy val agentBuilder: Binding[html.Div] = {
     <div>
       <div class="content-section">
         <h5>Experience Replay</h5>
@@ -97,7 +97,7 @@ class QNetworkPresenter[S,A](
   }
 
   @dom
-  override lazy val modelViewer: Binding[html.Div] = {
+  override lazy val agentViewer: Binding[html.Div] = {
     <div>
 
       <div class="content-section">
@@ -146,8 +146,8 @@ class QNetworkPresenter[S,A](
     </div>
   }
 
-  override def load(modelStore: ModelStore): Unit = {
-    super.load(modelStore)
+  override def load(agentStore: AgentStore): Unit = {
+    super.load(agentStore)
 
     explorationEpsilon := qNetwork.explorationEpsilon
     discountFactor := qNetwork.discountFactor
@@ -180,7 +180,7 @@ object QNetworkPresenter {
   def builder[S,A](
     environment: String,
     numActions: Int, actionMap: Int => A,
-    params: ModelParam[QNetworkSpace[S]]*): AgentPresenter.Builder[Agent[S,A]] = {
+    params: AgentParam[QNetworkSpace[S]]*): AgentPresenter.Builder[Agent[S,A]] = {
 
     name -> (() => new QNetworkPresenter(environment, numActions, actionMap, params.toArray))
   }

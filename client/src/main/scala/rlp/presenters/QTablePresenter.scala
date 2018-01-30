@@ -12,7 +12,7 @@ class QTablePresenter[O, A](
   environment: String,
   numActions: Int,
   actionMap: (Int) => A,
-  params: Array[ModelParam[QStateSpace[O]]]
+  params: Array[AgentParam[QStateSpace[O]]]
 ) extends AgentPresenter[Agent[O, A]](environment, QTablePresenter.name) {
 
   private val learningRate = Var(0.1)
@@ -25,7 +25,7 @@ class QTablePresenter[O, A](
   private val paramBindings = paramSelector.paramBindings
 
   @dom
-  override lazy val modelBuilder: Binding[HTMLElement] = {
+  override lazy val agentBuilder: Binding[HTMLElement] = {
     <div class="row content-section">
 
       <div class="col s12">
@@ -59,8 +59,8 @@ class QTablePresenter[O, A](
     agent
   }
 
-  override def load(modelStore: ModelStore): Unit = {
-    super.load(modelStore)
+  override def load(agentStore: AgentStore): Unit = {
+    super.load(agentStore)
 
     /* Reset from imported file */
     learningRate := qTable.learningRate
@@ -69,7 +69,7 @@ class QTablePresenter[O, A](
   }
 
   @dom
-  override lazy val modelViewer: Binding[HTMLElement] = {
+  override lazy val agentViewer: Binding[HTMLElement] = {
     <div>
 
       { paramSelector.viewer.bind }
@@ -115,7 +115,7 @@ class QTablePresenter[O, A](
 
   override def cloneBuildFrom(controller: AgentPresenter[Agent[O,A]]): Unit = {
 
-    // Require the controller to be a QTableModel
+    // Require the controller to be a QTablePresenter
     val that = controller.asInstanceOf[QTablePresenter[O,A]]
 
     paramBindings.get.clear()
@@ -144,7 +144,7 @@ object QTablePresenter {
   def builder[O,A](
     environment: String,
     numActions: Int, actionMap: (Int) => A,
-    params: ModelParam[QStateSpace[O]]*
+    params: AgentParam[QStateSpace[O]]*
   ): AgentPresenter.Builder[Agent[O,A]] = {
 
     name -> (() => new QTablePresenter(environment, numActions, actionMap, params.toArray))

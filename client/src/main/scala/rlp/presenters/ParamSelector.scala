@@ -7,14 +7,14 @@ import org.scalajs.dom.html.Div
 import rlp._
 import upickle.Js
 
-class ParamSelector[A](params: Array[ModelParam[A]]) {
+class ParamSelector[A](params: Array[AgentParam[A]]) {
 
-  val paramBindings: Vars[(ModelParam[A], Boolean)] = Vars(params.map(s => (s, s.defaultEnabled)) :_ *)
+  val paramBindings: Vars[(AgentParam[A], Boolean)] = Vars(params.map(s => (s, s.defaultEnabled)) :_ *)
   val baseID = getGUID("param-selector")
 
-  private def getCheckBoxID(param: ModelParam[A]): String = baseID + param.name
+  private def getCheckBoxID(param: AgentParam[A]): String = baseID + param.name
 
-  private def checkBoxToggled(param: ModelParam[A]): Unit = {
+  private def checkBoxToggled(param: AgentParam[A]): Unit = {
     val idx = params.indexOf(param)
     val checkBox = getElem[html.Input](getCheckBoxID(param))
 

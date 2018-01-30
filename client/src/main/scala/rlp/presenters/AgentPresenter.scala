@@ -32,7 +32,7 @@ abstract class AgentPresenter[A](val environmentName: String, val agentName: Str
 
   final val MAX_HISTORY = 2000
 
-  val modelName: Var[String] = Var("")
+  val name: Var[String] = Var("")
   val gamesPlayed: Var[Int] = Var(0)
 
   private val historyBuffer = new HistoryBuffer(MAX_HISTORY)
@@ -45,10 +45,10 @@ abstract class AgentPresenter[A](val environmentName: String, val agentName: Str
   }
 
   @dom
-  lazy val modelBuilder: Binding[HTMLElement] = <div></div>
+  lazy val agentBuilder: Binding[HTMLElement] = <div></div>
 
   @dom
-  lazy val modelViewer: Binding[HTMLElement] = <div></div>
+  lazy val agentViewer: Binding[HTMLElement] = <div></div>
 
   lazy val buildValid: Binding[Boolean] = Constant(true)
 
@@ -66,33 +66,33 @@ abstract class AgentPresenter[A](val environmentName: String, val agentName: Str
 
   protected def loadAgent(build: Js.Value): Unit
 
-  def load(modelStore: ModelStore): Unit = {
-    require(environmentName == modelStore.environmentName,
-      s"Invalid environment, expected $environmentName but given ${modelStore.environmentName}")
-    require(agentName == modelStore.agentName,
-      s"Invalid agent, expected $agentName, but given ${modelStore.agentName}")
+  def load(agentStore: AgentStore): Unit = {
+    require(environmentName == agentStore.environmentName,
+      s"Invalid environment, expected $environmentName but given ${agentStore.environmentName}")
+    require(agentName == agentStore.agentName,
+      s"Invalid agent, expected $agentName, but given ${agentStore.agentName}")
 
-    setId(modelStore.id)
+    setId(agentStore.id)
 
-    modelName := modelStore.modelName
-    gamesPlayed := modelStore.gamesPlayed
+    name := agentStore.name
+    gamesPlayed := agentStore.gamesPlayed
 
     historyBuffer.clear()
-    historyBuffer.history.get.appendAll(modelStore.performanceHistory)
-    historyBuffer.historyStep := modelStore.performanceStep
+    historyBuffer.history.get.appendAll(agentStore.performanceHistory)
+    historyBuffer.historyStep := agentStore.performanceStep
 
-    loadBuild(json.read(modelStore.buildData))
+    loadBuild(json.read(agentStore.buildData))
     agent
-    loadAgent(json.read(modelStore.agentData))
+    loadAgent(json.read(agentStore.agentData))
   }
 
-  final def store(): ModelStore = {
-    ModelStore(
+  final def store(): AgentStore = {
+    AgentStore(
       id,
       System.currentTimeMillis(),
       environmentName,
       agentName,
-      modelName.get,
+      name.get,
       gamesPlayed.get,
       historyBuffer.historyStep.get,
       historyBuffer.history.get,
@@ -106,7 +106,7 @@ abstract class AgentPresenter[A](val environmentName: String, val agentName: Str
     historyBuffer.clear()
   }
 
-  override def toString: String = agentName + " - " + modelName.get
+  override def toString: String = agentName + " - " + name.get
 }
 
 object AgentPresenter {

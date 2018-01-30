@@ -46,14 +46,14 @@ class ModelBuilder[A](
   }
 
   private def findUnusedName(): String = {
-    val names = models.get.map(_.modelName.get)
+    val names = models.get.map(_.name.get)
     var idx = 1
     while (names contains ("Model"+idx)) idx += 1
     "Model"+idx
   }
 
   private def onNameChange(): Unit = {
-    val modelNames = models.get.map(_.modelName.get)
+    val modelNames = models.get.map(_.name.get)
     val modelNameElem = getElem[html.Input]("model-name")
 
     if (modelNames contains modelNameElem.value) {
@@ -71,7 +71,7 @@ class ModelBuilder[A](
 
     val model = modelBinding.bind
     model.agent // Call build model
-    model.modelName := modelName.get
+    model.name := modelName.get
 
     Logger.log("ModelBuilder", "Creating model " + model.toString)
 
@@ -150,7 +150,7 @@ class ModelBuilder[A](
       </div>
 
       <div class="col s12">
-        { modelBinding.bind.modelBuilder.bind }
+        { modelBinding.bind.agentBuilder.bind }
       </div>
     </div>
   }

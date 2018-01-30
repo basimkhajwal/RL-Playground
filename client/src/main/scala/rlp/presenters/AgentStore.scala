@@ -2,12 +2,12 @@ package rlp.presenters
 
 import upickle.default._
 
-case class ModelStore(
+case class AgentStore(
   id: Long,
   timeStamp: Long,
   environmentName: String,
   agentName: String,
-  modelName: String,
+  name: String,
   gamesPlayed: Int,
   performanceStep: Int,
   performanceHistory: Seq[Double],
@@ -15,8 +15,8 @@ case class ModelStore(
   agentData: String,
 )
 
-object ModelStore {
+object AgentStore {
 
-  implicit val rw: ReadWriter[ModelStore] = macroRW
+  implicit val rw: ReadWriter[AgentStore] = macroRW
 }
 
