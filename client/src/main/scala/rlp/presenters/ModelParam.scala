@@ -1,4 +1,4 @@
-package rlp.models
+package rlp.presenters
 
 case class ModelParam[T](
   name: String,

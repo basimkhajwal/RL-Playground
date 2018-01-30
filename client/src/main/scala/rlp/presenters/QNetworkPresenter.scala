@@ -1,4 +1,4 @@
-package rlp.models
+package rlp.presenters
 
 import com.thoughtworks.binding.Binding.Var
 import com.thoughtworks.binding.{Binding, dom}
@@ -11,13 +11,13 @@ import rlp.ai.optimizers.NetworkOptimizer
 import rlp.ui.NumericInputHandler
 import upickle.Js
 
-class QNetworkModel[S,A](
+class QNetworkPresenter[S,A](
   environment: String,
   numActions: Int,
   actionMap: Int => A,
   params: Array[ModelParam[QNetworkSpace[S]]]
-) extends NetworkModel[S, A, QNetworkSpace[S]](
-  environment, QNetworkModel.name,
+) extends NetworkPresenter[S, A, QNetworkSpace[S]](
+  environment, QNetworkPresenter.name,
   params,
   { p => p.size }, numActions
 ) {
@@ -59,10 +59,10 @@ class QNetworkModel[S,A](
     QNetworkAgent.build(qNetwork, actionMap, inputs)
   }
 
-  override def cloneBuildFrom(that: Model[Agent[S, A]]): Unit = {
+  override def cloneBuildFrom(that: AgentPresenter[Agent[S, A]]): Unit = {
     super.cloneBuildFrom(that)
 
-    val controller = that.asInstanceOf[QNetworkModel[S, A]]
+    val controller = that.asInstanceOf[QNetworkPresenter[S, A]]
     replayBufferSize := controller.replayBufferSize.get
   }
 
@@ -173,15 +173,15 @@ class QNetworkModel[S,A](
   override protected def loadAgent(data: Js.Value): Unit = qNetwork.load(data)
 }
 
-object QNetworkModel {
+object QNetworkPresenter {
 
   val name = "Q Network"
 
   def builder[S,A](
     environment: String,
     numActions: Int, actionMap: Int => A,
-    params: ModelParam[QNetworkSpace[S]]*): Model.Builder[Agent[S,A]] = {
+    params: ModelParam[QNetworkSpace[S]]*): AgentPresenter.Builder[Agent[S,A]] = {
 
-    name -> (() => new QNetworkModel(environment, numActions, actionMap, params.toArray))
+    name -> (() => new QNetworkPresenter(environment, numActions, actionMap, params.toArray))
   }
 }

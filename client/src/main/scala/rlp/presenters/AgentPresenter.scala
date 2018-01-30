@@ -1,4 +1,4 @@
-package rlp.models
+package rlp.presenters
 
 import com.thoughtworks.binding.{Binding, dom}
 import com.thoughtworks.binding.Binding.{BindingSeq, Constant, Var}
@@ -7,7 +7,7 @@ import rlp._
 import rlp.utils.HistoryBuffer
 import upickle.{Js, json}
 
-abstract class Model[A](val environmentName: String, val agentName: String) {
+abstract class AgentPresenter[A](val environmentName: String, val agentName: String) {
 
   private val _viewDirty: Var[Boolean] = Var(false)
 
@@ -54,7 +54,7 @@ abstract class Model[A](val environmentName: String, val agentName: String) {
 
   lazy val agent: A = buildAgent()
 
-  def cloneBuildFrom(controller: Model[A]): Unit
+  def cloneBuildFrom(controller: AgentPresenter[A]): Unit
 
   protected def buildAgent(): A
 
@@ -109,6 +109,6 @@ abstract class Model[A](val environmentName: String, val agentName: String) {
   override def toString: String = agentName + " - " + modelName.get
 }
 
-object Model {
-  type Builder[A] = (String, (() => Model[A]))
+object AgentPresenter {
+  type Builder[A] = (String, (() => AgentPresenter[A]))
 }

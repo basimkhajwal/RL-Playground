@@ -1,6 +1,7 @@
 package rlp.dao
 
-import rlp.models.ModelStore
+
+import rlp.presenters.ModelStore
 
 import scala.concurrent.Future
 

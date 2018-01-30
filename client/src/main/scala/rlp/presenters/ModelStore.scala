@@ -1,4 +1,4 @@
-package rlp.models
+package rlp.presenters
 
 import upickle.default._
 

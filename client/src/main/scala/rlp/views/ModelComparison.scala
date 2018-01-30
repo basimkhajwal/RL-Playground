@@ -4,13 +4,13 @@ import com.thoughtworks.binding.Binding.{BindingSeq, Vars}
 import com.thoughtworks.binding.{Binding, dom}
 import org.scalajs.dom.{Event, html, window}
 import rlp._
-import rlp.models.Model
+import rlp.presenters.AgentPresenter
 
 import scala.scalajs.js
 import scala.scalajs.js.JSConverters._
 
 class ModelComparison[A](
-  models: Vars[Model[A]],
+  models: Vars[AgentPresenter[A]],
   performanceGap: Int
 ) {
 
@@ -25,7 +25,7 @@ class ModelComparison[A](
       "showlegend" -> true
     )
 
-    val items: BindingSeq[js.Object] = for (model:Model[A] <- models) yield {
+    val items: BindingSeq[js.Object] = for (model:AgentPresenter[A] <- models) yield {
       val history = model.performanceHistory.bind
       val xStep = performanceGap * model.performanceStep.bind
 

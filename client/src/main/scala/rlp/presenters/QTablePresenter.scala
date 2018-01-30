@@ -1,4 +1,4 @@
-package rlp.models
+package rlp.presenters
 
 import com.thoughtworks.binding.Binding.Var
 import com.thoughtworks.binding.{Binding, dom}
@@ -8,12 +8,12 @@ import rlp.agent.{Agent, QStateSpace, QTableAgent}
 import rlp.ui.NumericInputHandler
 import upickle.Js
 
-class QTableModel[O, A](
+class QTablePresenter[O, A](
   environment: String,
   numActions: Int,
   actionMap: (Int) => A,
   params: Array[ModelParam[QStateSpace[O]]]
-) extends Model[Agent[O, A]](environment, QTableModel.name) {
+) extends AgentPresenter[Agent[O, A]](environment, QTablePresenter.name) {
 
   private val learningRate = Var(0.1)
   private val discountFactor = Var(0.9)
@@ -113,10 +113,10 @@ class QTableModel[O, A](
     agent.reset()
   }
 
-  override def cloneBuildFrom(controller: Model[Agent[O,A]]): Unit = {
+  override def cloneBuildFrom(controller: AgentPresenter[Agent[O,A]]): Unit = {
 
     // Require the controller to be a QTableModel
-    val that = controller.asInstanceOf[QTableModel[O,A]]
+    val that = controller.asInstanceOf[QTablePresenter[O,A]]
 
     paramBindings.get.clear()
     paramBindings.get ++= that.paramBindings.get
@@ -137,7 +137,7 @@ class QTableModel[O, A](
   override protected def loadAgent(data: Js.Value): Unit = qTable.load(data)
 }
 
-object QTableModel {
+object QTablePresenter {
 
   val name = "Q Table"
 
@@ -145,9 +145,9 @@ object QTableModel {
     environment: String,
     numActions: Int, actionMap: (Int) => A,
     params: ModelParam[QStateSpace[O]]*
-  ): Model.Builder[Agent[O,A]] = {
+  ): AgentPresenter.Builder[Agent[O,A]] = {
 
-    name -> (() => new QTableModel(environment, numActions, actionMap, params.toArray))
+    name -> (() => new QTablePresenter(environment, numActions, actionMap, params.toArray))
   }
 }
 

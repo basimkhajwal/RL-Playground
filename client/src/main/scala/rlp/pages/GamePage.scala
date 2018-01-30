@@ -7,7 +7,7 @@ import org.scalajs.dom.html.{Canvas, Div}
 import org.scalajs.dom.raw.CanvasRenderingContext2D
 import rlp.environment.Environment
 import rlp._
-import rlp.models.Model
+import rlp.presenters.AgentPresenter
 import rlp.utils.{BackgroundProcess, KeyboardHandler, Logger}
 import rlp.views.{ModelBuilder, ModelComparison, ModelTrainer}
 
@@ -16,18 +16,18 @@ import scala.scalajs.js.timers
 
 abstract class GamePage[S, A] extends Page {
 
-  protected val modelBuilders: List[Model.Builder[A]]
+  protected val modelBuilders: List[AgentPresenter.Builder[A]]
 
-  protected def createEnvironment(model: Model[A]): Environment[S]
+  protected def createEnvironment(model: AgentPresenter[A]): Environment[S]
   protected def render(ctx: CanvasRenderingContext2D): Unit
 
   protected val performanceEntryGap: Int = 100
-  protected def modelPerformance(model: Model[A]): Double
+  protected def modelPerformance(model: AgentPresenter[A]): Double
 
   protected val renderTraining: Var[Boolean] = Var(true)
 
-  protected val models: Vars[Model[A]] = Vars()
-  private var model: Model[A] = _
+  protected val models: Vars[AgentPresenter[A]] = Vars()
+  private var model: AgentPresenter[A] = _
 
   lazy val modelBuilder = new ModelBuilder(modelBuilders, models, modelDAO)
   lazy val modelTrainer = new ModelTrainer(models, modelBuilders, modelDAO, modelPerformance, trainStep)
@@ -190,7 +190,7 @@ abstract class GamePage[S, A] extends Page {
 
       {
         modelTrainer.selectedModel.bind match {
-          case Some(newModel : Model[A]) => {
+          case Some(newModel : AgentPresenter[A]) => {
             this.model = newModel
             trainingEnvironment = createEnvironment(model)
           }

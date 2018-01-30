@@ -8,7 +8,8 @@ import org.scalajs.dom.{Blob, Event, html, window}
 import rlp._
 import rlp.dao.ModelDAO
 import rlp.environment.Environment
-import rlp.models.{Model, ModelStore}
+import rlp.models.ModelStore
+import rlp.presenters.{AgentPresenter, ModelStore}
 import rlp.ui.SelectHandler
 import rlp.utils.{BackgroundProcess, Logger}
 
@@ -16,10 +17,10 @@ import scala.concurrent.ExecutionContext.Implicits.global
 import scala.scalajs.js
 
 class ModelTrainer[A](
-  models: Vars[Model[A]],
-  builders: List[Model.Builder[A]],
+  models: Vars[AgentPresenter[A]],
+  builders: List[AgentPresenter.Builder[A]],
   modelDAO: ModelDAO,
-  modelPerformance: (Model[A]) => Double,
+  modelPerformance: (AgentPresenter[A]) => Double,
   trainStep: () => Unit,
 ) {
 
@@ -35,7 +36,7 @@ class ModelTrainer[A](
 
   val modelExists = Binding { models.bind.nonEmpty }
 
-  val selectedModel: Binding[Option[Model[A]]] = Binding {
+  val selectedModel: Binding[Option[AgentPresenter[A]]] = Binding {
     if (modelExists.bind) {
       val model = models.bind(modelSelect.selectedIndex.bind)
       modelSelected(model)
@@ -57,7 +58,7 @@ class ModelTrainer[A](
     isTraining := false
   }
 
-  private def modelSelected(model: Model[A]): Unit = {
+  private def modelSelected(model: AgentPresenter[A]): Unit = {
     if (isTraining.get) pauseTraining()
     js.timers.setTimeout(100) { js.Dynamic.global.Materialize.updateTextFields() }
   }
@@ -126,7 +127,7 @@ class ModelTrainer[A](
   }
 
   @dom
-  private def modelEditPane(model: Model[A]): Binding[html.Element] = {
+  private def modelEditPane(model: AgentPresenter[A]): Binding[html.Element] = {
 
     val MIN_SAVE_DELAY = 1000
     var lastSaveTime: Double = 0
@@ -257,7 +258,7 @@ class ModelTrainer[A](
   }
 
   @dom
-  private def leaderboardModal(model: Model[A]): Binding[html.Element] = {
+  private def leaderboardModal(model: AgentPresenter[A]): Binding[html.Element] = {
 
     val numRuns = 200
 

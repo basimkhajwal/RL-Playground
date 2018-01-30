@@ -1,4 +1,4 @@
-package rlp.models
+package rlp.presenters
 
 import com.thoughtworks.binding.{Binding, dom}
 import com.thoughtworks.binding.Binding.Vars

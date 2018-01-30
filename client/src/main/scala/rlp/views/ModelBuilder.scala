@@ -6,7 +6,7 @@ import org.scalajs.dom.html.Div
 import org.scalajs.dom.{Event, html}
 import rlp._
 import rlp.dao.ModelDAO
-import rlp.models.Model
+import rlp.presenters.AgentPresenter
 import rlp.ui.SelectHandler
 import rlp.utils.Logger
 
@@ -14,14 +14,14 @@ import scala.concurrent.ExecutionContext.Implicits.global
 import scala.scalajs.js
 
 class ModelBuilder[A](
-  builders: List[Model.Builder[A]],
-  models: Vars[Model[A]],
+  builders: List[AgentPresenter.Builder[A]],
+  models: Vars[AgentPresenter[A]],
   modelDAO: ModelDAO
 ) {
 
   private val modelSelect = new SelectHandler("Model Type", builders.map(_._1), Constant(false))
 
-  private val modelCache: Vars[Model[A]] = Vars()
+  private val modelCache: Vars[AgentPresenter[A]] = Vars()
 
   private val modelBinding = Binding {
     val idx = modelSelect.selectedIndex.bind
@@ -95,7 +95,7 @@ class ModelBuilder[A](
     js.Dynamic.global.$("#builder-modal").modal("close")
   }
 
-  private def cloneModel(model: Model[A]): Unit = {
+  private def cloneModel(model: AgentPresenter[A]): Unit = {
 
     val builderIdx = builders.indexWhere(_._1 equals model.agentName)
     modelSelect.selectedIndex := builderIdx

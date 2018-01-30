@@ -1,4 +1,4 @@
-package rlp.models
+package rlp.presenters
 
 import com.thoughtworks.binding.Binding.{Constant, Constants, Var, Vars}
 import com.thoughtworks.binding.{Binding, dom}
@@ -13,13 +13,13 @@ import upickle.Js
 
 import scala.scalajs.js
 
-abstract class NetworkModel[S,A,P](
+abstract class NetworkPresenter[S,A,P](
   environment: String,
   name: String,
   params: Array[ModelParam[P]],
   paramSize: P => Int,
   outputSize: Int
-) extends Model[Agent[S,A]](environment, name) {
+) extends AgentPresenter[Agent[S,A]](environment, name) {
 
   protected val activationFunctions: List[(String, ActivationFunction)] = List(
     "ReLU" -> ReLU,
@@ -164,8 +164,8 @@ abstract class NetworkModel[S,A,P](
     new NeuralNetwork(layerSizes, layerActivations)
   }
 
-  override def cloneBuildFrom(that: Model[Agent[S, A]]): Unit = {
-    val controller = that.asInstanceOf[NetworkModel[S,A,P]]
+  override def cloneBuildFrom(that: AgentPresenter[Agent[S, A]]): Unit = {
+    val controller = that.asInstanceOf[NetworkPresenter[S,A,P]]
 
     layerDefinitions.get.clear()
     layerDefinitions.get ++= controller.layerDefinitions.get.map(

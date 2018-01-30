@@ -9,7 +9,8 @@ import org.scalajs.dom.html.Div
 import rlp.agent.QNetworkAgent.QNetworkSpace
 import rlp.agent.QStateSpace
 import rlp.environment.Pong.PongAgent
-import rlp.models.{Model, ModelParam, QNetworkModel, QTableModel}
+import rlp.models.{ModelParam, QNetworkModel, QTableModel}
+import rlp.presenters.{AgentPresenter, QNetworkPresenter, QTablePresenter}
 import rlp.ui.SelectHandler
 
 class PongPage extends GamePage[Pong.State, PongAgent] {
@@ -45,7 +46,7 @@ class PongPage extends GamePage[Pong.State, PongAgent] {
 
   override val modelBuilders = List(
 
-    QTableModel.builder(
+    QTablePresenter.builder(
       name,
       2, { a => if (a == 0) UpAction else DownAction },
       ModelParam("Ball X", QStateSpace.boxed[AgentState](0, SCREEN_WIDTH, 20, _.ballPos.x)),
@@ -55,7 +56,7 @@ class PongPage extends GamePage[Pong.State, PongAgent] {
       ModelParam("Opponent Y", QStateSpace.boxed[AgentState](0, SCREEN_HEIGHT, 10, _.otherPaddle), false)
     ),
 
-    QNetworkModel.builder(
+    QNetworkPresenter.builder(
       name,
       2, { a => if (a == 0) UpAction else DownAction },
       ModelParam("Ball X", QNetworkSpace[AgentState](1, s => Array(s.ballPos.x / SCREEN_WIDTH))),
@@ -64,7 +65,7 @@ class PongPage extends GamePage[Pong.State, PongAgent] {
     )
   )
 
-  override protected def modelPerformance(model: Model[PongAgent]): Double = {
+  override protected def modelPerformance(model: AgentPresenter[PongAgent]): Double = {
 
     val numRuns = 10
     val naivePongAgent = new NaivePongAgent()
@@ -87,7 +88,7 @@ class PongPage extends GamePage[Pong.State, PongAgent] {
     totalScore / numRuns
   }
 
-  override def createEnvironment(model: Model[PongAgent]): Pong = {
+  override def createEnvironment(model: AgentPresenter[PongAgent]): Pong = {
     new Pong(model.agent, new NaivePongAgent)
   }
 

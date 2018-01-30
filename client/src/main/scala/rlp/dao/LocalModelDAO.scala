@@ -1,5 +1,5 @@
 package rlp.dao
-import rlp.models.ModelStore
+import rlp.presenters.ModelStore
 import rlp.utils.Logger
 import upickle.default
 
