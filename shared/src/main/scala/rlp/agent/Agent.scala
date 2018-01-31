@@ -10,6 +10,14 @@ import upickle.Js
   */
 trait Agent[S, A] {
 
+  private var _trainEnabled: Boolean = true
+
+  def setTrainEnabled(trainEnabled: Boolean): Unit = {
+    _trainEnabled = trainEnabled
+  }
+
+  def isTrainEnabled(): Boolean = _trainEnabled
+
   /**
     * Accept a new state from the environment and return
     * a corresponding action to take

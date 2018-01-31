@@ -20,18 +20,32 @@ class MappedAgent[S1, A1, S2, A2](
   actionMap: A1 => A2
 ) extends Agent[S2, A2] {
 
-  def act(state: S2): A2 = actionMap(agent.act(stateMap(state)))
+  def act(state: S2): A2 = {
+    actionMap(agent.act(stateMap(state)))
+  }
 
-  override def percept(reward: Double): Unit = agent.percept(reward)
+  override def percept(reward: Double): Unit = {
+    agent.percept(reward)
+  }
 
-  override def duplicate(): Agent[S2, A2] = new MappedAgent(agent.duplicate(), stateMap, actionMap)
+  override def duplicate(): Agent[S2, A2] = {
+    new MappedAgent(agent.duplicate(), stateMap, actionMap)
+  }
 
-  override def clone(): MappedAgent[S1,A1,S2,A2] = new MappedAgent(agent.clone(), stateMap, actionMap)
+  override def clone(): MappedAgent[S1,A1,S2,A2] = {
+    new MappedAgent(agent.clone(), stateMap, actionMap)
+  }
 
-  override def reset(): Unit = agent.reset()
+  override def reset(): Unit = {
+    agent.reset()
+  }
 
-  override def load(data: Js.Value): Unit = agent.load(data)
+  override def load(data: Js.Value): Unit = {
+    agent.load(data)
+  }
 
-  override def store(): Js.Value = agent.store()
+  override def store(): Js.Value = {
+    agent.store()
+  }
 }
 

@@ -68,7 +68,10 @@ class PongPage extends GamePage[Pong.State, PongAgent] {
 
     val numRuns = 10
     val naivePongAgent = new NaivePongAgent()
-    val testEnv = new Pong(model.agent.clone(), naivePongAgent)
+    val testAgent = model.agent.clone()
+    val testEnv = new Pong(testAgent, naivePongAgent)
+
+    testAgent.setTrainEnabled(false)
 
     var totalScore = 0.0
 

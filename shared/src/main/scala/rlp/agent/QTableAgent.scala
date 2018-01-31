@@ -20,7 +20,7 @@ class QTableAgent(
 
     val newAction = if (math.random() < explorationEpsilon) (math.random() * numActions).toInt else greedyAction
 
-    if (!first) {
+    if (!first && isTrainEnabled()) {
 
       val expectedReward = reward + discountFactor * (if (last) 0 else maxReward)
 

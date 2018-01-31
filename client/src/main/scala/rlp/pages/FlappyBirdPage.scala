@@ -76,9 +76,12 @@ class FlappyBirdPage extends GamePage[FlappyBird.State, FlappyBird.FlappyBirdAge
   }
 
   override protected def agentPerformance(model: AgentPresenter[FlappyBirdAgent]): Double = {
-    val testEnv = new FlappyBird(model.agent.clone())
+    val testAgent = model.agent.clone()
+    val testEnv = new FlappyBird(testAgent)
     val testRuns = 10
     var totalDistance = 0.0
+
+    testAgent.setTrainEnabled(false)
 
     for (_ <- 0 until testRuns) {
       testEnv.reset()

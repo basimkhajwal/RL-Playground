@@ -42,7 +42,7 @@ class QNetworkAgent(
 
   override def step(prevState: Array[Double], action: Int, reward: Double, newState: Array[Double], first: Boolean, last: Boolean): Int = {
 
-    if (!first) {
+    if (!first && isTrainEnabled()) {
 
       replayBuffer(stepCount % replayBufferSize) = (prevState, action, reward, if (last) null else newState)
       stepCount += 1
