@@ -443,7 +443,26 @@ abstract class NetworkPresenter[S,A,P](
       viewChanged()
     }
 
-    initScript("optimiser-btns") { () => js.Dynamic.global.$(".tooltipped").tooltip() }
+    def refreshWeightText(): Unit = {
+      val elem = getElem[html.Div]("weight-text")
+      elem.innerHTML = ""
+
+      for ((weights, idx) <- getNetwork().weights.zipWithIndex) {
+        elem.innerHTML += s"<strong>Layer ${idx+1}</strong><br />"
+        elem.innerHTML += weights.toString.replace("\n", "<br /> ")
+        elem.innerHTML += "<br/>"
+      }
+    }
+
+    initScript("optimiser-btns") { () =>
+      js.Dynamic.global.$(".tooltipped").tooltip()
+    }
+
+    initScript("weight-text")(refreshWeightText)
+
+    initScript("weight-collapsible") { () =>
+      js.Dynamic.global.$(".collapsible").collapsible()
+    }
 
     undoChanges()
 
@@ -453,6 +472,29 @@ abstract class NetworkPresenter[S,A,P](
       <div class="divider"></div>
 
       { networkVisualisation(getNetwork()).bind }
+
+      <ul id="weight-collapsible" class="collapsible" data:data-collapsible="accordion">
+        <li>
+          <div class="collapsible-header center-align">
+           <i class="small material-icons">insert_chart</i>
+            <strong>Weights</strong>
+          </div>
+
+          <div class="collapsible-body row">
+            <div class="col s12" id="weight-text">
+            </div>
+
+            <div class="col s12 center-align">
+              <br />
+              <br />
+              <a class="btn btn-flat waves-effect red lighten-2 white-text"
+                 onclick={_:Event => refreshWeightText()}>
+                Refresh
+              </a>
+            </div>
+          </div>
+        </li>
+      </ul>
 
       <h5>Optimiser Select</h5>
       <div class="divider"></div>

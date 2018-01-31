@@ -178,7 +178,7 @@ class Matrix(var rows: Int, var cols: Int, var data: Array[Double]) extends Stor
       if (r != 0) str += ",\n "
       for (c <- 0 until cols) {
         if (c != 0) str += " "
-        str += this(r, c)
+        str += this(r, c).formatted("%.5f")
       }
     }
     str + " ]"
