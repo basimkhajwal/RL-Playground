@@ -24,7 +24,7 @@ object DBTest {
       _ <- delete(MODEL_STORE, 3)
       _ <- delete(MODEL_STORE, 4)
 
-      items <- getAll[LocalModelDAO.ModelStoreItem](MODEL_STORE)
+      items <- getAll[LocalAgentDAO.AgentStoreItem](MODEL_STORE)
     } {
       items foreach (x => println(x.id + " - " + x.modelStore))
     }

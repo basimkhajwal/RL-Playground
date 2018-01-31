@@ -7,24 +7,24 @@ import scala.concurrent.Future
 import scala.scalajs.js
 import scala.concurrent.ExecutionContext.Implicits.global
 
-object LocalModelDAO extends ModelDAO {
+object LocalAgentDAO {
 
   private def log(msg: String): Unit = {
     Logger.log("LocalModelDAO", msg)
   }
 
-  override def getAll(): Future[Seq[AgentStore]] = {
+  def getAll(): Future[Seq[AgentStore]] = {
     log("Retrieving model stores")
-    IndexedDB.getAll[ModelStoreItem](IndexedDB.MODEL_STORE) map { items =>
+    IndexedDB.getAll[AgentStoreItem](IndexedDB.MODEL_STORE) map { items =>
       log(items.length + " items retrieved")
-      items map { item => ModelStoreItem.extract(item) }
+      items map { item => AgentStoreItem.extract(item) }
     }
   }
 
-  override def create(model: AgentStore): Future[Long] = {
+  def create(model: AgentStore): Future[Long] = {
 
     val modelID: Long = System.currentTimeMillis()
-    val item = ModelStoreItem.fromStore(model)
+    val item = AgentStoreItem.fromStore(model)
     item.id = modelID
 
     log(s"Creating model store id $modelID from ${model.agentName} - ${model.name}")
@@ -34,40 +34,40 @@ object LocalModelDAO extends ModelDAO {
       .map { _ => modelID }
   }
 
-  override def update(model: AgentStore): Future[Unit] = {
+  def update(model: AgentStore): Future[Unit] = {
     log(s"Updating model store id ${model.id}")
 
-    IndexedDB.retrieve[ModelStoreItem](IndexedDB.MODEL_STORE, model.id.toDouble) flatMap { item =>
+    IndexedDB.retrieve[AgentStoreItem](IndexedDB.MODEL_STORE, model.id.toDouble) flatMap { item =>
       item.modelStore = default.write(model)
       IndexedDB.update(IndexedDB.MODEL_STORE, item)
     }
   }
 
-  override def delete(id: Long): Future[Unit] = {
+  def delete(id: Long): Future[Unit] = {
     log(s"Deleting model store id $id")
     IndexedDB.delete(IndexedDB.MODEL_STORE, id.toDouble)
   }
 
   @js.native
-  trait ModelStoreItem extends js.Object {
+  trait AgentStoreItem extends js.Object {
     var id: Double = js.native
     var modelStore: String = js.native
   }
 
-  object ModelStoreItem {
+  object AgentStoreItem {
 
-    def extract(item: ModelStoreItem): AgentStore = {
+    def extract(item: AgentStoreItem): AgentStore = {
       default.read[AgentStore](item.modelStore)
     }
 
-    def apply(id: Long, modelStore: String): ModelStoreItem = {
+    def apply(id: Long, modelStore: String): AgentStoreItem = {
       js.Dynamic.literal(
         "id" -> id,
         "modelStore" -> modelStore
-      ).asInstanceOf[ModelStoreItem]
+      ).asInstanceOf[AgentStoreItem]
     }
 
-    def fromStore(modelStore: AgentStore): ModelStoreItem = {
+    def fromStore(modelStore: AgentStore): AgentStoreItem = {
       apply(modelStore.id, default.write(modelStore))
     }
   }

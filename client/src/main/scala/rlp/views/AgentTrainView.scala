@@ -6,7 +6,7 @@ import org.scalajs.dom.html.Div
 import org.scalajs.dom.raw.FileReader
 import org.scalajs.dom.{Blob, Event, html, window}
 import rlp._
-import rlp.dao.ModelDAO
+import rlp.dao.LocalAgentDAO
 import rlp.environment.Environment
 import rlp.presenters.{AgentPresenter, AgentStore}
 import rlp.ui.SelectHandler
@@ -18,7 +18,6 @@ import scala.scalajs.js
 class AgentTrainView[A](
   agents: Vars[AgentPresenter[A]],
   builders: List[AgentPresenter.Builder[A]],
-  modelDAO: ModelDAO,
   agentPerformance: (AgentPresenter[A]) => Double,
   trainStep: () => Unit,
 ) {
@@ -155,7 +154,7 @@ class AgentTrainView[A](
 
       deleteIssued = true
 
-      modelDAO.delete(agent.id) recover {
+      LocalAgentDAO.delete(agent.id) recover {
         case e:Throwable => Logger.log("AgentTrainView", "Delete error - " + e.getMessage)
       }
 
@@ -174,7 +173,8 @@ class AgentTrainView[A](
 
     def checkSave(): Unit = {
       if ((forceSave || agent.viewDirty) && !deleteIssued) {
-        modelDAO.update(agent.store()) recover {
+
+        LocalAgentDAO.update(agent.store()) recover {
           case e:Throwable => Logger.log("AgentTrainView", "Save error " + e.getMessage)
         }
 

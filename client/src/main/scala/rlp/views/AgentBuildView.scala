@@ -5,7 +5,7 @@ import com.thoughtworks.binding.{Binding, dom}
 import org.scalajs.dom.html.Div
 import org.scalajs.dom.{Event, html}
 import rlp._
-import rlp.dao.ModelDAO
+import rlp.dao.LocalAgentDAO
 import rlp.presenters.AgentPresenter
 import rlp.ui.SelectHandler
 import rlp.utils.Logger
@@ -16,7 +16,6 @@ import scala.scalajs.js
 class AgentBuildView[A](
   builders: List[AgentPresenter.Builder[A]],
   agents: Vars[AgentPresenter[A]],
-  modelDAO: ModelDAO
 ) {
 
   private val builderSelect = new SelectHandler("Agent Type", builders.map(_._1), Constant(false))
@@ -76,7 +75,7 @@ class AgentBuildView[A](
 
     Logger.log("AgentBuildView", "Creating agent " + presenter.toString)
 
-    modelDAO.create(presenter.store()) map { id =>
+    LocalAgentDAO.create(presenter.store()) map { id =>
       presenter.setId(id)
       agents.get += presenter
     }

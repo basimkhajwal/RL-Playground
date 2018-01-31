@@ -7,6 +7,7 @@ import org.scalajs.dom.html.{Canvas, Div}
 import org.scalajs.dom.raw.CanvasRenderingContext2D
 import rlp.environment.Environment
 import rlp._
+import rlp.dao.LocalAgentDAO
 import rlp.presenters.AgentPresenter
 import rlp.utils.{BackgroundProcess, KeyboardHandler, Logger}
 import rlp.views.{AgentBuildView, AgentComparisonView, AgentTrainView}
@@ -29,8 +30,8 @@ abstract class GamePage[S, A] extends Page {
   protected val presenters: Vars[AgentPresenter[A]] = Vars()
   private var presenter: AgentPresenter[A] = _
 
-  lazy val buildView = new AgentBuildView(presenterBuilders, presenters, modelDAO)
-  lazy val trainView = new AgentTrainView(presenters, presenterBuilders, modelDAO, agentPerformance, trainStep)
+  lazy val buildView = new AgentBuildView(presenterBuilders, presenters)
+  lazy val trainView = new AgentTrainView(presenters, presenterBuilders, agentPerformance, trainStep)
   lazy val comparisonView = new AgentComparisonView(presenters, performanceEntryGap)
 
   protected val aspectRatio: Double = 3.0/4
@@ -65,21 +66,21 @@ abstract class GamePage[S, A] extends Page {
     if (!initialised) {
       initialised = true
 
-      modelDAO.getAll() map { modelStores =>
+      LocalAgentDAO.getAll() map { agentStores =>
 
-        Logger.log("GamePage", s"Loading ${modelStores.length} model stores from database")
+        Logger.log("GamePage", s"Loading ${agentStores.length} agent stores from database")
 
         for {
-          store <- modelStores
+          store <- agentStores
           if store.environmentName == name
         } {
           try {
 
             presenterBuilders.find(_._1 == store.agentName) match {
               case Some((_, builder)) => {
-                val model = builder()
-                model.load(store)
-                presenters.get += model
+                val agent = builder()
+                agent.load(store)
+                presenters.get += agent
               }
 
               case None =>
@@ -87,7 +88,7 @@ abstract class GamePage[S, A] extends Page {
 
           } catch {
             case e: Exception =>
-              Logger.log("GamePage", s"Error loading modelStore ${store.id} - " + e.getMessage)
+              Logger.log("GamePage", s"Error loading agentStore ${store.id} - " + e.getMessage)
           }
         }
 
