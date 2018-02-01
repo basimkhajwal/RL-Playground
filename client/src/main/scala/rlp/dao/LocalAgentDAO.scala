@@ -10,7 +10,7 @@ import scala.concurrent.ExecutionContext.Implicits.global
 object LocalAgentDAO {
 
   private def log(msg: String): Unit = {
-    Logger.log("LocalModelDAO", msg)
+    Logger.log("LocalAgentDAO", msg)
   }
 
   def getAll(): Future[Seq[AgentStore]] = {

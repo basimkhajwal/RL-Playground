@@ -228,10 +228,10 @@ class AgentTrainView[A](
       </div>
 
       <div id="agent-option-btns" class="col s4 offset-s1">
-        <a class="btn-floating waves-effect waves-light tooltipped brown lighten-1 modal-trigger"
+        <!-- <a class="btn-floating waves-effect waves-light tooltipped brown lighten-1 modal-trigger"
            data:data-tooltip="Submit to leaderboard" href="#leaderboard-modal">
           <i class="material-icons">publish</i>
-        </a>
+        </a> -->
         <a class="btn-floating waves-effect waves-light tooltipped blue-grey"
            data:data-tooltip="Export file"
            onclick={_:Event => onExport()}>
