@@ -12,7 +12,7 @@ object PuckWorld {
 
   val TARGET_RADIUS = 10
   val PUCK_RADIUS = 30
-  val BAD_RADIUS = 250
+  val BAD_RADIUS = 170
 
   val WALL_RESTITUTION = 0.5
 
@@ -21,7 +21,7 @@ object PuckWorld {
   val THRUSTER_IMPULSE = 65
   val MAX_SPEED = 150
 
-  val EPISODE_LENGTH = 1000
+  val EPISODE_LENGTH = 3000
 
   case class State(
     px: Double,
