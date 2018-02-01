@@ -158,7 +158,15 @@ class AgentBuildView[A](
   @dom
   lazy val content: Binding[Div] = {
 
-    initModal("builder-modal")
+    val onOpen: js.Function = { () =>
+      name := findUnusedName()
+    }
+
+    initModal("builder-modal",
+      js.Dynamic.literal(
+        "ready" -> onOpen
+      )
+    )
 
     <div class="modal modal-fixed-footer" id="builder-modal">
 
