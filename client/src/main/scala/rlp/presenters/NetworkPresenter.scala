@@ -4,7 +4,7 @@ import com.thoughtworks.binding.Binding.{Constant, Constants, Var, Vars}
 import com.thoughtworks.binding.{Binding, dom}
 import org.scalajs.dom.{Event, html}
 import rlp.agent.Agent
-import rlp.ai.ActivationFunction.{Linear, ReLU, Sigmoid}
+import rlp.ai.ActivationFunction.{Linear, ReLU, Sigmoid, TanH}
 import rlp.ai.{ActivationFunction, NeuralNetwork}
 import rlp.ai.optimizers.{Adam, NetworkOptimizer, RMSProp, SGDMomentum}
 import rlp._
@@ -23,6 +23,7 @@ abstract class NetworkPresenter[S,A,P](
 
   protected val activationFunctions: List[(String, ActivationFunction)] = List(
     "ReLU" -> ReLU,
+    "TanH" -> TanH,
     "Sigmoid" -> Sigmoid,
     "Linear" -> Linear
   )

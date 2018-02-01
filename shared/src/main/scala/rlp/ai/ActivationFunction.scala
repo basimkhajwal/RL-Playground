@@ -33,4 +33,12 @@ object ActivationFunction {
       sigmoid * (1 - sigmoid)
     }
   }
+
+  object TanH extends ActivationFunction {
+    override def apply(x: Double) = math.tanh(x)
+    override def derivative(x: Double) = {
+      val t = math.tanh(x)
+      1 - t*t
+    }
+  }
 }
