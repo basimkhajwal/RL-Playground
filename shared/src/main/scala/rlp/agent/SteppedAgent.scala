@@ -29,7 +29,9 @@ trait SteppedAgent[S, A] extends Agent[S, A] {
   }
 
   override def resetEpisode(): Unit = {
-    step(lastState, lastAction, lastReward, lastState, first, true)
+    if (!first) {
+      step(lastState, lastAction, lastReward, lastState, first, true)
+    }
     first = true
   }
 
