@@ -28,6 +28,8 @@ abstract class NetworkPresenter[S,A,P](
     "Linear" -> Linear
   )
 
+  protected val enableSoftMax: Boolean = false
+
   protected val outputActivation = Linear
 
   protected val maxHiddenLayers = 5
@@ -137,7 +139,9 @@ abstract class NetworkPresenter[S,A,P](
           <span class="col s3">Output Layer</span>
           <span class="col s4">{s"$outputSize neurons"}</span>
           <span class="col s4">
-            { activationFunctions.find(_._2 == outputActivation).map(_._1).getOrElse("") }
+            { activationFunctions.find(_._2 == outputActivation).map(_._1).getOrElse("") +
+              (if (enableSoftMax) " + softmax" else "")
+            }
           </span>
         </div>
       </div>
@@ -162,7 +166,7 @@ abstract class NetworkPresenter[S,A,P](
     val layerSizes = Array(inputSize) ++ hiddenLayerSizes ++ Array(outputSize)
     val layerActivations = hiddenLayerActivations ++ Array(outputActivation)
 
-    new NeuralNetwork(layerSizes, layerActivations)
+    new NeuralNetwork(layerSizes, layerActivations, enableSoftMax)
   }
 
   override def cloneBuildFrom(that: AgentPresenter[Agent[S, A]]): Unit = {
