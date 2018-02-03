@@ -6,10 +6,11 @@ import rlp.environment.{NaivePongAgent, Pong}
 import com.thoughtworks.binding.{Binding, dom}
 import org.scalajs.dom.CanvasRenderingContext2D
 import org.scalajs.dom.html.Div
+import rlp.agent.PolicyNetworkAgent.PolicyNetworkSpace
 import rlp.agent.QNetworkAgent.QNetworkSpace
 import rlp.agent.QStateSpace
 import rlp.environment.Pong.PongAgent
-import rlp.presenters.{AgentParam, AgentPresenter, QNetworkPresenter, QTablePresenter}
+import rlp.presenters._
 import rlp.ui.SelectHandler
 
 class PongPage extends GamePage[Pong.State, PongAgent] {
@@ -61,6 +62,14 @@ class PongPage extends GamePage[Pong.State, PongAgent] {
       AgentParam("Ball X", QNetworkSpace[AgentState](1, s => Array(s.ballPos.x / SCREEN_WIDTH))),
       AgentParam("Ball Y", QNetworkSpace[AgentState](1, s => Array(s.ballPos.y / SCREEN_HEIGHT))),
       AgentParam("Paddle Y", QNetworkSpace[AgentState](1, s => Array(s.currentPaddle / SCREEN_HEIGHT)))
+    ),
+
+    PolicyNetworkPresenter.builder(
+      name,
+      2, { a => if (a == 0) UpAction else DownAction },
+      AgentParam("Ball X", PolicyNetworkSpace[AgentState](1, s => Array(s.ballPos.x / SCREEN_WIDTH))),
+      AgentParam("Ball Y", PolicyNetworkSpace[AgentState](1, s => Array(s.ballPos.y / SCREEN_HEIGHT))),
+      AgentParam("Paddle Y", PolicyNetworkSpace[AgentState](1, s => Array(s.currentPaddle / SCREEN_HEIGHT)))
     )
   )
 
