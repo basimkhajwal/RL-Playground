@@ -25,11 +25,11 @@ class NeuralNetworkSuite extends FunSuite with PropertyChecks with Matchers {
 
     val networks = List(
       new NeuralNetwork(Array(10, 11, 5), Array(Sigmoid, ReLU)),
-      new NeuralNetwork(Array(2, 10, 3, 5), Array(ReLU, Sigmoid, Linear)),
-      new NeuralNetwork(Array(5, 9, 3, 3), Array(ReLU, Sigmoid, Linear)),
-      new NeuralNetwork(Array(3, 8, 2, 7), Array(Sigmoid, ReLU, Linear), false, 10000),
+      new NeuralNetwork(Array(2, 10, 3, 5), Array(ReLU, Sigmoid, Linear), false, 10000),
+      new NeuralNetwork(Array(5, 9, 3, 3), Array(ReLU, Sigmoid, Linear), false, 100),
+      new NeuralNetwork(Array(3, 8, 2, 7), Array(Sigmoid, ReLU, Linear), true, 10000),
       new NeuralNetwork(Array(1, 7, 5), Array(Sigmoid, Sigmoid), true, 100),
-      new NeuralNetwork(Array(9, 6, 5), Array(ReLU, ReLU), false, 0.01),
+      new NeuralNetwork(Array(9, 6, 5), Array(ReLU, ReLU), true, 0.01),
     )
 
     for (_ <- 0 until 10) {

@@ -97,7 +97,7 @@ class NeuralNetwork(
         val losses =
           for (k <- 0 until output.cols) yield {
             if (useSoftMax) {
-              -(target(i, k)*math.log(output(i, k)) + (1-target(i,k))*math.log(1-output(i,k)) )
+              -target(i, k)*math.log(output(i, k)) //+ (1-target(i,k))*math.log(1-output(i,k)) )
             } else {
               0.5 * math.pow(target(i, k) - output(i, k), 2)
             }
