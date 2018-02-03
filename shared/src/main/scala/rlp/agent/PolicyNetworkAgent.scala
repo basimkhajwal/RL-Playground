@@ -2,7 +2,7 @@ package rlp.agent
 
 import rlp.ai.NeuralNetwork
 import rlp.ai.optimizers.{NetworkOptimizer, SGDMomentum}
-import rlp.math.Matrix
+import rlp.math.{Distribution, Matrix}
 import upickle.Js
 
 import scala.collection.mutable.ArrayBuffer
@@ -58,16 +58,35 @@ class PolicyNetworkAgent(
 
   override def resetEpisode(): Unit = {
 
+    if (episodeRewards.isEmpty) return
+
     val returns = computeReturns()
 
+    val mean = Distribution.mean(returns)
+    val stdDev = Distribution.stdDev(returns)
+
     for (i <- returns.indices) {
-      if (returns(i).abs > 1e-10) {
-        for (grad <- episodeGradients(i)) {
-          grad *= returns(i)
-        }
-        optimiser.step(episodeGradients(i))
+
+      if (stdDev > 1e-10) {
+        returns(i) = (returns(i) - mean) / stdDev
+      }
+
+      for (grad <- episodeGradients(i)) {
+        grad *= returns(i)
       }
     }
+
+    val combinedGradient = new Array[Matrix](episodeGradients(0).length)
+
+    for (i <- combinedGradient.indices) {
+      combinedGradient(i) = new Matrix(episodeGradients(0)(i))
+      for (j <- 1 until episodeGradients.length) {
+        combinedGradient(i) += episodeGradients(j)(i)
+      }
+      combinedGradient(i) *= (1.0 / episodeGradients.length)
+    }
+
+    optimiser.step(combinedGradient)
 
     episodeRewards.clear()
     episodeGradients.clear()
