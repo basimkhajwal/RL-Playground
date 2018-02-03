@@ -40,6 +40,10 @@ class MappedAgent[S1, A1, S2, A2](
     agent.reset()
   }
 
+  override def resetEpisode(): Unit = {
+    agent.resetEpisode()
+  }
+
   override def load(data: Js.Value): Unit = {
     agent.load(data)
   }
