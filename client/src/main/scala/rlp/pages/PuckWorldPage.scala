@@ -1,9 +1,10 @@
 package rlp.pages
 
 import org.scalajs.dom.raw.CanvasRenderingContext2D
+import rlp.agent.PolicyNetworkAgent.PolicyNetworkSpace
 import rlp.agent.QNetworkAgent.QNetworkSpace
 import rlp.environment.{Environment, PuckWorld}
-import rlp.presenters.{AgentParam, AgentPresenter, QNetworkPresenter}
+import rlp.presenters.{AgentParam, AgentPresenter, PolicyNetworkPresenter, QNetworkPresenter}
 
 class PuckWorldPage extends GamePage[PuckWorld.State, PuckWorld.PuckAgent]{
 
@@ -34,6 +35,18 @@ class PuckWorldPage extends GamePage[PuckWorld.State, PuckWorld.PuckAgent]{
       AgentParam("Green Y", QNetworkSpace.bounded[AgentState](0, SCREEN_HEIGHT,  _.gy)),
       AgentParam("Red X", QNetworkSpace.bounded[AgentState](0, SCREEN_WIDTH, _.rx)),
       AgentParam("Red Y", QNetworkSpace.bounded[AgentState](0, SCREEN_HEIGHT,  _.ry)),
+    ),
+
+    PolicyNetworkPresenter.builder(name,
+      4, { a => if (a == 0) ThrusterLeft else if (a == 1) ThrusterRight else if (a == 2) ThrusterUp else ThrusterDown },
+      AgentParam("Puck X", PolicyNetworkSpace.bounded[AgentState](0, SCREEN_WIDTH, _.px)),
+      AgentParam("Puck Y", PolicyNetworkSpace.bounded[AgentState](0, SCREEN_HEIGHT,  _.py)),
+      AgentParam("Velocity X", PolicyNetworkSpace.bounded[AgentState](0, SCREEN_WIDTH, _.pvx)),
+      AgentParam("Velocity Y", PolicyNetworkSpace.bounded[AgentState](0, SCREEN_HEIGHT,  _.pvy)),
+      AgentParam("Green X", PolicyNetworkSpace.bounded[AgentState](0, SCREEN_WIDTH, _.gx)),
+      AgentParam("Green Y", PolicyNetworkSpace.bounded[AgentState](0, SCREEN_HEIGHT,  _.gy)),
+      AgentParam("Red X", PolicyNetworkSpace.bounded[AgentState](0, SCREEN_WIDTH, _.rx)),
+      AgentParam("Red Y", PolicyNetworkSpace.bounded[AgentState](0, SCREEN_HEIGHT,  _.ry)),
     )
   )
 

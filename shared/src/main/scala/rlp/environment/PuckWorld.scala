@@ -84,7 +84,6 @@ class PuckWorld(agent: PuckWorld.PuckAgent) extends Environment[PuckWorld.State]
   reset()
 
   override def reset(seed: Int): Unit = {
-
     random.setSeed(seed)
     t = 0
     totalReward = 0
@@ -97,6 +96,8 @@ class PuckWorld(agent: PuckWorld.PuckAgent) extends Environment[PuckWorld.State]
     pv = Point2D(0, 0)
     r = randomTarget()
     g = randomTarget()
+
+    agent.resetEpisode()
   }
 
   private def randomTarget(): Point2D = {
