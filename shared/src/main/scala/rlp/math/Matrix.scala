@@ -213,7 +213,7 @@ object Matrix {
     var r = 0
 
     for (m <- ms) {
-      Array.copy(m.data, 0, ret, r*ret.cols, m.data.size)
+      Array.copy(m.data, 0, ret.data, r*ret.cols, m.data.size)
       r += m.rows
     }
 
