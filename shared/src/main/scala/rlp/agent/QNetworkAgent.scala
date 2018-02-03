@@ -42,6 +42,8 @@ class QNetworkAgent(
 
   override def step(prevState: Array[Double], action: Int, reward: Double, newState: Array[Double], first: Boolean, last: Boolean): Int = {
 
+    val numActions = network.layerSizes(network.numLayers - 1)
+
     if (!first && isTrainEnabled()) {
 
       replayBuffer(stepCount % replayBufferSize) = (prevState, action, reward, if (last) null else newState)
@@ -62,13 +64,15 @@ class QNetworkAgent(
           } else {
             returns(i, a) = r + discountFactor * maxAction(n)._2
           }
+
+          //for (j <- 0 until numActions) {
+          //  returns(i, j) = math.min(math.max(returns(i, j), -1), 1)
+          //}
         }
 
         optimiser.step(inputs, returns)
       }
     }
-
-    val numActions = network.layerSizes(network.numLayers - 1)
 
     if (math.random() < explorationEpsilon) (math.random() * numActions).toInt
     else maxAction(newState)._1
