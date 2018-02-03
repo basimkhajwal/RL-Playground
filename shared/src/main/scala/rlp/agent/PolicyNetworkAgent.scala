@@ -33,6 +33,7 @@ class PolicyNetworkAgent(
     }
 
     val oneHot = new Array[Double](numActions)
+    for (i <- actionProbabilities.indices) oneHot(i) = actionProbabilities(i)
     oneHot(action) = 1.0
 
     episodeGradients += network.backProp(Matrix.rows(state), Matrix.rows(oneHot))
