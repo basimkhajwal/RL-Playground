@@ -22,7 +22,7 @@ class QNetworkAgent(
   var optimiser: NetworkOptimizer = new SGDMomentum(network, 0.0001)
   var discountFactor = 0.99
   var explorationEpsilon = 0.1
-  var miniBatchSize = 10
+  var miniBatchSize = math.min(10, replayBufferSize)
   var updateStepInterval = 50
 
   private def sampleIndices(n: Int, k: Int): Array[Int] = {
