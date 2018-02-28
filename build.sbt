@@ -31,7 +31,9 @@ lazy val shared = (crossProject.crossType(CrossType.Pure) in file("shared")).set
     "com.lihaoyi" %%% "upickle" % "0.5.1",
     "org.scalactic" %% "scalactic" % "3.0.4" % "test",
     "org.scalatest" %% "scalatest" % "3.0.4" % "test",
-    "org.scalacheck" %% "scalacheck" % "1.13.4" % "test"
+    "org.scalacheck" %% "scalacheck" % "1.13.4" % "test",
+
+    "com.github.wookietreiber" %% "scala-chart" % "latest.integration"
   )
 )
 lazy val sharedJvm = shared.jvm
