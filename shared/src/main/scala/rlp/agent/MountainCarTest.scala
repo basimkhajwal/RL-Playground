@@ -1,7 +1,7 @@
 package rlp.agent
 
 import rlp.agent.QNetworkAgent.QNetworkSpace
-import rlp.ai.ActivationFunction.{Linear, Sigmoid}
+import rlp.ai.ActivationFunction.{Linear, Sigmoid, TanH}
 import rlp.ai.NeuralNetwork
 import rlp.ai.optimizers.{Adam, SGDMomentum}
 import rlp.environment.MountainCar
@@ -38,7 +38,7 @@ object MountainCarTest {
 
     qTable.explorationEpsilon = 0.05
 
-    val network = new NeuralNetwork(Array(2, 3), Array(Linear))
+    val network = new NeuralNetwork(Array(2, 10, 3), Array(TanH, Linear))
     val qNetwork = new QNetworkAgent(network, 100)
 
     network.initialiseWeights()
