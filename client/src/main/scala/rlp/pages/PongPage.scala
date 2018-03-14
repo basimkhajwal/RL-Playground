@@ -155,8 +155,15 @@ class PongPage extends GamePage[Pong.State, PongAgent] {
   @dom
   override lazy val gameOptions: Binding[Div] = {
     <div>
-      <br/>{leftAgentSelect.handler.bind}<br/>{rightAgentSelect.handler.bind}{createGameEnvironment(leftAgentSelect.selectedIndex.bind, rightAgentSelect.selectedIndex.bind)
-    ""}
+      <br/>
+      { leftAgentSelect.handler.bind }
+      <br/>
+      { rightAgentSelect.handler.bind }
+
+      {
+        createGameEnvironment(leftAgentSelect.selectedIndex.bind, rightAgentSelect.selectedIndex.bind)
+        ""
+      }
     </div>
   }
 
