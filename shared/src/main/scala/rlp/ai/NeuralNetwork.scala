@@ -197,8 +197,8 @@ class NeuralNetwork(
     }
   }
 
-  def initialiseWeights(): Unit = {
-    val rand = new Random()
+  def initialiseWeights(seed: Long = System.currentTimeMillis()): Unit = {
+    val rand = new Random(seed)
     for (w <- weights.indices) {
       val stdDev = math.sqrt(2.0 / layerSizes(w))
       for (r <- 0 until weights(w).rows) {

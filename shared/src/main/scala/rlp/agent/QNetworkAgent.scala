@@ -12,6 +12,7 @@ import scala.util.Random
 class QNetworkAgent(
   val network: NeuralNetwork,
   val replayBufferSize: Int = 10000,
+  val seed: Long = System.currentTimeMillis()
 ) extends SteppedAgent[Array[Double], Int]{
 
   type Replay = (Array[Double], Int, Double, Array[Double])
@@ -25,9 +26,10 @@ class QNetworkAgent(
   var miniBatchSize = math.min(10, replayBufferSize)
   var updateStepInterval = 50
 
+  private val rand = new Random(seed)
+
   private def sampleIndices(n: Int, k: Int): Array[Int] = {
     val arr = new Array[Int](k)
-    val rand = new Random()
 
     for (i <- 0 until k) arr(i) = i
     for (i <- k until n) {
@@ -40,6 +42,10 @@ class QNetworkAgent(
 
   private def sampleItems[T : ClassTag](xs: Array[T], n: Int, k: Int): Array[T] = sampleIndices(n, k).map(xs)
 
+  // TEMP
+  var totalTDError: Double = 0
+  var errorSteps: Int = 0
+
   override def step(prevState: Array[Double], action: Int, reward: Double, newState: Array[Double], first: Boolean, last: Boolean): Int = {
 
     val numActions = network.layerSizes(network.numLayers - 1)
@@ -49,7 +55,9 @@ class QNetworkAgent(
       replayBuffer(stepCount % replayBufferSize) = (prevState, action, reward, if (last) null else newState)
       stepCount += 1
 
+
       if (stepCount >= miniBatchSize && stepCount % updateStepInterval == 0) {
+
         val sample = sampleItems(replayBuffer, Math.min(stepCount, replayBufferSize), miniBatchSize)
 
         val inputs = Matrix.rows(sample.map(_._1))
@@ -58,6 +66,7 @@ class QNetworkAgent(
 
         for (i <- 0 until miniBatchSize) {
           val (_, a, r, n) = sample(i)
+          val old = returns(i,a)
 
           if (n == null) {
             returns(i, a) = r
@@ -65,16 +74,16 @@ class QNetworkAgent(
             returns(i, a) = r + discountFactor * maxAction(n)._2
           }
 
-          //for (j <- 0 until numActions) {
-          //  returns(i, j) = math.min(math.max(returns(i, j), -1), 1)
-          //}
+          val err = returns(i,a)-old
+          totalTDError += err.abs
+          errorSteps += 1
         }
 
         optimiser.step(inputs, returns)
       }
     }
 
-    if (math.random() < explorationEpsilon) (math.random() * numActions).toInt
+    if (rand.nextDouble() < explorationEpsilon) (rand.nextDouble() * numActions).toInt
     else maxAction(newState)._1
   }
 
