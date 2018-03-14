@@ -28,13 +28,13 @@ class MountainCarPage extends GamePage[MountainCar.State, MountainCar.MountainCa
 
   override protected val presenterBuilders: List[(String, () => AgentPresenter[MountainCarAgent])] = List(
     QTablePresenter.builder(name,
-      2, { a => if (a == 0) NoAction else if (a == 1) LeftAction else RightAction },
+      3, { a => if (a == 0) NoAction else if (a == 1) LeftAction else RightAction },
       AgentParam("X position", QStateSpace.boxed[State](-1.2, 0.6, 50, _.x)),
       AgentParam("Velocity", QStateSpace.boxed[State](-0.07, 0.07, 50, _.v)),
     ),
 
     QNetworkPresenter.builder(name,
-      2, { a => if (a == 0) NoAction else if (a == 1) LeftAction else RightAction },
+      3, { a => if (a == 0) NoAction else if (a == 1) LeftAction else RightAction },
       AgentParam("X position", QNetworkSpace.bounded[State](-1.2, 0.6, _.x)),
       AgentParam("Velocity", QNetworkSpace.bounded[State](-0.07, 0.07, _.v)),
     )
