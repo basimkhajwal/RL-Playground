@@ -1,12 +1,15 @@
 package rlp.pages
 
+import com.thoughtworks.binding.{Binding, dom}
+import org.scalajs.dom.html.Div
 import org.scalajs.dom.raw.CanvasRenderingContext2D
 import rlp.agent.QNetworkAgent.QNetworkSpace
 import rlp.agent.QStateSpace
+import rlp.environment.FlappyBird.FlappyBirdAgent
 import rlp.environment.{Environment, FlappyBird}
 import rlp.presenters.{AgentParam, AgentPresenter, QNetworkPresenter, QTablePresenter}
 
-class FlappyBirdPage extends GamePage[FlappyBird.State, FlappyBird.FlappyBirdAgent]{
+class FlappyBirdPage extends GamePage[FlappyBird.State, FlappyBirdAgent] {
 
   import FlappyBird._
 
@@ -35,13 +38,40 @@ class FlappyBirdPage extends GamePage[FlappyBird.State, FlappyBird.FlappyBirdAge
     QNetworkPresenter.builder(name,
       2, { a => if (a == 0) NoAction else JumpAction },
       AgentParam("Height", QNetworkSpace.bounded[AgentState](0, SCREEN_HEIGHT - GROUND_HEIGHT, _.y)),
-      AgentParam("Vertical Speed", QNetworkSpace.bounded[AgentState](-MAX_SPEED, MAX_SPEED,  _.vy)),
-      AgentParam("Next Block Distance", QNetworkSpace.bounded[AgentState](0, BLOCK_SPACING + BLOCK_WIDTH,  _.blockDist)),
+      AgentParam("Vertical Speed", QNetworkSpace.bounded[AgentState](-MAX_SPEED, MAX_SPEED, _.vy)),
+      AgentParam("Next Block Distance", QNetworkSpace.bounded[AgentState](0, BLOCK_SPACING + BLOCK_WIDTH, _.blockDist)),
       AgentParam("Gap Height", QNetworkSpace.bounded[AgentState](0, SCREEN_HEIGHT - GROUND_HEIGHT, _.gapMid)),
     )
   )
 
-  override protected def createEnvironment(model: AgentPresenter[FlappyBirdAgent]): Environment[FlappyBird.State] = {
+  private val gameEnvironment: FlappyBird = new FlappyBird(new UserAgent())
+
+  private var wasSpacePressed: Boolean = false
+
+  override def start(): Unit = {
+    super.start()
+
+    keyboardHandler.registerClickListener { key:String =>
+      if (key == " ") {
+        wasSpacePressed = true
+      }
+    }
+  }
+
+  @dom
+  override lazy val gameOptions: Binding[Div] = {
+
+    <div>
+      <br/>
+      <br/>
+      <h5 class="center-align">Controls</h5>
+      <br/>
+      <h6 class="center-align"><strong>Space</strong> - launch bird</h6>
+      <br/>
+    </div>
+  }
+
+  override protected def createEnvironment(model: AgentPresenter[FlappyBirdAgent]): Environment[State] = {
     new FlappyBird(model.agent)
   }
 
@@ -53,26 +83,35 @@ class FlappyBirdPage extends GamePage[FlappyBird.State, FlappyBird.FlappyBirdAge
     ctx.fillStyle = "lightblue"
     ctx.fillRect(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT)
 
-    if (trainingEnvironment != null) {
+    if (!renderTraining.get) {
 
-      val state = trainingEnvironment.getState()
-
-      ctx.fillStyle = "brown"
-      ctx.fillRect(0, SCREEN_HEIGHT - GROUND_HEIGHT, SCREEN_WIDTH, GROUND_HEIGHT)
-
-      ctx.translate(SCREEN_WIDTH/2 - state.x, 0)
-
-      ctx.fillStyle = "lime"
-      for ((blockX, gapY) <- state.blocks) {
-        ctx.fillRect(blockX, 0, BLOCK_WIDTH, gapY)
-        ctx.fillRect(blockX, gapY + GAP_HEIGHT, BLOCK_WIDTH, SCREEN_HEIGHT - GROUND_HEIGHT - (gapY + GAP_HEIGHT))
+      if (gameEnvironment.step()) {
+        gameEnvironment.reset()
       }
+      renderState(ctx, gameEnvironment.getState())
 
-      ctx.fillStyle = "red"
-      ctx.fillRect(state.x, state.y, BIRD_WIDTH, BIRD_HEIGHT)
+    } else if (trainingEnvironment != null) {
+
+      renderState(ctx, trainingEnvironment.getState())
     }
 
     ctx.restore()
+  }
+
+  private def renderState(ctx: CanvasRenderingContext2D, state: State): Unit = {
+    ctx.fillStyle = "brown"
+    ctx.fillRect(0, SCREEN_HEIGHT - GROUND_HEIGHT, SCREEN_WIDTH, GROUND_HEIGHT)
+
+    ctx.translate(SCREEN_WIDTH / 2 - state.x, 0)
+
+    ctx.fillStyle = "lime"
+    for ((blockX, gapY) <- state.blocks) {
+      ctx.fillRect(blockX, 0, BLOCK_WIDTH, gapY)
+      ctx.fillRect(blockX, gapY + GAP_HEIGHT, BLOCK_WIDTH, SCREEN_HEIGHT - GROUND_HEIGHT - (gapY + GAP_HEIGHT))
+    }
+
+    ctx.fillStyle = "red"
+    ctx.fillRect(state.x, state.y, BIRD_WIDTH, BIRD_HEIGHT)
   }
 
   override protected def agentPerformance(model: AgentPresenter[FlappyBirdAgent]): Double = {
@@ -97,4 +136,15 @@ class FlappyBirdPage extends GamePage[FlappyBird.State, FlappyBird.FlappyBirdAge
     totalDistance / testRuns
   }
 
+  class UserAgent extends FlappyBirdAgent {
+
+    override def act(state: AgentState): Action = {
+      if (wasSpacePressed) {
+        wasSpacePressed = false
+        JumpAction
+      } else {
+        NoAction
+      }
+    }
+  }
 }
