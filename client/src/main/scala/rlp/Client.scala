@@ -4,7 +4,7 @@ import com.thoughtworks.binding.Binding.Var
 import com.thoughtworks.binding.{Binding, dom}
 import org.scalajs.dom.{Event, document, html, window}
 import rlp.dao.LocalAgentDAO
-import rlp.pages.{FlappyBirdPage, Page, PongPage, PuckWorldPage}
+import rlp.pages._
 import rlp.ui.{SelectHandler, TabSelectHandler}
 
 import scala.scalajs.js.Dynamic
@@ -14,7 +14,8 @@ object Client {
   val pages: List[Page] = List(
     new PongPage(),
     new PuckWorldPage(),
-    new FlappyBirdPage()
+    new FlappyBirdPage(),
+    new MountainCarPage()
   )
 
   @dom
