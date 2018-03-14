@@ -7,8 +7,17 @@ import upickle.Js
 
 abstract class NetworkOptimizer(val network: NeuralNetwork) extends Storable {
 
+  var totalGrad: Double = 0
+
   def step(input: Matrix, target: Matrix): Unit = {
     val gradients = network.backProp(input, target)
+
+    for (g <- gradients) {
+      for (x <- g.data) {
+        totalGrad += x
+      }
+    }
+
     step(gradients)
   }
 

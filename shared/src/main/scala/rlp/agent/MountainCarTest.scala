@@ -1,9 +1,9 @@
 package rlp.agent
 
 import rlp.agent.QNetworkAgent.QNetworkSpace
-import rlp.ai.ActivationFunction.{Linear, Sigmoid, TanH}
+import rlp.ai.ActivationFunction.{Linear, ReLU, Sigmoid, TanH}
 import rlp.ai.NeuralNetwork
-import rlp.ai.optimizers.{Adam, SGDMomentum}
+import rlp.ai.optimizers.{Adam, RMSProp, SGDMomentum}
 import rlp.environment.MountainCar
 
 import scalax.chart.api._
@@ -16,9 +16,12 @@ object MountainCarTest {
 
     val env = new MountainCar(agent)
 
-    for (e <- 0 until 5000) yield {
+    for (e <- 0 until 90) yield {
+      println("========")
+      println(e)
+      println("========")
       var length = 0
-      while (!env.step() && length <= 3000) {
+      while (!env.step() && length <= 600) {
         length += 1
       }
       env.reset()
@@ -38,15 +41,16 @@ object MountainCarTest {
 
     qTable.explorationEpsilon = 0.05
 
-    val network = new NeuralNetwork(Array(2, 10, 3), Array(TanH, Linear))
+    val network = new NeuralNetwork(Array(2, 3), Array(Linear))
     val qNetwork = new QNetworkAgent(network, 100)
 
     network.initialiseWeights()
 
-    qNetwork.updateStepInterval = 10
+    qNetwork.updateStepInterval = 20
+    qNetwork.miniBatchSize = 50
     qNetwork.explorationEpsilon = 0.1
     qNetwork.discountFactor = 0.9
-    qNetwork.optimiser = new SGDMomentum(network, 0.0001)
+    qNetwork.optimiser = new RMSProp(network, 0.05, decay = 0.0001)
 
     val agentB = QNetworkAgent.build[State, Action](qNetwork, (x:Int) => if (x == 0) LeftAction else if (x == 1) NoAction else RightAction,
       Seq(
@@ -55,10 +59,37 @@ object MountainCarTest {
       )
     )
 
-    val chart1 = XYLineChart(runAgent(agentA))
-    chart1.show("Q Table")
+    //val chart1 = XYLineChart(runAgent(agentA))
+    //chart1.show("Q Table")
 
-    val chart2 = XYLineChart(runAgent(agentB))
-    chart2.show("Q Network")
+    val env = new MountainCar(agentB)
+
+    val episodes = 500
+    val episodeLengths = new Array[Int](episodes)
+    val tdErrors = new Array[Double](episodes)
+    val grads = new Array[Double](episodes)
+
+    for (e <- 0 until episodes) yield {
+      var length = 0
+      while (!env.step() && length <= 600) {
+        length += 1
+      }
+      env.reset()
+
+      episodeLengths(e) = length
+      tdErrors(e) = qNetwork.totalTDError / qNetwork.errorSteps
+      grads(e) = qNetwork.optimiser.totalGrad / qNetwork.errorSteps
+
+      qNetwork.totalTDError = 0
+      qNetwork.errorSteps = 0
+      qNetwork.optimiser.totalGrad = 0
+
+      qNetwork.explorationEpsilon *= 0.99
+    }
+
+    val dir = "/Users/Basim/Downloads/car_test/"
+    XYLineChart((0 until episodes) zip episodeLengths).saveAsPNG(dir+"ep_len.png")
+    XYLineChart((0 until episodes) zip tdErrors).saveAsPNG(dir+"ep_err.png")
+    XYLineChart((0 until episodes) zip grads).saveAsPNG(dir+"ep_grad.png")
   }
 }
