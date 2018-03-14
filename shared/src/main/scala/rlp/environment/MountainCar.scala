@@ -4,6 +4,22 @@ import rlp.agent.Agent
 
 object MountainCar {
 
+  val MIN_X = -1.2
+  val MAX_X = 0.6
+
+  val MIN_Y = 0
+  val MAX_Y = 1.3
+
+  val MAX_SPEED = 0.07
+  val GOAL_X = 0.5
+
+  val CAR_WIDTH = 40
+  val CAR_HEIGHT = 20
+
+  def positionHeight(x: Double): Double = {
+    math.sin(3 * x)*0.45 + 0.55
+  }
+
   case class State(v: Double, x: Double)
 
   sealed trait Action
@@ -44,17 +60,17 @@ class MountainCar(val agent: MountainCar.MountainCarAgent) extends Environment[M
     }
 
     v += action * 0.001 - math.cos(3 * x) * 0.0025
-    if (v < -0.07) v = -0.07
-    if (v > 0.07) v = 0.07
+    if (v < -MAX_SPEED) v = -MAX_SPEED
+    if (v > MAX_SPEED) v = MAX_SPEED
 
     x += v
-    if (x <= -1.2) {
-      x = -1.2
+    if (x <= MIN_X) {
+      x = MIN_X
       v = 0
     }
 
     agent.percept(-1)
 
-    x >= 0.6
+    x >= MAX_X
   }
 }
