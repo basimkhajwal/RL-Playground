@@ -14,11 +14,11 @@ object FlappyBird {
 
   val BIRD_WIDTH = 30.0
   val BIRD_HEIGHT = 30.0
-  val BIRD_SPEED = 50.0
-  val BIRD_JUMP_SPEED = 100.0
+  val BIRD_SPEED = 200.0
+  val BIRD_JUMP_SPEED = 300.0
   val MAX_SPEED = BIRD_JUMP_SPEED
 
-  val GRAVITY = 70.0
+  val GRAVITY = 400.0
 
   val GAP_HEIGHT = 160.0
   val GAP_PADDING = 50.0
