@@ -54,7 +54,7 @@ abstract class GamePage[S, A] extends Page {
 
   private var initialised: Boolean = false
 
-  override def start(): Unit = {
+  override def show(): Unit = {
     renderProcess.start(Environment.FPS)
     window.onresize = { _:Event => pageResized() }
     pageResized()
@@ -99,7 +99,7 @@ abstract class GamePage[S, A] extends Page {
 
   }
 
-  override def stop(): Unit = {
+  override def hide(): Unit = {
     renderProcess.stop()
     if (trainView.isTraining.get) trainView.pauseTraining()
   }

@@ -26,13 +26,13 @@ object Client {
 
     def pageChanged(idx: Int): Unit = {
       if (currentPage.get != null) {
-        currentPage.get.stop()
+        currentPage.get.hide()
         currentPage := pages(idx)
-        currentPage.get.start()
+        currentPage.get.show()
       } else {
         window.onload = { _:Event =>
           currentPage := pages(idx)
-          currentPage.get.start()
+          currentPage.get.show()
         }
       }
 
