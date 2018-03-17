@@ -5,11 +5,11 @@ import org.scalajs.dom.html
 
 trait Page {
 
-  def start(): Unit
-
-  def stop(): Unit
-
   val name: String
+
+  def show(): Unit
+
+  def hide(): Unit
 
   @dom
   lazy val content: Binding[html.Div] = {

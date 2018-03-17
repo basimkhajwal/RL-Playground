@@ -48,13 +48,19 @@ class FlappyBirdPage extends GamePage[FlappyBird.State, FlappyBirdAgent] {
 
   private var wasSpacePressed: Boolean = false
 
-  override def start(): Unit = {
-    super.start()
+  private var initialShow: Boolean = true
 
-    keyboardHandler.registerClickListener { key:String =>
-      if (key == " ") {
-        wasSpacePressed = true
+  override def show(): Unit = {
+    super.show()
+
+    if (initialShow) {
+      keyboardHandler.registerClickListener { key:String =>
+        if (key == " ") {
+          wasSpacePressed = true
+        }
       }
+
+      initialShow = false
     }
   }
 
