@@ -8,24 +8,18 @@ import rlp.environment.Environment
 object MDPTest {
 
   val transitions: Array[Array[Int]] = Array(
-    Array(1, 1),
-    Array(2, 2),
-    Array(3, 3),
-    Array(4, 4),
-    Array(5, 5),
-    Array(6, 7),
-    null,
+    Array(1, 2),
+    Array(1, 4),
+    Array(1, 3),
+    Array(1, 4),
     null,
   )
 
   val rewards: Array[Array[Double]] = Array(
-    Array(0, 0),
-    Array(0, 0),
-    Array(0, 0),
-    Array(0, 0),
-    Array(0, 0),
-    Array(-1, 1),
-    null,
+    Array(0, 1),
+    Array(-1, -2),
+    Array(-2, -1),
+    Array(2, 1),
     null
   )
 
@@ -57,13 +51,13 @@ object MDPTest {
     val qTableAgent = new QTableAgent(numStates, numActions)
 
     qNetworkAgent.updateStepInterval = 1
-    qNetworkAgent.optimiser = new Adam(network, 0.003)
+    qNetworkAgent.optimiser = new Adam(network, 0.0001)
 
     qNetworkAgent.explorationEpsilon = 0.1
     qTableAgent.explorationEpsilon = 0.1
 
-    qNetworkAgent.discountFactor = 0.9
-    qTableAgent.discountFactor = 0.9
+    qNetworkAgent.discountFactor = 1
+    qTableAgent.discountFactor = 1
 
     runMDPAgent(new MappedAgent[Array[Double],Int,Int,Int](qNetworkAgent, oneHot(numStates), identity))
     runMDPAgent(qTableAgent)
