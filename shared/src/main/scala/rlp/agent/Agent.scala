@@ -10,6 +10,8 @@ import upickle.Js
   */
 trait Agent[S, A] {
 
+  /* Control whether or not the agent will update itself when carrying out actions */
+
   private var _trainEnabled: Boolean = true
 
   def setTrainEnabled(trainEnabled: Boolean): Unit = {
