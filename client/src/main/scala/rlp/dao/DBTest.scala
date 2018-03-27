@@ -5,6 +5,9 @@ import scala.scalajs.js.annotation.{JSExport, JSExportTopLevel}
 
 import scala.concurrent.ExecutionContext.Implicits.global
 
+/**
+  * Integration test for database APIs
+  */
 @JSExportTopLevel("DBTest")
 object DBTest {
 

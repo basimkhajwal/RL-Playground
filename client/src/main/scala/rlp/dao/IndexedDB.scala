@@ -8,18 +8,30 @@ import scala.concurrent.{Future, Promise}
 import scala.scalajs.js
 import scala.concurrent.ExecutionContext.Implicits.global
 
+/**
+  * Exposes a Scala API to interact with the browser IndexedDB
+  */
 object IndexedDB {
 
+  /* The name of the database and the single table within it */
   val DB_NAME = "rlp"
   val MODEL_STORE = "modelStore"
 
+  /**
+    * Return the underlying Database object, initialising
+    * if it doesn't exist
+    *
+    * @return A Future to the database object
+    */
   def getDatabase(): Future[Database] = {
 
     val dBRequest = window.indexedDB.open(DB_NAME, 1)
 
+    // If the database doesn't exist
     dBRequest.onupgradeneeded = { _ =>
       Logger.log("IndexedDB", s"Upgrading database with $MODEL_STORE database")
 
+      // Create the table to store models
       val db = dBRequest.result.asInstanceOf[Database]
       db.createObjectStore(MODEL_STORE, js.Dynamic.literal("keyPath" -> "id"))
     }
@@ -29,12 +41,19 @@ object IndexedDB {
     }
   }
 
+  /**
+    * @param storeName The name of the store to access
+    * @param readOnly Whether to disable write operations
+    * @return A Future for the object store
+    */
   def objectStore(storeName: String, readOnly: Boolean = true): Future[ObjectStore] = {
     getDatabase() map { db =>
       db.transaction(storeName, if (readOnly) "readonly" else "readwrite")
         .objectStore(storeName)
     }
   }
+
+  /* ====== CRUD operations on the database below for an arbitrary type A ======= */
 
   def create(storeName: String, item: js.Any): Future[Unit] = {
     objectStore(storeName, readOnly = false) flatMap { store =>
@@ -90,6 +109,8 @@ object IndexedDB {
     }
   }
 
+  /* ==== Helper functions for mapping callbacks to Futures ===== */
+
   def requestPromise(request: Request): Future[Unit] = {
     requestPromise[Unit](request) { _ => () }
   }
@@ -105,7 +126,11 @@ object IndexedDB {
     )
   }
 
-  def requestPromise[A](request: Request, success: Event => A, error: DOMError => Throwable): Future[A] = {
+  def requestPromise[A](
+    request: Request,
+    success: Event => A,
+    error: DOMError => Throwable
+  ): Future[A] = {
     val promise = Promise[A]()
 
     request.onsuccess = { event =>
