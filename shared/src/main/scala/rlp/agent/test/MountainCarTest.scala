@@ -1,9 +1,10 @@
-package rlp.agent
+package rlp.agent.test
 
 import rlp.agent.QNetworkAgent.QNetworkSpace
-import rlp.ai.ActivationFunction.{Linear, ReLU, Sigmoid, TanH}
+import rlp.agent.{QNetworkAgent, QStateSpace, QTableAgent}
+import rlp.ai.ActivationFunction.{Linear, ReLU}
 import rlp.ai.NeuralNetwork
-import rlp.ai.optimizers.{Adam, RMSProp, SGDMomentum}
+import rlp.ai.optimizers.Adam
 import rlp.environment.MountainCar
 
 import scalax.chart.api._

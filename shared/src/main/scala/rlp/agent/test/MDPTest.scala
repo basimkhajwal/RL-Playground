@@ -1,9 +1,9 @@
-package rlp.agent
+package rlp.agent.test
 
+import rlp.agent.{Agent, MappedAgent, QNetworkAgent, QTableAgent}
 import rlp.ai.ActivationFunction.Linear
 import rlp.ai.NeuralNetwork
-import rlp.ai.optimizers.{Adam, SGDMomentum}
-import rlp.environment.Environment
+import rlp.ai.optimizers.Adam
 
 object MDPTest {
 

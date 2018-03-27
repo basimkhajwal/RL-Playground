@@ -1,5 +1,6 @@
-package rlp.agent
+package rlp.agent.test
 
+import rlp.agent.{PolicyNetworkAgent, QNetworkAgent, QTableAgent}
 import rlp.ai.ActivationFunction.{Linear, ReLU}
 import rlp.ai.NeuralNetwork
 import rlp.ai.optimizers.Adam

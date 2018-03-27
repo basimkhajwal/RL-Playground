@@ -1,8 +1,9 @@
-package rlp.agent
+package rlp.agent.test
 
-import rlp.ai.ActivationFunction.{Linear, ReLU}
+import rlp.agent.{MappedAgent, QNetworkAgent}
+import rlp.ai.ActivationFunction.Linear
 import rlp.ai.NeuralNetwork
-import rlp.ai.optimizers.{Adam, SGDMomentum}
+import rlp.ai.optimizers.Adam
 import rlp.environment.{NaivePongAgent, Pong}
 import rlp.util.Point2D
 
