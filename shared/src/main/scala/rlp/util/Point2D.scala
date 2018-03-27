@@ -1,5 +1,11 @@
 package rlp.util
 
+/**
+  * Represents a 2D point in space
+  *
+  * @param x
+  * @param y
+  */
 case class Point2D(x: Double, y: Double) {
 
   def +(that: Point2D) = Point2D(x + that.x, y + that.y)
@@ -26,6 +32,7 @@ case class Point2D(x: Double, y: Double) {
     if (a < 0) a+2*math.Pi else a
   }
 }
+
 object Point2D {
 
   def fromPolar(theta: Double, m: Double): Point2D = {

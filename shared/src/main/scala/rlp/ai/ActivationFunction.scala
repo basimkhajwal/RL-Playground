@@ -16,6 +16,11 @@ sealed trait ActivationFunction {
 
 object ActivationFunction {
 
+  /**
+    * Implementations of the most popular
+    * activation functions
+    */
+
   object Linear extends ActivationFunction {
     override def apply(x: Double): Double = x
     override def derivative(x: Double): Double = 1

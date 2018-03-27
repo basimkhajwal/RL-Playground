@@ -187,6 +187,11 @@ class NeuralNetwork(
     gradients
   }
 
+  /**
+    * Reset the weights uniformly at random
+    * @param min The minimum weight (default 0)
+    * @param max The maximum weight (default 1)
+    */
   def randomiseWeights(min: Double = 0, max: Double = 1): Unit = {
     for (w <- weights.indices) {
       for (r <- 0 until weights(w).rows) {
@@ -197,6 +202,10 @@ class NeuralNetwork(
     }
   }
 
+  /** Initialise the weights of the layers using a random
+    * heuristic for better convergence properties
+    * @param seed An optional seed to uniquely define the initialisation
+    */
   def initialiseWeights(seed: Long = System.currentTimeMillis()): Unit = {
     val rand = new Random(seed)
     for (w <- weights.indices) {
@@ -220,8 +229,15 @@ class NeuralNetwork(
     }
   }
 
-  // Very simple training method for now
-  // TODO: Implement RMSProp and proper batching
+  /**
+    * Do simple gradient descent, not recommended
+    * for real problems since an optimiser works much better
+    *
+    * @param inputs
+    * @param targets
+    * @param alpha
+    * @param numEpochs
+    */
   def train(inputs: Matrix, targets: Matrix, alpha: Double, numEpochs: Int): Unit ={
     for (_ <- 0 until numEpochs) {
       val grad = backProp(inputs, targets)

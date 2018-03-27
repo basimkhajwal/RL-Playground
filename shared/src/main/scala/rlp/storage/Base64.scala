@@ -2,6 +2,9 @@ package rlp.storage
 
 import java.nio.ByteBuffer
 
+/**
+  * Base64 compression algorithm for encoding/decoding binary data
+  */
 object Base64 {
 
   val base64 = Seq('A' to 'Z', 'a' to 'z', '0' to '9', Seq('+','/')).reduce(_ ++ _).toArray

@@ -1,5 +1,9 @@
 package rlp.math
 
+/**
+  * Functions on arrays of doubles dealing
+  * with distributions of data
+  */
 object Distribution {
 
   def mean(values: Array[Double]): Double = {

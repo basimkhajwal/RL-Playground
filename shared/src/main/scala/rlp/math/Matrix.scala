@@ -98,7 +98,8 @@ class Matrix(var rows: Int, var cols: Int, var data: Array[Double]) extends Stor
   }
 
   def elemProductSelf(that: Matrix): Matrix = {
-    require(rows == that.rows && cols == that.cols, "Element-wise matrix multiplication only defined for same sizes!")
+    require(rows == that.rows && cols == that.cols,
+      "Element-wise matrix multiplication only defined for same sizes!")
     for (r <- 0 until rows) {
       for (c <- 0 until cols) {
         this(r, c) *= that(r, c)
@@ -113,7 +114,7 @@ class Matrix(var rows: Int, var cols: Int, var data: Array[Double]) extends Stor
 
   def +=(that: Matrix): Matrix = {
     require(rows == that.rows && cols == that.cols,
-      s"Matrix addition isn't defined for ${rows}x$cols and ${that.rows}x${that.cols} because ${rows == that.rows} ${cols == that.cols}")
+      s"Matrix addition not defined for ${rows}x$cols and ${that.rows}x${that.cols}")
     for (i <- 0 until (rows*cols)) data(i) += that.data(i)
     this
   }
@@ -164,7 +165,7 @@ class Matrix(var rows: Int, var cols: Int, var data: Array[Double]) extends Stor
 
   def load(json: Js.Value): Unit = {
     val xs = Storable.binaryRead(json.str.toString)
-    require(xs.length == data.length, s"Cannot load a $rows x $cols matrix from ${xs.length} values")
+    require(xs.length == data.length, s"Cannot load $rows x $cols matrix from ${xs.length} values")
     data = xs
   }
 
