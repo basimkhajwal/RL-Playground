@@ -9,39 +9,57 @@ import rlp.presenters.AgentPresenter
 import scala.scalajs.js
 import scala.scalajs.js.JSConverters._
 
+/**
+  * View to show a graph comparing the performance
+  * over time of all the agents
+  *
+  * @param agents A binding to all the agents
+  * @param performanceGap The gap (time interval) between each performance entry
+  * @tparam A The agent type
+  */
 class AgentComparisonView[A](
   agents: Vars[AgentPresenter[A]],
   performanceGap: Int
 ) {
 
+  /**
+    * A binding to the Plotly graph object
+    */
   @dom
   private lazy val graph: Binding[html.Div] = {
-    val plotDiv = {<div id="graph-div"></div>}
-    val global = js.Dynamic.global
 
+    // The <div> which wraps the graph
+    val plotDiv = {<div id="graph-div"></div>}
+
+    // Generate a list of data-points (JS objects) for each agent
+    val items: BindingSeq[js.Object] =
+      for (agent:AgentPresenter[A] <- agents) yield {
+
+        val history = agent.performanceHistory.bind
+        val xStep = performanceGap * agent.performanceStep.bind
+
+        js.Dynamic.literal(
+          "x" -> history.indices.map(xStep*_).toJSArray,
+          "y" -> history.toJSArray,
+          "type" -> "scatter",
+          "name" -> agent.toString
+        )
+      }
+
+    // Layout preferences for the graph
     val layout: js.Object = js.Dynamic.literal(
       "xaxis" -> js.Dynamic.literal("title" -> "Games Played", "zeroline" -> true),
       "yaxis" -> js.Dynamic.literal("title" -> "Performance", "zeroline" -> true),
       "showlegend" -> true
     )
 
-    val items: BindingSeq[js.Object] = for (agent:AgentPresenter[A] <- agents) yield {
-      val history = agent.performanceHistory.bind
-      val xStep = performanceGap * agent.performanceStep.bind
-
-      js.Dynamic.literal(
-        "x" -> history.indices.map(xStep*_).toJSArray,
-        "y" -> history.toJSArray,
-        "type" -> "scatter",
-        "name" -> agent.toString
-      )
-    }
-
-    global.Plotly.newPlot(plotDiv, items.bind.toJSArray, layout)
+    // Generate the graph itself through plotly.js
+    js.Dynamic.global.Plotly.newPlot(plotDiv, items.bind.toJSArray, layout)
 
     plotDiv
   }
 
+  // Re-draw the graph on page resize
   private def pageResized(): Unit = {
     val graphDiv = getElem[html.Div]("graph-div")
     if (graphDiv != null) {
@@ -52,8 +70,14 @@ class AgentComparisonView[A](
   @dom
   lazy val content: Binding[html.Div] = {
 
-    window.addEventListener("resize", { _:Event => pageResized() })
-    js.timers.setTimeout(100) { pageResized() }
+    window.addEventListener(
+      "resize",
+      { _:Event => pageResized() }
+    )
+
+    js.timers.setTimeout(100) {
+      pageResized()
+    }
 
     <div class="card" id="agent-comparison">
       <div class="row">
