@@ -1,7 +1,8 @@
 package rlp.agent.test
 
 import rlp.agent.QNetworkAgent.QNetworkSpace
-import rlp.agent.{QNetworkAgent, QStateSpace, QTableAgent}
+import rlp.agent.{QNetworkAgent, QTableAgent}
+import rlp.agent.QTableAgent.QStateSpace
 import rlp.ai.ActivationFunction.{Linear, ReLU}
 import rlp.ai.NeuralNetwork
 import rlp.ai.optimizers.Adam

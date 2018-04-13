@@ -8,7 +8,7 @@ import org.scalajs.dom.CanvasRenderingContext2D
 import org.scalajs.dom.html.Div
 import rlp.agent.PolicyNetworkAgent.PolicyNetworkSpace
 import rlp.agent.QNetworkAgent.QNetworkSpace
-import rlp.agent.QStateSpace
+import rlp.agent.QTableAgent.QStateSpace
 import rlp.environment.Pong.PongAgent
 import rlp.presenters._
 import rlp.ui.SelectHandler

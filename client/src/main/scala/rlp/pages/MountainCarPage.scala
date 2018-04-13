@@ -4,7 +4,7 @@ import com.thoughtworks.binding.{Binding, dom}
 import org.scalajs.dom.html.Div
 import org.scalajs.dom.raw.CanvasRenderingContext2D
 import rlp.agent.QNetworkAgent.QNetworkSpace
-import rlp.agent.QStateSpace
+import rlp.agent.QTableAgent.QStateSpace
 import rlp.environment.{Environment, MountainCar}
 import rlp.presenters.{AgentParam, AgentPresenter, QNetworkPresenter, QTablePresenter}
 

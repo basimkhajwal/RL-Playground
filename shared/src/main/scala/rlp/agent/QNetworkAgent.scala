@@ -40,20 +40,28 @@ class QNetworkAgent(
     arr
   }
 
-  private def sampleItems[T : ClassTag](xs: Array[T], n: Int, k: Int): Array[T] = sampleIndices(n, k).map(xs)
+  private def sampleItems[T : ClassTag](
+    xs: Array[T],
+    n: Int, k: Int): Array[T] = {
+    sampleIndices(n, k).map(xs)
+  }
 
-  override def step(prevState: Array[Double], action: Int, reward: Double, newState: Array[Double], first: Boolean, last: Boolean): Int = {
+  override def step(
+    prevState: Array[Double], action: Int, reward: Double,
+    newState: Array[Double], first: Boolean, last: Boolean): Int = {
 
     val numActions = network.layerSizes(network.numLayers - 1)
 
     if (!first && isTrainEnabled()) {
 
-      replayBuffer(stepCount % replayBufferSize) = (prevState, action, reward, if (last) null else newState)
+      replayBuffer(stepCount % replayBufferSize) =
+        (prevState, action, reward, if (last) null else newState)
       stepCount += 1
 
       if (stepCount >= miniBatchSize && stepCount % updateStepInterval == 0) {
 
-        val sample = sampleItems(replayBuffer, Math.min(stepCount, replayBufferSize), miniBatchSize)
+        val sampleSize = Math.min(stepCount, replayBufferSize)
+        val sample = sampleItems(replayBuffer, sampleSize, miniBatchSize)
 
         val inputs = Matrix.rows(sample.map(_._1))
 
@@ -61,10 +69,10 @@ class QNetworkAgent(
 
         for (i <- 0 until miniBatchSize) {
           val (_, a, r, n) = sample(i)
-          if (n == null) {
-            returns(i, a) = r
-          } else {
-            returns(i, a) = r + discountFactor * maxAction(n)._2
+          returns(i, a) = r
+
+          if (n != null) {
+            returns(i, a) += discountFactor * maxAction(n)._2
           }
         }
 
@@ -72,8 +80,10 @@ class QNetworkAgent(
       }
     }
 
-    if (rand.nextDouble() < explorationEpsilon) (rand.nextDouble() * numActions).toInt
-    else maxAction(newState)._1
+    if (rand.nextDouble() < explorationEpsilon)
+      (rand.nextDouble() * numActions).toInt
+    else
+      maxAction(newState)._1
   }
 
   private def maxAction(state: Array[Double]): (Int, Double) = {
@@ -143,7 +153,9 @@ object QNetworkAgent {
     spaces.flatMap(_(state))
   }
 
-  def build[S,A](qAgent: QNetworkAgent, actionMap: Int => A, spaces: Seq[QNetworkSpace[S]]): Agent[S,A] = {
+  def build[S,A](
+    qAgent: QNetworkAgent, actionMap: Int => A, spaces: Seq[QNetworkSpace[S]]
+  ): Agent[S,A] = {
     new MappedAgent(qAgent, stateMap(spaces.toArray), actionMap)
   }
 }

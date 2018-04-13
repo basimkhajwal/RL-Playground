@@ -15,16 +15,24 @@ class QTableAgent(
     this(numStates, numActions, new Array[Double](numStates * numActions))
   }
 
-  override def step(prevState: Int, action: Int, reward: Double, newState: Int, first: Boolean, last: Boolean): Int = {
+  override def step(
+    prevState: Int, action: Int, reward: Double,
+    newState: Int, first: Boolean, last: Boolean
+  ): Int = {
+
     val (greedyAction, maxReward) = maximumAction(newState)
 
-    val newAction = if (math.random() < explorationEpsilon) (math.random() * numActions).toInt else greedyAction
+    val newAction =
+      if (math.random() < explorationEpsilon)
+        (math.random() * numActions).toInt
+      else greedyAction
 
     if (!first && isTrainEnabled()) {
 
       val expectedReward = reward + discountFactor * (if (last) 0 else maxReward)
+      val tdError = expectedReward - this(prevState, action)
 
-      this(prevState, action) += learningRate * (expectedReward - this(prevState, action))
+      this(prevState, action) += learningRate * tdError
     }
 
     newAction
@@ -47,10 +55,14 @@ class QTableAgent(
     for (i <- table.indices) table(i) = 0
   }
 
-  override def duplicate(): QTableAgent = new QTableAgent(numStates, numActions, table.clone())
+  override def duplicate(): QTableAgent = {
+    new QTableAgent(numStates, numActions, table.clone())
+  }
 
   @inline
-  def apply(state: Int, action: Int): Double = table(state + action * numStates)
+  def apply(state: Int, action: Int): Double = {
+    table(state + action * numStates)
+  }
 
   @inline
   def update(state: Int, action: Int, value: Double): Unit = {
@@ -81,44 +93,54 @@ class QTableAgent(
 
 object QTableAgent {
 
-  def build[S,A](numActions: Int, actionMap: (Int) => A, space: QStateSpace[S]): (QTableAgent, Agent[S,A]) = {
+  class QStateSpace[T](val size: Int, val map: T => Int) {
+    def apply(s: T): Int = map(s)
+  }
+
+  object QStateSpace {
+
+    private def stateMap[S](spaces: Array[QStateSpace[S]])(state: S): Int = {
+      var stateSize = 1
+      var currentIdx = 0
+
+      for (space:QStateSpace[S] <- spaces) {
+        currentIdx += stateSize * space(state)
+        stateSize *= space.size
+      }
+
+      currentIdx
+    }
+
+    def discrete[T](n: Int, map: (T) => Int) = new QStateSpace(n, map)
+
+    def boxed[T](
+      low: Double, high: Double, divisions: Int = 10, map: T => Double
+    ): QStateSpace[T] = {
+      discrete[T](divisions, { s => (divisions * (map(s) - low) / (high-low)).toInt })
+    }
+
+    def combination[T](spaces: QStateSpace[T]*): QStateSpace[T] = {
+      combination(spaces.toArray)
+    }
+
+    def combination[T](spaces: Array[QStateSpace[T]]): QStateSpace[T] = {
+      new QStateSpace[T](spaces.map(_.size).product, stateMap(spaces))
+    }
+  }
+
+  def build[S,A](
+    numActions: Int, actionMap: (Int) => A, space: QStateSpace[S]
+  ): (QTableAgent, Agent[S,A]) = {
+
     val agent = new QTableAgent(space.size, numActions)
 
     agent -> new MappedAgent[Int,Int,S,A](agent, space.map, actionMap)
   }
 
-  def build[S, A](numActions: Int, actionMap: (Int) => A, spaces: Seq[QStateSpace[S]]): (QTableAgent, Agent[S,A]) = {
+  def build[S, A](
+    numActions: Int, actionMap: (Int) => A, spaces: Seq[QStateSpace[S]]
+  ): (QTableAgent, Agent[S,A]) = {
     build(numActions, actionMap, QStateSpace.combination(spaces.toArray))
   }
 }
 
-class QStateSpace[T](val size: Int, val map: T => Int) {
-  def apply(s: T): Int = map(s)
-}
-
-object QStateSpace {
-
-  private def stateMap[S](spaces: Array[QStateSpace[S]])(state: S): Int = {
-    var stateSize = 1
-    var currentIdx = 0
-
-    for (space:QStateSpace[S] <- spaces) {
-      currentIdx += stateSize * space(state)
-      stateSize *= space.size
-    }
-
-    currentIdx
-  }
-
-  def discrete[T](n: Int, map: (T) => Int) = new QStateSpace(n, map)
-
-  def boxed[T](low: Double, high: Double, divisions: Int = 10, map: T => Double) = {
-    discrete[T](divisions, { s => (divisions * (map(s) - low) / (high-low)).toInt })
-  }
-
-  def combination[T](spaces: QStateSpace[T]*): QStateSpace[T] = combination(spaces.toArray)
-
-  def combination[T](spaces: Array[QStateSpace[T]]): QStateSpace[T] = {
-    new QStateSpace[T](spaces.map(_.size).product, stateMap(spaces))
-  }
-}
