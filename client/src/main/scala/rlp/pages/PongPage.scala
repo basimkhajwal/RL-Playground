@@ -13,6 +13,9 @@ import rlp.environment.Pong.PongAgent
 import rlp.presenters._
 import rlp.ui.SelectHandler
 
+/**
+  * Game page for the pong environment
+  */
 class PongPage extends GamePage[Pong.State, PongAgent] {
 
   import Pong._
@@ -30,6 +33,7 @@ class PongPage extends GamePage[Pong.State, PongAgent] {
 
   private var gameEnvironment: Pong = _
 
+  // Binding to the agents that the user can select from
   private val agentNames: BindingSeq[String] = {
     val defaultNames = Constants("Rule-based computer", "Player (W/S)", "Player (Up/Down)")
     for {
@@ -38,8 +42,8 @@ class PongPage extends GamePage[Pong.State, PongAgent] {
     } yield x
   }
 
+  // Two select handlers, one for each agent
   val leftAgentSelect = new SelectHandler("Player 1", agentNames, renderTraining)
-
   val rightAgentSelect = new SelectHandler("Player 2", agentNames, renderTraining)
 
   override val performanceEntryGap: Int = 200
@@ -73,6 +77,13 @@ class PongPage extends GamePage[Pong.State, PongAgent] {
     )
   )
 
+  /**
+    * Average the number of wins of an agent agains the naive
+    * agent over 10 runs
+    *
+    * @param model
+    * @return
+    */
   override protected def agentPerformance(model: AgentPresenter[PongAgent]): Double = {
 
     val numRuns = 10
@@ -103,6 +114,11 @@ class PongPage extends GamePage[Pong.State, PongAgent] {
     new Pong(model.agent, model.agent.clone())
   }
 
+  /**
+    * Create an agent based on the index chosen by the select
+    * @param idx
+    * @return
+    */
   private def createAgent(idx: Int): PongAgent = idx match {
     case 0 => new NaivePongAgent
     case 1 => new PongUserAgent("w", "s")
@@ -135,9 +151,11 @@ class PongPage extends GamePage[Pong.State, PongAgent] {
     ctx.save()
     ctx.scale(ctx.canvas.width / Pong.SCREEN_WIDTH, ctx.canvas.height / Pong.SCREEN_HEIGHT)
 
+    // Clear the background
     ctx.fillStyle = "black"
     ctx.fillRect(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT)
 
+    // Draw each paddle
     ctx.fillStyle = "lime"
     ctx.fillRect(
       PADDLE_PADDING, state.leftPaddleY,
@@ -147,6 +165,8 @@ class PongPage extends GamePage[Pong.State, PongAgent] {
       SCREEN_WIDTH - PADDLE_PADDING - PADDLE_WIDTH, state.rightPaddleY,
       PADDLE_WIDTH, PADDLE_HEIGHT
     )
+
+    // Fill in the ball
     ctx.fillRect(state.ballPos.x, state.ballPos.y, BALL_SIZE, BALL_SIZE)
 
     ctx.restore()
@@ -167,6 +187,13 @@ class PongPage extends GamePage[Pong.State, PongAgent] {
     </div>
   }
 
+  /**
+    * A user agent that moves up/down
+    * depending on the keys pressed
+    *
+    * @param upKey The key code of the up key
+    * @param downKey The key code of the down key
+    */
   class PongUserAgent(val upKey: String, val downKey: String) extends PongAgent {
 
     override def act(state: AgentState): Action = {
@@ -180,4 +207,3 @@ class PongPage extends GamePage[Pong.State, PongAgent] {
   }
 
 }
-

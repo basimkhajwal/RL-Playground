@@ -6,6 +6,9 @@ import rlp.agent.QNetworkAgent.QNetworkSpace
 import rlp.environment.{Environment, PuckWorld}
 import rlp.presenters.{AgentParam, AgentPresenter, PolicyNetworkPresenter, QNetworkPresenter}
 
+/**
+  * Puck world environment game page
+  */
 class PuckWorldPage extends GamePage[PuckWorld.State, PuckWorld.PuckAgent]{
 
   import PuckWorld._
@@ -69,6 +72,8 @@ class PuckWorldPage extends GamePage[PuckWorld.State, PuckWorld.PuckAgent]{
       ctx.strokeStyle = "black"
       ctx.globalAlpha = 0.5
 
+      // Render each puck as a circle, coloured and with a particular radius
+
       ctx.fillStyle = "#cccccc"
       ctx.beginPath()
       ctx.arc(state.px, state.py, PUCK_RADIUS, 0, 2*math.Pi)
@@ -98,6 +103,13 @@ class PuckWorldPage extends GamePage[PuckWorld.State, PuckWorld.PuckAgent]{
     ctx.restore()
   }
 
+  /**
+    * Measure the total reward experienced by an agent
+    * averaged over 10 episodes
+    *
+    * @param model
+    * @return
+    */
   override protected def agentPerformance(model: AgentPresenter[PuckAgent]): Double = {
     val testAgent = model.agent.clone()
     val testEnv = new PuckWorld(testAgent)
