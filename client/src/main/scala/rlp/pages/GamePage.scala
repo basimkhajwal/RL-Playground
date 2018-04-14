@@ -1,35 +1,53 @@
 package rlp.pages
 
-import com.thoughtworks.binding.Binding.{Constants, SingleMountPoint, Var, Vars}
+import com.thoughtworks.binding.Binding.{Constants, Var, Vars}
 import com.thoughtworks.binding.{Binding, dom}
-import org.scalajs.dom.{Event, html, window}
+import org.scalajs.dom.{Event, window}
 import org.scalajs.dom.html.{Canvas, Div}
 import org.scalajs.dom.raw.CanvasRenderingContext2D
 import rlp.environment.Environment
 import rlp._
 import rlp.dao.LocalAgentDAO
-import rlp.presenters.AgentPresenter
+import rlp.presenters.{AgentPresenter, AgentStore}
 import rlp.utils.{BackgroundProcess, KeyboardHandler, Logger}
 import rlp.views.{AgentBuildView, AgentComparisonView, AgentTrainView}
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.scalajs.js.timers
 
+/**
+  * The main base class for each game, providing a common
+  * layout and functionality for handling pages built
+  * on agents and environments
+  *
+  * @tparam S
+  * @tparam A
+  */
 abstract class GamePage[S, A] extends Page {
 
+  /* Abstract constants / functions which specify the environment functionality */
+
+  // A builder for each agent type
   protected val presenterBuilders: List[AgentPresenter.Builder[A]]
 
+  /** Given a built agent presenter, provide an environment */
   protected def createEnvironment(agentPresenter: AgentPresenter[A]): Environment[S]
+
+  // Render the current environment state onto the rendering context
   protected def render(ctx: CanvasRenderingContext2D): Unit
 
-  protected val performanceEntryGap: Int = 100
+  // Measure the agent performance
   protected def agentPerformance(presenter: AgentPresenter[A]): Double
+
+  // The number of games between each performance entry
+  protected val performanceEntryGap: Int = 100
 
   protected val renderTraining: Var[Boolean] = Var(true)
 
   protected val presenters: Vars[AgentPresenter[A]] = Vars()
   private var presenter: AgentPresenter[A] = _
 
+  // Views for the separate sections of the page
   lazy val buildView = new AgentBuildView(presenterBuilders, presenters)
   lazy val trainView = new AgentTrainView(presenters, presenterBuilders, agentPerformance, trainStep)
   lazy val comparisonView = new AgentComparisonView(presenters, performanceEntryGap)
@@ -41,12 +59,15 @@ abstract class GamePage[S, A] extends Page {
   private var ctx: CanvasRenderingContext2D = _
   protected val keyboardHandler = new KeyboardHandler()
 
+  // Handling the number of steps within an episode
   protected val MAX_EPISODE_LENGTH = 1000
   private var episodeLength = 0
+
   protected var trainingEnvironment: Environment[S] = _
 
   private val renderProcess = new BackgroundProcess(() => render(ctx), "Rendering")
 
+  // Descriptions to show within the environment info section
   val gameDescription: String
   val inputDescription: String
   val actionDescription: String
@@ -56,6 +77,8 @@ abstract class GamePage[S, A] extends Page {
 
   override def show(): Unit = {
     renderProcess.start(Environment.FPS)
+
+    // Register resize and keyboard handlers
     window.onresize = { _:Event => pageResized() }
     pageResized()
 
@@ -66,37 +89,48 @@ abstract class GamePage[S, A] extends Page {
     if (!initialised) {
       initialised = true
 
+      // Read agents in from the database
       LocalAgentDAO.getAll() map { agentStores =>
 
         Logger.log("GamePage", s"Loading ${agentStores.length} agent stores from database")
 
-        for {
-          store <- agentStores
-          if store.environmentName == name
-        } {
-          try {
-
-            presenterBuilders.find(_._1 == store.agentName) match {
-              case Some((_, builder)) => {
-                val agent = builder()
-                agent.load(store)
-                presenters.get += agent
-              }
-
-              case None =>
-            }
-
-          } catch {
-            case e: Exception =>
-              Logger.log("GamePage", s"Error loading agentStore ${store.id} - " + e.getMessage)
-          }
-        }
+        agentStores
+            .filter(_.environmentName == name) // Filter agents for this environment
+            .foreach(loadAgentStore) // Load each one
 
       } recover {
-        case error:Throwable => Logger.log("GamePage", "DB access error - " + error.getMessage)
+
+        case error:Throwable => {
+          Logger.log("GamePage", "DB access error - " + error.getMessage)
+        }
       }
     }
 
+  }
+
+  private def loadAgentStore(agentStore: AgentStore): Unit = {
+    try {
+
+      // Find the agent presenter than handles this agent type
+      presenterBuilders.find(_._1 == agentStore.agentName) match {
+
+        case Some((_, builder)) => {
+
+          // Create a new agent and add to the presenters
+          val agent = builder()
+          agent.load(agentStore)
+          presenters.get += agent
+        }
+
+        case None => {
+          Logger.log("GamePage", s"Error loading agentStore ${agentStore.id} invalid agent type")
+        }
+      }
+
+    } catch {
+      case e: Exception =>
+        Logger.log("GamePage", s"Error loading agentStore ${agentStore.id} - " + e.getMessage)
+    }
   }
 
   override def hide(): Unit = {
@@ -108,6 +142,7 @@ abstract class GamePage[S, A] extends Page {
     renderTraining := !renderTraining.get
   }
 
+  // Rescale the canvas element when the page is resized
   protected def pageResized(): Unit = {
     val container = getElem[Div]("canvas-container")
     val width = Math.min(targetGameWidth, container.offsetWidth - 50)
@@ -116,9 +151,17 @@ abstract class GamePage[S, A] extends Page {
     canvas.height = (aspectRatio * width).toInt
   }
 
+  /**
+    * Run a single iteration of the current environment
+    */
   protected def trainStep(): Unit = {
+
     episodeLength += 1
+
+    // Step and check for episode end or episode timeout
     if (trainingEnvironment.step() || episodeLength > MAX_EPISODE_LENGTH) {
+
+      // If not timed out
       if (episodeLength <= MAX_EPISODE_LENGTH) {
 
         // Asynchronously perform performance check
@@ -130,16 +173,22 @@ abstract class GamePage[S, A] extends Page {
 
         presenter.gamesPlayed := presenter.gamesPlayed.get + 1
       }
+
+      // Reset and begin a new episode
       trainingEnvironment.reset()
       episodeLength = 0
     }
   }
 
+  /**
+    * The HTML element containing the full page content
+    */
   @dom
   override lazy val content: Binding[Div] = {
 
     <div class="row page-container">
 
+      <!-- Description of this page -->
       <div class="col s12">
         <div class="description card-panel">
           <span class="flow-text">{gameDescription}</span>
@@ -162,6 +211,7 @@ abstract class GamePage[S, A] extends Page {
         </div>
       </div>
 
+      <!-- Game preview with controls -->
       <div class="col s12">
         <div class="card">
           <div class="row vertical-stretch-row" id="game-row">
@@ -175,6 +225,7 @@ abstract class GamePage[S, A] extends Page {
         </div>
       </div>
 
+      <!-- Model training and building section -->
       <div class="col s12">
         <div class="card" id="agent-select">
           <div class="card-content">
@@ -185,6 +236,7 @@ abstract class GamePage[S, A] extends Page {
         </div>
       </div>
 
+      <!-- Graph comparison -->
       <div class="col s12">
         { comparisonView.content.bind }
       </div>
@@ -202,6 +254,10 @@ abstract class GamePage[S, A] extends Page {
     </div>
   }
 
+  /**
+    * The default control section with a render
+    * toggle and a title
+    */
   @dom
   protected lazy val controlsSection: Binding[Div] = {
     <div id="control-section">
@@ -224,16 +280,27 @@ abstract class GamePage[S, A] extends Page {
     </div>
   }
 
+  /**
+    * Sub-section for more custom controls for each page
+    */
   @dom
   protected lazy val gameOptions: Binding[Div] = {
     <div>Empty!</div>
   }
 
+  /**
+    * The container for the game view
+    */
   @dom
   protected lazy val gameContainer: Binding[Div] = {
-    canvas = <canvas class="center-align" width={targetGameWidth} height={(targetGameWidth * aspectRatio).toInt}></canvas>
+    canvas =
+      <canvas class="center-align" width={targetGameWidth}
+        height={(targetGameWidth * aspectRatio).toInt}>
+      </canvas>
     ctx = canvas.getContext("2d").asInstanceOf[CanvasRenderingContext2D]
 
-    <div id="canvas-container" class="center-align valign-wrapper"> { canvas } </div>
+    <div id="canvas-container" class="center-align valign-wrapper">
+      { canvas }
+    </div>
   }
 }
