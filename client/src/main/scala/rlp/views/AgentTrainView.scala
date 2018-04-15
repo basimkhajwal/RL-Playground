@@ -15,6 +15,16 @@ import rlp.utils.{BackgroundProcess, Logger}
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.scalajs.js
 
+/**
+  * The largest view which incorporates the agent training
+  * and hyper-parameter selection
+  *
+  * @param agents
+  * @param builders
+  * @param agentPerformance
+  * @param trainStep
+  * @tparam A
+  */
 class AgentTrainView[A](
   agents: Vars[AgentPresenter[A]],
   builders: List[AgentPresenter.Builder[A]],
@@ -22,8 +32,11 @@ class AgentTrainView[A](
   trainStep: () => Unit,
 ) {
 
+  // Multipliers for the fast forward option
   val gameSpeedMultiplier = List(1, 2, 4, 6, -1)
   val gameSpeedToString = gameSpeedMultiplier.init.map("x"+_) ++ List("Max")
+
+  //    Various bindings to the training state
 
   val isTraining: Var[Boolean] = Var(false)
   val gameSpeed: Var[Int] = Var(0)
@@ -46,6 +59,8 @@ class AgentTrainView[A](
 
   private val trainingProcess = new BackgroundProcess(trainStep, "Training")
 
+  /* Training control methods */
+
   def startTraining(): Unit = {
     trainingProcess.start(Environment.FPS * gameSpeedMultiplier(gameSpeed.get))
     isTraining := true
@@ -56,9 +71,17 @@ class AgentTrainView[A](
     isTraining := false
   }
 
+  /**
+    * When a new agent is selected, stop training and update
+    * the materialize ui
+    *
+    * @param agent
+    */
   private def agentSelected(agent: AgentPresenter[A]): Unit = {
     if (isTraining.get) pauseTraining()
-    js.timers.setTimeout(100) { js.Dynamic.global.Materialize.updateTextFields() }
+    js.timers.setTimeout(100) {
+      js.Dynamic.global.Materialize.updateTextFields()
+    }
   }
 
   @dom
@@ -78,30 +101,40 @@ class AgentTrainView[A](
     <div class="row" id="agent-trainer">
 
       <div class="row grey col s12 lighten-3" id="agent-training-header">
+        <!-- Title -->
         <div class="col s12 center-align">
           <span class="card-title">Agent Training</span>
         </div>
 
+        <!-- Top area controls -->
         <div class="row col s12 vertical-stretch-row">
+
           <div class="col s3 offset-s1">
             { agentSelect.handler.bind }
           </div>
 
           <div id="modal-btns" class="col s2 valign-wrapper">
+
+            <!-- Add new model button -->
             <a class="btn-floating waves-effect waves-light modal-trigger tooltipped red"
                href="#builder-modal" id="add-agent-btn" data:data-tooltip="New Agent">
               <i class="material-icons">add</i>
             </a>
+
+            <!-- Upload model from file button -->
             <a class="btn-floating waves-effect waves-light modal-trigger tooltipped red lighten-2"
                href="#import-modal" id="import-agent-btn" data:data-tooltip="Import Agent">
               <i class="material-icons">file_upload</i>
             </a>
           </div>
 
-          <div class="col s3 valign-wrapper" id="training-btns-container">{ trainingButtons.bind }</div>
+          <div class="col s3 valign-wrapper" id="training-btns-container">
+            { trainingButtons.bind }
+          </div>
         </div>
       </div>
 
+      <!-- Generic agent edit pane, same for all agents -->
       <div class="col s12 grey lighten-4 row" id="agent-info">
         {
           selectedAgent.bind match {
@@ -111,6 +144,7 @@ class AgentTrainView[A](
         }
       </div>
 
+      <!-- Agent specific edit pane (bind from presenter) -->
       <div class="col s12">
         {
           selectedAgent.bind match {
@@ -452,28 +486,29 @@ class AgentTrainView[A](
 
     <div class="center-align" id="buttons-container">
       <div class="valign-wrapper">
+
+        <!-- Reset button -->
         <a class= {buttonStyle + "btn-medium orange"}
-           onclick={ _:Event => resetTraining() }
-        >
+           onclick={ _:Event => resetTraining() }>
           <i class="material-icons">replay</i>
         </a>
 
+        <!-- Pause/Play button -->
         <a class={buttonStyle + "btn-large red"}
-           onclick = { _:Event => if (training) pauseTraining() else startTraining() }
-        >
+           onclick = { _:Event => if (training) pauseTraining() else startTraining() }>
           <i class="material-icons">
             { if (training) "pause" else "play_arrow" }
           </i>
         </a>
 
-        <a class= {
-           buttonStyle + "btn-medium orange " + (if (training) "" else "disabled")
-           }
-           onclick={ _:Event => fastForwardTraining() }
-        >
+        <!-- Fast forward button -->
+        <a class= { buttonStyle + "btn-medium orange " + (if (training) "" else "disabled") }
+           onclick={ _:Event => fastForwardTraining() }>
           <i class="material-icons">fast_forward</i>
         </a>
-        <span id="training-speed"> { if (isTraining.bind) gameSpeedToString(gameSpeed.bind) else "" } </span>
+        <span id="training-speed">
+          { if (isTraining.bind) gameSpeedToString(gameSpeed.bind) else "" }
+        </span>
       </div>
     </div>
   }

@@ -1,13 +1,14 @@
 package rlp.presenters
 
+import com.thoughtworks.binding.Binding.Var
 import com.thoughtworks.binding.{Binding, dom}
-import org.scalajs.dom.html
 import org.scalajs.dom.html.Div
 import rlp.agent.{Agent, PolicyNetworkAgent}
 import rlp.ai.NeuralNetwork
 import rlp._
 import rlp.agent.PolicyNetworkAgent.PolicyNetworkSpace
 import rlp.ai.optimizers.NetworkOptimizer
+import rlp.ui.NumericInputHandler
 import upickle.Js
 
 class PolicyNetworkPresenter[S, A](
@@ -38,7 +39,17 @@ class PolicyNetworkPresenter[S, A](
     policyNetwork = new PolicyNetworkAgent(network)
     policyNetwork.reset()
 
+    discountFactor := policyNetwork.discountFactor
+
     PolicyNetworkAgent.build(policyNetwork, actionMap, inputs)
+  }
+
+  private val discountFactor: Var[Double] = Var(0.9)
+
+  private def paramsChanged(discount: Double): Unit = {
+    policyNetwork.discountFactor = discount
+
+    viewChanged()
   }
 
   @dom
@@ -49,12 +60,28 @@ class PolicyNetworkPresenter[S, A](
         <div class="divider"></div>
 
         <div class="row">
-          <h5>TODO....</h5>
+          <div class="col s3 offset-s2">
+            { new NumericInputHandler("Discount Factor", discountFactor, 0, 1).content.bind }
+          </div>
         </div>
 
-      </div>{paramSelector.viewer.bind}{networkViewer.bind}
+      </div>
+
+      { paramSelector.viewer.bind }
+      { networkViewer.bind }
+
+      {
+        paramsChanged(discountFactor.bind)
+        ""
+      }
 
     </div>
+  }
+
+  override def load(agentStore: AgentStore): Unit = {
+    super.load(agentStore)
+
+    discountFactor := policyNetwork.discountFactor
   }
 
   override def resetAgent(): Unit = {
