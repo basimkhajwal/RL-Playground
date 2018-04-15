@@ -11,6 +11,16 @@ import rlp.ai.optimizers.NetworkOptimizer
 import rlp.ui.NumericInputHandler
 import upickle.Js
 
+/**
+  * The presenter for the PolicyNetworkAgent
+  *
+  * @param environment The environment for this agent presenter
+  * @param numActions
+  * @param actionMap
+  * @param params The parameters for the agent
+  * @tparam S The environment state type
+  * @tparam A The action type
+  */
 class PolicyNetworkPresenter[S, A](
   environment: String,
   numActions: Int,
@@ -109,7 +119,8 @@ object PolicyNetworkPresenter {
   def builder[S,A](
     environment: String,
     numActions: Int, actionMap: Int => A,
-    params: AgentParam[PolicyNetworkSpace[S]]*): AgentPresenter.Builder[Agent[S,A]] = {
+    params: AgentParam[PolicyNetworkSpace[S]]*
+  ): AgentPresenter.Builder[Agent[S,A]] = {
 
     name -> (() => new PolicyNetworkPresenter(environment, numActions, actionMap, params.toArray))
   }

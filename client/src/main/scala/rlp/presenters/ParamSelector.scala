@@ -7,9 +7,17 @@ import org.scalajs.dom.html.Div
 import rlp._
 import upickle.Js
 
+/**
+  * Represents a selector for parameters to an agent builder with user interface built of check boxes
+  *
+  * @param params
+  * @tparam A
+  */
 class ParamSelector[A](params: Array[AgentParam[A]]) {
 
   val paramBindings: Vars[(AgentParam[A], Boolean)] = Vars(params.map(s => (s, s.defaultEnabled)) :_ *)
+
+  // Generate an ID for the div element
   val baseID = getGUID("param-selector")
 
   private def getCheckBoxID(param: AgentParam[A]): String = baseID + param.name
@@ -21,6 +29,10 @@ class ParamSelector[A](params: Array[AgentParam[A]]) {
     paramBindings.get(idx) = (param, checkBox.checked)
   }
 
+  /**
+    * Store the state of each check-box
+    * @return
+    */
   def store(): Js.Value = {
     Js.Arr(
       paramBindings.get.map(p =>
@@ -33,6 +45,10 @@ class ParamSelector[A](params: Array[AgentParam[A]]) {
     )
   }
 
+  /**
+    * Extract the state and update the checkboxes
+    * @param data
+    */
   def load(data: Js.Value): Unit = {
     val paramMap = data.arr.map { p =>
       val paramKey = p.obj
@@ -44,6 +60,9 @@ class ParamSelector[A](params: Array[AgentParam[A]]) {
     paramBindings.get.appendAll(newParams)
   }
 
+  /**
+    * Check-boxes to select the optional inputs
+    */
   @dom
   lazy val builder: Binding[Div] = {
     <div class="distribute-container">
@@ -61,6 +80,9 @@ class ParamSelector[A](params: Array[AgentParam[A]]) {
     </div>
   }
 
+  /**
+    * A list displaying which inputs have been selected
+    */
   @dom
   lazy val viewer: Binding[Div] = {
     <div class="content-section">

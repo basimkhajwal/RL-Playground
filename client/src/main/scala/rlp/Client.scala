@@ -3,14 +3,18 @@ package rlp
 import com.thoughtworks.binding.Binding.Var
 import com.thoughtworks.binding.{Binding, dom}
 import org.scalajs.dom.{Event, document, html, window}
-import rlp.dao.LocalAgentDAO
 import rlp.pages._
 import rlp.ui.{SelectHandler, TabSelectHandler}
 
 import scala.scalajs.js.Dynamic
 
+/**
+  * The main entry point to the application which arbitrates the page select
+  * and which page currently has focus
+  */
 object Client {
 
+  // The pages available to select from
   val pages: List[Page] = List(
     new PongPage(),
     new PuckWorldPage(),
@@ -18,12 +22,20 @@ object Client {
     new MountainCarPage()
   )
 
+  /**
+    * The app itself consisting of a tab-select and the current page
+    */
   @dom
   lazy val app: Binding[html.Div] = {
 
     val pageSelect = new TabSelectHandler(pages.map(_.name))
     val currentPage = Var[Page](null)
 
+    /**
+      * When a page is changed, hide the previous one and show the new one
+      *
+      * @param idx
+      */
     def pageChanged(idx: Int): Unit = {
       if (currentPage.get != null) {
         currentPage.get.hide()
@@ -40,11 +52,18 @@ object Client {
     }
 
     <div id="app" class="grey lighten-5">
-      <div class="row page-container"> { pageSelect.handler.bind } </div>
+
+      <div class="row page-container">
+        { pageSelect.handler.bind }
+      </div>
 
       {
         val page = currentPage.bind
-        if (page != null) page.content.bind else <!-- -->
+        if (page != null) {
+          page.content.bind
+        } else {
+          <!-- -->
+        }
       }
 
       {
@@ -54,11 +73,16 @@ object Client {
     </div>
   }
 
+  // The app entry point
   def main(args: Array[String]): Unit = {
+
+    // Render the app onto the clientContainer element
     dom.render(document.getElementById("clientContainer"), app)
+
+    // Update the select elements
     SelectHandler.init()
 
-    /* Hide pre-loader */
+    // Hide the pre-loader
     getElem[html.Div]("loader").classList.remove("active")
   }
 }

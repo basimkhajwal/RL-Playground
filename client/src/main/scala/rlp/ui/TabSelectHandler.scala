@@ -2,7 +2,7 @@ package rlp.ui
 
 import com.thoughtworks.binding.{Binding, dom}
 import com.thoughtworks.binding.Binding.{Constants, Var}
-import org.scalajs.dom.{Event, html}
+import org.scalajs.dom.html
 import rlp._
 
 import scala.scalajs.js
@@ -12,10 +12,6 @@ class TabSelectHandler(val items: Seq[String]) {
   private val selectedIdx: Var[Int] = Var(0)
   private val id = getGUID("tab-select-handler")
   private val tabIDs = items.map(_ => getGUID("tab-select-item"))
-
-  private def onTabSelect(index: Int): Unit = {
-    selectedIdx := index
-  }
 
   def selectedIndex: Binding[Int] = selectedIdx
 
@@ -28,8 +24,11 @@ class TabSelectHandler(val items: Seq[String]) {
   lazy val handler: Binding[html.Div] = {
 
     initScript(id) { () =>
+
       val callback: js.Function1[js.Dynamic,Unit] = { x => tabChanged(x) }
-      js.Dynamic.global.$("#" + id).tabs(js.Dynamic.literal("onShow" -> callback))
+      val tabOptions = js.Dynamic.literal("onShow" -> callback)
+
+      js.Dynamic.global.$("#" + id).tabs(tabOptions)
     }
 
     <div>

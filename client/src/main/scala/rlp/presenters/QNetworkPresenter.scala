@@ -11,6 +11,16 @@ import rlp.ai.optimizers.NetworkOptimizer
 import rlp.ui.NumericInputHandler
 import upickle.Js
 
+/**
+  * The presenter for the QNetworkAgent
+  *
+  * @param environment The environment for this agent presenter
+  * @param numActions
+  * @param actionMap
+  * @param params The parameters for the agent
+  * @tparam S The environment state type
+  * @tparam A The action type
+  */
 class QNetworkPresenter[S,A](
   environment: String,
   numActions: Int,
@@ -24,6 +34,7 @@ class QNetworkPresenter[S,A](
 
   private var qNetwork: QNetworkAgent = _
 
+  // The only extra build time parameter
   private val replayBufferSize: Var[Int] = Var(1000)
 
   @dom
@@ -82,11 +93,20 @@ class QNetworkPresenter[S,A](
     replayBufferSize := keyMap("replayBufferSize").num.toInt
   }
 
+  // Train time hyper-parameters
   private val explorationEpsilon: Var[Double] = Var(0.1)
   private val discountFactor: Var[Double] = Var(0.99)
   private val miniBatchSize: Var[Int] = Var(10)
   private val updateStepInterval: Var[Int] = Var(50)
 
+  /**
+    * When any parameter changes update the qNetwork
+    *
+    * @param epsilon
+    * @param discount
+    * @param batchSize
+    * @param updateInterval
+    */
   private def paramsChanged(epsilon: Double, discount: Double, batchSize: Int, updateInterval: Int): Unit = {
     qNetwork.explorationEpsilon = epsilon
     qNetwork.discountFactor = discount
@@ -180,7 +200,8 @@ object QNetworkPresenter {
   def builder[S,A](
     environment: String,
     numActions: Int, actionMap: Int => A,
-    params: AgentParam[QNetworkSpace[S]]*): AgentPresenter.Builder[Agent[S,A]] = {
+    params: AgentParam[QNetworkSpace[S]]*
+  ): AgentPresenter.Builder[Agent[S,A]] = {
 
     name -> (() => new QNetworkPresenter(environment, numActions, actionMap, params.toArray))
   }

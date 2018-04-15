@@ -2,12 +2,15 @@ import com.thoughtworks.binding.Binding
 import com.thoughtworks.binding.dom.Runtime.TagsAndTags2
 import org.scalajs.dom.raw
 import org.scalajs.dom.document
-import upickle.Js
 
 import scala.collection.mutable
 import scala.scalajs.js
 import scalatags.JsDom
 
+/**
+  * Various commonly used functions, mainly to access HTML5 elements
+  * or type hacks to satisfy the compiler
+  */
 package object rlp {
 
   implicit def makeIntellijHappy[T<:raw.Node](x: scala.xml.Node): Binding[T] =
@@ -18,6 +21,8 @@ package object rlp {
 
   implicit def toSvgTags(x: TagsAndTags2.type) = JsDom.svgTags
 
+  // Keep track of GUIDs and assign them to uniquely add ID's for div elements in the page
+
   private val counters = mutable.Map[String,Int]()
 
   def getGUID(prefix: String = ""): String = {
@@ -25,6 +30,14 @@ package object rlp {
     prefix + counters(prefix)
   }
 
+  /**
+    * Run initialisation scripts on the element when it is added to the DOM
+    *
+    * @param id
+    * @param initialTimeout
+    * @param refreshInterval
+    * @param init
+    */
   def initScript(id: String, initialTimeout: Double = 0, refreshInterval: Double = 50)(init: () => Unit): Unit = {
     var refreshTimer: js.timers.SetIntervalHandle = null
 
@@ -47,6 +60,8 @@ package object rlp {
       js.Dynamic.global.$("#" + id).modal(opts)
     }
   }
+
+  /* Jquery handlers */
 
   def getElem[T](id: String): T = document.getElementById(id).asInstanceOf[T]
 

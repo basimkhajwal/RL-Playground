@@ -9,6 +9,16 @@ import rlp.agent.QTableAgent.QStateSpace
 import rlp.ui.NumericInputHandler
 import upickle.Js
 
+/**
+  * The presenter for the QTableAgent
+  *
+  * @param environment
+  * @param numActions
+  * @param actionMap
+  * @param params
+  * @tparam O
+  * @tparam A
+  */
 class QTablePresenter[O, A](
   environment: String,
   numActions: Int,
@@ -16,6 +26,7 @@ class QTablePresenter[O, A](
   params: Array[AgentParam[QStateSpace[O]]]
 ) extends AgentPresenter[Agent[O, A]](environment, QTablePresenter.name) {
 
+  // Train time parameters
   private val learningRate = Var(0.1)
   private val discountFactor = Var(0.9)
   private val explorationEpsilon = Var(0.1)

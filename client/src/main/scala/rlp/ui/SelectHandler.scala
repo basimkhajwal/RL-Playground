@@ -12,6 +12,14 @@ import scala.scalajs.js.{Dynamic, timers}
 
 object SelectHandler {
 
+  /**
+    * This system handles inserting select handlers dynamically which causes
+    * an issue with the materialize initializer.
+    *
+    * To overcome this, the handler listens for the CSS animation (that automatically
+    * starts on insert) so that it can notify materialize.
+    */
+
   private val handlers: ArrayBuffer[SelectHandler] = ArrayBuffer.empty
 
   def init(): Unit = {
@@ -31,6 +39,13 @@ object SelectHandler {
   }
 }
 
+/**
+  * UI component that encapsulates a select HTML5 component with the materialize library
+  *
+  * @param name The title of the select box
+  * @param items The items to show
+  * @param disabledCondition Whether to disable the select or not
+  */
 class SelectHandler(val name: String, val items: BindingSeq[String], val disabledCondition: Binding[Boolean]) {
 
   SelectHandler.register(this)
@@ -55,6 +70,9 @@ class SelectHandler(val name: String, val items: BindingSeq[String], val disable
     selectedIndex := select.selectedIndex
   }
 
+  /**
+    * Update the items in the container
+    */
   private def refresh(): Unit = {
     val select = getElem[html.Select](selectID)
     if (select != null && select.selectedIndex != selectedIndex.get) {
@@ -62,6 +80,12 @@ class SelectHandler(val name: String, val items: BindingSeq[String], val disable
     }
   }
 
+  /**
+    * Fixes issue with materialize library not handling updated elements
+    *
+    * @param condition
+    * @param innerItems
+    */
   private def contentChanged(condition: Boolean, innerItems: Seq[String]): Unit = {
     Dynamic.global.$("#" + selectID).material_select()
     timers.setTimeout(20) {
@@ -74,7 +98,8 @@ class SelectHandler(val name: String, val items: BindingSeq[String], val disable
 
     <div>
       <label>{name}</label>
-      <select id={selectID} class="browser-default" onchange={_:Event => selectionChanged()} disabled={disabledCondition.bind}
+      <select id={selectID} class="browser-default"
+        onchange={_:Event => selectionChanged()} disabled={disabledCondition.bind}
         value={selectedIndex.toString}>
         {
           val indexedItems = Constants(items.bind.zipWithIndex: _*)
@@ -86,7 +111,10 @@ class SelectHandler(val name: String, val items: BindingSeq[String], val disable
         }
       </select>
 
-      { contentChanged(disabledCondition.bind, items.bind); "" }
+      {
+        contentChanged(disabledCondition.bind, items.bind)
+        ""
+      }
     </div>
   }
 }

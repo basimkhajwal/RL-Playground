@@ -13,6 +13,13 @@ import rlp.utils.Logger
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.scalajs.js
 
+/**
+  * Handles the build modal for creating new agents
+  *
+  * @param builders
+  * @param agents
+  * @tparam A
+  */
 class AgentBuildView[A](
   builders: List[AgentPresenter.Builder[A]],
   agents: Vars[AgentPresenter[A]],
@@ -20,6 +27,10 @@ class AgentBuildView[A](
 
   private val builderSelect = new SelectHandler("Agent Type", builders.map(_._1), Constant(false))
 
+  /**
+    * A cache for presenters if the user navigates away from the modal
+    * or to another presenter
+    */
   private val presenterCache: Vars[AgentPresenter[A]] = Vars()
 
   private val presenterBinding = Binding {
@@ -122,11 +133,11 @@ class AgentBuildView[A](
 
         <ul id="clone-dropdown" class="dropdown-content">
           {
-          for (agent <- agents) yield {
-            <li>
-              <a href="#" onclick={_:Event => clonePresenter(agent)}>{agent.toString}</a>
-            </li>
-          }
+            for (agent <- agents) yield {
+              <li>
+                <a href="#" onclick={_:Event => clonePresenter(agent)}>{agent.toString}</a>
+              </li>
+            }
           }
         </ul>
       </div>
@@ -146,7 +157,10 @@ class AgentBuildView[A](
       <div class="col s3 offset-s2 input-field">
         <input id="agent-name" class="validate" type="text"
                value={name.bind} onchange={_:Event => onNameChange()} required={true}/>
-        <label class="active" for="agent-name" data:data-error="Agent name empty or already exists">Agent Name</label>
+        <label class="active" for="agent-name"
+               data:data-error="Agent name empty or already exists">
+          Agent Name
+        </label>
       </div>
 
       <div class="col s12">

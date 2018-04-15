@@ -13,6 +13,25 @@ import upickle.Js
 
 import scala.scalajs.js
 
+/**
+  * The agent presenter base class for the neural network agents:
+  * QNetworkPresenter and PolicyNetworkPresenter
+  *
+  * Defines the build definition for handling multiple hidden layers
+  * with different neuron counts and activation functions.
+  *
+  * Also has an SVG neural network visualisation and optimiser
+  * selecting user interfaces.
+  *
+  * @param environment The environment for this agent presenter
+  * @param name The type of the agent
+  * @param params The parameters for the agent
+  * @param paramSize A mapping from a parameter to the number of neuron inputs it requires
+  * @param outputSize The number of actions for this agent
+  * @tparam S The environment state type
+  * @tparam A The action type
+  * @tparam P The agent parameter type
+  */
 abstract class NetworkPresenter[S,A,P](
   environment: String,
   name: String,
@@ -28,16 +47,25 @@ abstract class NetworkPresenter[S,A,P](
     "Linear" -> Linear
   )
 
+  // Options for the last layer
   protected val enableSoftMax: Boolean = false
-
   protected val outputActivation = Linear
 
+  // Default max layers
   protected val maxHiddenLayers = 5
 
+  // Selection bar on top for which parameters to enable
   protected val paramSelector = new ParamSelector(params)
   protected val paramBindings = paramSelector.paramBindings
   private val paramsEnabled = for ((param, enabled) <- paramBindings; if enabled) yield param
 
+  /**
+    * UI component representing a single layer in the build definition
+    *
+    * @param size The layer size in number of neurons
+    * @param activation  The activation function
+    * @param index The index within the hidden layers
+    */
   class LayerDef(
     val size: Var[Int] = Var(10),
     val activation: Var[ActivationFunction] = Var(ReLU),
@@ -53,6 +81,13 @@ abstract class NetworkPresenter[S,A,P](
       activation := activationFunctions(activationIdx)._2
     }
 
+    /**
+      * The view consisting of row containing:
+      * - the layer index label
+      * - a NumericInputHandler for the number of neurons
+      * - a SelectHandler for the activation function
+      * - a delete button
+      */
     @dom
     lazy val handler: Binding[html.Div] = {
       <div class="layer-definition row valign-wrapper">
@@ -76,6 +111,10 @@ abstract class NetworkPresenter[S,A,P](
       </div>
     }
 
+    /**
+      * Serialise the layer def
+      * @return
+      */
     def store(): Js.Value = {
       Js.Obj(
         "size" -> Js.Num(size.get),
@@ -86,10 +125,13 @@ abstract class NetworkPresenter[S,A,P](
   }
 
   object LayerDef {
+
+    /** Convenient constructor for LayerDef */
     def apply(size: Int = 10, activation: ActivationFunction = ReLU, index: Int = 0): LayerDef = {
       new LayerDef(Var(size), Var(activation), Var(index))
     }
 
+    /** De-serialise into a layer def for this presenter */
     def load(data: Js.Value): LayerDef = {
 
       val keyMap = data.obj
@@ -102,29 +144,49 @@ abstract class NetworkPresenter[S,A,P](
     }
   }
 
+  // The hidden layer definitions
   private val layerDefinitions = Vars[LayerDef]()
 
+  /**
+    * Add a new hidden layer
+    */
   private def createLayer(): Unit = {
     layerDefinitions.get += LayerDef(index = layerDefinitions.get.length)
   }
 
+  /**
+    * Delete the hidden layer given
+    * @param layer
+    */
   private def deleteLayer(layer: LayerDef): Unit = {
+
+    /* Find the index of the layer */
     val idx = layerDefinitions.get.indexOf(layer)
+
+    // If the layer is in the definitions, remove it
     if (idx >= 0) {
       layerDefinitions.get.remove(idx)
+
+      // Decrement other layer indices beyond it
       for (i <- idx until layerDefinitions.get.length) {
         layerDefinitions.get(i).index := layerDefinitions.get(i).index.get - 1
       }
     }
   }
 
+  /**
+    * The part of the builder constructing the network layers
+    */
   @dom
   protected final lazy val networkBuilder: Binding[html.Div] = {
     <div class="content-section">
+
+      <!-- Title -->
       <h5>Layer Definitions</h5>
       <div class="divider"></div>
 
       <div id="layer-definitions">
+        <!-- Input layer -->
         <div class="layer-definition row" id="input-layer">
           <span class="col s3">Input Layer</span>
           <span class="col s4">{paramsEnabled.bind.map(p => paramSize(p.value)).sum.toString} neurons</span>
@@ -133,8 +195,10 @@ abstract class NetworkPresenter[S,A,P](
           </div>
         </div>
 
+        <!-- Hidden layers -->
         { for (layer <- layerDefinitions) yield layer.handler.bind }
 
+        <!-- Input layer -->
         <div class="layer-definition row" id="output-layer">
           <span class="col s3">Output Layer</span>
           <span class="col s4">{s"$outputSize neurons"}</span>
@@ -146,6 +210,7 @@ abstract class NetworkPresenter[S,A,P](
         </div>
       </div>
 
+      <!-- Button for adding a new layer -->
       <div id="create-layer">
         <a onclick={_:Event => createLayer()}
            class={"btn light-green" + (if (layerDefinitions.length.bind >= maxHiddenLayers) " disabled" else "")}>
@@ -155,17 +220,29 @@ abstract class NetworkPresenter[S,A,P](
     </div>
   }
 
+  /**
+    * Build the neural network from the layers given
+    * @return
+    */
   protected final def buildNetwork(): NeuralNetwork = {
 
-    val inputSizes = for ((param, enabled) <- paramBindings.get; if enabled) yield paramSize(param.value)
+    // Extract all the enabled input sizes
+    val inputSizes =
+      for {
+        (param, enabled) <- paramBindings.get
+        if enabled
+      } yield paramSize(param.value)
+
+    // Get the total
     val inputSize = inputSizes.sum
 
+    // Extract hidden layer properties
     val hiddenLayerSizes = layerDefinitions.get.map(_.size.get).toArray
     val hiddenLayerActivations = layerDefinitions.get.map(_.activation.get).toArray
 
+    // Combine input, hidden and output layers
     val layerSizes = Array(inputSize) ++ hiddenLayerSizes ++ Array(outputSize)
     val layerActivations = hiddenLayerActivations ++ Array(outputActivation)
-
     new NeuralNetwork(layerSizes, layerActivations, enableSoftMax)
   }
 
@@ -198,12 +275,24 @@ abstract class NetworkPresenter[S,A,P](
     paramSelector.load(keyMap("params"))
   }
 
+  /* Abstract member functions which the underlying presenter must implement
+  * to extract the network, and get/set the optimiser from the agent
+  * */
+
   protected def getNetwork(): NeuralNetwork
 
   protected def getOptimiser(): NetworkOptimizer
 
   protected def setOptimiser(optimiser: NetworkOptimizer): Unit
 
+  /**
+    * Represents a single parameter for the network optimiser
+    *
+    * @param name The display name of the optimiser
+    * @param extractor Extracting the optimiser's value
+    * @param min Minimum bound on value
+    * @param max Maximum bound on value
+    */
   case class OptimiserParam(
     name: String,
     extractor: NetworkOptimizer => Double,
@@ -211,6 +300,15 @@ abstract class NetworkPresenter[S,A,P](
     max: Double = Double.PositiveInfinity,
   )
 
+  /**
+    * User interface for an optimiser
+    *
+    * @param name The optimiser name
+    * @param params The parameters which it requires
+    * @param paramConstructor A constructor which builds the optimiser from a set of parameters
+    * @param default The default optimiser of this type
+    * @param isInstance A type hack (type erasure sucks) for Java compatibility
+    */
   case class OptimiserBuilder(
     name: String,
     params: List[OptimiserParam],
@@ -219,12 +317,18 @@ abstract class NetworkPresenter[S,A,P](
     isInstance: NetworkOptimizer => Boolean
   ) {
 
+    // Whether the properties of this optimiser have been changed
     val dirty: Var[Boolean] = Var(false)
 
+    // Various state trackers to check for changes and keep track of which parameters have changed
     private val initialValues: Array[Double] = params.map(_.extractor(default)).toArray
     private val paramDirty = new Array[Boolean](initialValues.size)
     private val paramValues: List[Var[Double]] = initialValues.map(Var(_)).toList
 
+    /**
+      * Reload parameters from this optimiser
+      * @param opt
+      */
     def selectOptimiser(opt: NetworkOptimizer): Unit = {
       if (isInstance(opt)) {
         for (i <- params.indices) {
@@ -238,10 +342,19 @@ abstract class NetworkPresenter[S,A,P](
       }
     }
 
+    /**
+      * Build optimiser from parametrs
+      * @return
+      */
     def construct(): NetworkOptimizer = {
       paramConstructor(paramValues.map(_.get).toArray)
     }
 
+    /**
+      * Handler a single parameter change (param at idx changed to value)
+      * @param idx
+      * @param value
+      */
     private def paramUpdated(idx: Int, value: Double): Unit = {
       paramDirty(idx) = value != initialValues(idx)
       dirty := paramDirty.reduce(_ || _)
@@ -262,8 +375,17 @@ abstract class NetworkPresenter[S,A,P](
     }
   }
 
+  /**
+    * A fully customisable SVG visualisation of a neural network
+    * showing layers and connections
+    *
+    * @param network
+    * @return
+    */
   @dom
   private def networkVisualisation(network: NeuralNetwork): Binding[html.Div] = {
+
+    /* Various properties and parameters to tweak the look of it*/
 
     val maxWidth = 800
 
@@ -280,8 +402,21 @@ abstract class NetworkPresenter[S,A,P](
     val nodeSpacing = 10
     val maxNodes = 10
 
+    /**
+      * The number of neurons that will be drawn for this layer
+      * @param layer
+      * @return
+      */
     def layerSize(layer: Int): Int = Math.min(maxNodes, network.layerSizes(layer))
 
+    /**
+      * Given a node in a particular layer, compute the (x, y) coordinates
+      * of it's centre
+      *
+      * @param layer
+      * @param idx
+      * @return
+      */
     def getNodePosition(layer: Int, idx: Int): (Int, Int) = {
 
       val n = layerSize(layer)
@@ -301,47 +436,49 @@ abstract class NetworkPresenter[S,A,P](
 
         <!-- Network Nodes -->
         {
-        for {
-          layer <- Constants(0 until network.numLayers :_*)
-          idx <- Constants(0 until layerSize(layer) :_*)
-        } yield {
-          val (x,y) = getNodePosition(layer, idx)
+          for {
+            layer <- Constants(0 until network.numLayers :_*)
+            idx <- Constants(0 until layerSize(layer) :_*)
+          } yield {
+            val (x,y) = getNodePosition(layer, idx)
             <circle
-            data:cx={x.toString}
-            data:cy={y.toString}
-            data:fill="black"
-            data:r={nodeRadius.toString}
+              data:cx={x.toString}
+              data:cy={y.toString}
+              data:fill="black"
+              data:r={nodeRadius.toString}
             />
-        }
+          }
         }
 
         <!-- Network Connections -->
         {
-        for {
-          layerA <- Constants(0 until (network.numLayers - 1): _*)
-          layerB = layerA + 1
-          idxA <- Constants(0 until layerSize(layerA): _*)
-          idxB <- Constants(0 until layerSize(layerB): _*)
-        } yield {
+          for {
+            layerA <- Constants(0 until (network.numLayers - 1): _*)
+            layerB = layerA + 1
+            idxA <- Constants(0 until layerSize(layerA): _*)
+            idxB <- Constants(0 until layerSize(layerB): _*)
+          } yield {
 
-          val (x1, y1) = getNodePosition(layerA, idxA)
-          val (x2, y2) = getNodePosition(layerB, idxB)
+            val (x1, y1) = getNodePosition(layerA, idxA)
+            val (x2, y2) = getNodePosition(layerB, idxB)
 
             <line
-            data:x1={x1.toString} data:x2={x2.toString}
-            data:y1={y1.toString} data:y2={y2.toString}
-            data:stroke-width="2" data:stroke="rgba(0,0,0,0.5)"/>
-        }
+              data:x1={x1.toString} data:x2={x2.toString}
+              data:y1={y1.toString} data:y2={y2.toString}
+              data:stroke-width="2" data:stroke="rgba(0,0,0,0.5)"
+              />
+          }
         }
 
         <!-- Network Labels -->
-        {
         {
           for (layer <- Constants(0 until network.numLayers :_*)) yield {
 
             val x = layer * layerWidth + layerWidth / 2
 
             <g data:text-anchor="middle" data:style="font-size:12px; font-weight:300;">
+
+              <!-- Layer type -->
               <text data:x={x.toString} data:y="15" data:style="font-size:14px; font-weight:400;">
                 {
                 if (layer == 0) "Input Layer"
@@ -350,10 +487,12 @@ abstract class NetworkPresenter[S,A,P](
                 }
               </text>
 
+              <!-- Layer size -->
               <text data:x={x.toString} data:y="40">
                 { network.layerSizes(layer) + " neurons" }
               </text>
 
+              <!--  Activation function -->
               <text data:x={x.toString} data:y="60">
                 {
                   if (layer == 0) ""
@@ -368,11 +507,14 @@ abstract class NetworkPresenter[S,A,P](
             </g>
           }
         }
-        }
       </svg>
     </div>
   }
 
+  /**
+    * Definitions for each optimiser (SGD, Adam, RMSProp) for how to build
+    * its parameters from the optimiser itself
+    */
   lazy val optimisers = Array(
     OptimiserBuilder(
       "Stochastic Gradient Descent",
@@ -385,6 +527,7 @@ abstract class NetworkPresenter[S,A,P](
       new SGDMomentum(getNetwork()),
       { _.isInstanceOf[SGDMomentum] }
     ),
+
     OptimiserBuilder(
       "ADAM",
       List(
@@ -397,6 +540,7 @@ abstract class NetworkPresenter[S,A,P](
       new Adam(getNetwork()),
       { _.isInstanceOf[Adam] }
     ),
+
     OptimiserBuilder(
       "RMSProp",
       List(
@@ -410,6 +554,9 @@ abstract class NetworkPresenter[S,A,P](
     )
   )
 
+  /**
+    * The view representing all the neural network training functionality
+    */
   @dom
   protected final lazy val networkViewer: Binding[html.Div] = {
     val optimiserSelect = new SelectHandler("Optimiser", optimisers.map(_.name), Constant(false))
@@ -422,10 +569,14 @@ abstract class NetworkPresenter[S,A,P](
 
     val currentOptimiserBinding = Var(getOptimiser())
 
+    /**
+      * Either the optimiser type has changed, or the optimiser parameters have changed ( save is needed)
+      */
     val dirty = Binding {
       val currentOptimiser = currentOptimiserBinding.bind
       val optIdx = optimisers.indexWhere(_.isInstance(currentOptimiser))
       val selectedOptimiser = optimisers(optimiserSelect.selectedIndex.bind)
+
       optIdx != optimiserSelect.selectedIndex.bind || selectedOptimiser.dirty.bind
     }
 
@@ -458,6 +609,8 @@ abstract class NetworkPresenter[S,A,P](
         elem.innerHTML += "<br/>"
       }
     }
+
+    /* Initialisation for various components */
 
     initScript("optimiser-btns") { () =>
       js.Dynamic.global.$(".tooltipped").tooltip()
