@@ -28,6 +28,9 @@ class QNetworkAgent(
 
   private val rand = new Random(seed)
 
+  /** Run the Fisher-Yates to generate random indices
+    * for selecting k elements from n elements
+    */
   private def sampleIndices(n: Int, k: Int): Array[Int] = {
     val arr = new Array[Int](k)
 
@@ -40,6 +43,7 @@ class QNetworkAgent(
     arr
   }
 
+  /** Select k uniformly random elements from an array of length n */
   private def sampleItems[T : ClassTag](
     xs: Array[T],
     n: Int, k: Int): Array[T] = {
@@ -54,19 +58,23 @@ class QNetworkAgent(
 
     if (!first && isTrainEnabled()) {
 
+      // Store the replay in the circular buffer
       replayBuffer(stepCount % replayBufferSize) =
         (prevState, action, reward, if (last) null else newState)
       stepCount += 1
 
+      // If the buffer is full and the step interval is reached
       if (stepCount >= miniBatchSize && stepCount % updateStepInterval == 0) {
 
+        // Randomly sample replays
         val sampleSize = Math.min(stepCount, replayBufferSize)
         val sample = sampleItems(replayBuffer, sampleSize, miniBatchSize)
 
+        // Extract inputs and current returns
         val inputs = Matrix.rows(sample.map(_._1))
-
         val returns = network.forwardProp(inputs)
 
+        // Work out expected rewards via Q-learning algorithm
         for (i <- 0 until miniBatchSize) {
           val (_, a, r, n) = sample(i)
           returns(i, a) = r
@@ -76,16 +84,20 @@ class QNetworkAgent(
           }
         }
 
+        // Step the optimiser to reduce error
         optimiser.step(inputs, returns)
       }
     }
 
+    // Check for exploration rate
     if (rand.nextDouble() < explorationEpsilon)
-      (rand.nextDouble() * numActions).toInt
+      (rand.nextDouble() * numActions).toInt // random action
     else
-      maxAction(newState)._1
+      maxAction(newState)._1 // greedy action
   }
 
+
+  // Extract the maximum action (with its value) from a state
   private def maxAction(state: Array[Double]): (Int, Double) = {
     val result = network.forwardProp(state)
 

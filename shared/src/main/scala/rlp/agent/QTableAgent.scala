@@ -20,24 +20,28 @@ class QTableAgent(
     newState: Int, first: Boolean, last: Boolean
   ): Int = {
 
+    // Extract the best action and reward from this state
     val (greedyAction, maxReward) = maximumAction(newState)
 
-    val newAction =
-      if (math.random() < explorationEpsilon)
-        (math.random() * numActions).toInt
-      else greedyAction
-
     if (!first && isTrainEnabled()) {
-
+      
+      // Apply Q-learning step algorithm
       val expectedReward = reward + discountFactor * (if (last) 0 else maxReward)
       val tdError = expectedReward - this(prevState, action)
 
       this(prevState, action) += learningRate * tdError
     }
 
-    newAction
+    // Pick a random action based on exploration rate,
+    // or pick the best action
+    if (math.random() < explorationEpsilon)
+      (math.random() * numActions).toInt
+    else greedyAction
   }
 
+  /**
+    * Extract the maximum action and reward from the state
+    */
   private def maximumAction(state: Int): (Int, Double) = {
     var maxAction = 0
     var maxActionValue = Double.NegativeInfinity
