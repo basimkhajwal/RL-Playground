@@ -7,6 +7,9 @@ import rlp.ai.optimizers.Adam
 import rlp.environment.{NaivePongAgent, Pong}
 import rlp.util.Point2D
 
+/**
+  * Pong integration test
+  */
 object PongTest {
 
   import rlp.environment.Pong._

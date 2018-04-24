@@ -5,6 +5,10 @@ import rlp.ai.ActivationFunction.Linear
 import rlp.ai.NeuralNetwork
 import rlp.ai.optimizers.Adam
 
+/**
+  * Integration test to see if agents can learn
+  * a Markov decision process
+  */
 object MDPTest {
 
   val transitions: Array[Array[Int]] = Array(

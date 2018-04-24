@@ -10,6 +10,9 @@ import rlp.environment.MountainCar
 
 import scalax.chart.api._
 
+/**
+  * Integration test involving the mountain car agent
+  */
 object MountainCarTest {
 
   import MountainCar._
