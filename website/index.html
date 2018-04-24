@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+
+<html>
+    <head>
+        <title>RL-Playground</title>
+        <link href="http://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet" />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.100.2/css/materialize.min.css" media="screen,projection"/>
+        <link rel="stylesheet" media="screen" href="main.css" />
+
+        <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    </head>
+
+    <body>
+
+        <div id="content-wrapper" class="grey lighten-5">
+            <div id="header" class="navbar-fixed">
+                <nav class="teal darken-2">
+                    <div class="nav-wrapper page-container">
+                        <a href="index.html" class="white-text brand-logo">RL-Playground</a>
+                    </div>
+                </nav>
+            </div>
+
+            <div id="loader" class="preloader-wrapper active">
+                <div class="spinner-layer spinner-red-only">
+                    <div class="circle-clipper left">
+                        <div class="circle"></div>
+                    </div>
+                    <div class="gap-patch">
+                        <div class="circle"></div>
+                    </div>
+                    <div class="circle-clipper right">
+                        <div class="circle"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="clientContainer"></div>
+        </div>
+
+        <footer class="page-footer deep-orange lighten-2">
+            <div class="page-container">
+                <div class="row">
+                    <div class="col l6 s12">
+                        <h5 class="white-text">RL-Playground</h5>
+                        <p class="grey-text text-lighten-4">
+                            A reinforcement learning playground made for my A-level computing coursework.
+                            Made using Scala.JS and Binding.scala.
+                        </p>
+                    </div>
+                    <div class="col l4 offset-l2 s12">
+                        <h5 class="white-text">Links</h5>
+                        <ul>
+                            <li><a class="grey-text text-lighten-3" href="#">Home</a></li>
+                            <li>
+                                <iframe src="https://ghbtns.com/github-btn.html?user=basimkhajwal&repo=RL-Playground&type=star&count=true"
+                                        frameborder="0" scrolling="0" width="160px" height="30px"></iframe>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            <div class="footer-copyright">
+                <div class="page-container">© 2017 Basim Khajwal</div>
+            </div>
+        </footer>
+
+        <script src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.100.2/js/materialize.min.js"></script>
+        <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+        <script src="js/FileSaver.min.js"></script>
+        <script src="client-opt.js"></script>
+    </body>
+
+</html>

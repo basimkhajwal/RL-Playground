@@ -1,0 +1,279 @@
+.page-container {
+    margin: 0 auto;
+    max-width: 90%;
+}
+
+.title {
+    font-size: 2.1rem;
+}
+
+#add-agent-btn, #import-agent-btn {
+    margin-top: 10px;
+    margin-left: 10px;
+}
+
+#modal-btns {
+    margin: 11px 0 0;
+    align-items: flex-start;
+}
+
+#training-btns-container {
+    margin: 0 auto;
+}
+
+#buttons-container {
+    text-align: center;
+}
+
+#buttons-container > div {
+    display: block;
+    margin: 0 auto;
+}
+
+#canvas-container canvas {
+    display: block;
+    margin: 0 auto;
+}
+
+#control-section {
+    padding: 30px;
+}
+
+.distribute-container {
+    padding: 20px 10%;
+    display: flex;
+    justify-content: space-evenly;
+}
+
+.distribute-item {
+    display: inline-block;
+    margin: 0 auto;
+}
+
+.vertical-stretch-row {
+    display: flex;
+    align-items: stretch;
+}
+
+#agent-select {
+    min-height: 400px;
+}
+
+#agent-select > .card-content{
+    padding: 0;
+}
+
+#agent-training-header {
+    padding: 24px;
+    margin-bottom: 0px;
+}
+
+#agent-info {
+    padding-top: 30px;
+}
+
+#episode-label {
+    font-weight: 300;
+}
+
+#training-speed {
+    display: inline-block;
+    width: 40px;
+    margin-left: -20px;
+    padding-left: 20px;
+    font-weight: 300;
+    transform: translateY(10%);
+}
+
+#game-row:focus {
+    outline: none;
+}
+
+.layer-definition {
+    border: 1px darkgray solid;
+    border-radius: 5px;
+    padding: 24px;
+}
+
+.layer-definition span {
+    font-size: 18px;
+    font-weight: 300;
+}
+
+#create-layer {
+    text-align: center;
+}
+
+#create-layer a {
+    display: inline-block;
+}
+
+#agent-comparison .card-title {
+    font-size: 24px;
+    line-height: 32px;
+    font-weight: 300;
+    padding: 30px 0;
+}
+
+#graph-div {
+    width: 100%;
+}
+
+.optimiser-input {
+    display: inline-block;
+}
+
+.optimiser-input-container {
+    display: flex;
+    align-items: stretch;
+    justify-content: space-between;
+}
+
+.network-visualisation svg {
+    display: block;
+    margin: 20px auto;
+}
+
+#builder-modal {
+    width: 90%;
+    max-width: 1200px;
+}
+
+.tab-select {
+    text-align: center;
+    margin: 15px 0;
+    background-color: inherit;
+}
+
+.content-section {
+    width: 85%;
+    margin: 0 auto;
+}
+
+.content-section h5 {
+    color: #111;
+    font-weight: 300;
+    margin-top: 35px;
+    margin-bottom: 0;
+}
+
+.content-section .divider {
+    margin-top: 15px;
+    margin-bottom: 30px;
+}
+
+/* CSS trick */
+@keyframes selectInserted {
+    from { opacity: 0.9999; }
+    to { opacity: 1; }
+}
+
+select {
+    animation-duration: 0.001s;
+    animation-name: selectInserted;
+}
+
+body {
+    display: flex;
+    min-height: 100vh;
+    flex-direction: column;
+}
+
+#content-wrapper {
+    flex: 1 0 auto;
+    display: flex;
+    flex-direction: column;
+}
+
+.form-container {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+}
+
+.form-container .card {
+    padding-left: 50px;
+    padding-right: 50px;
+    padding-top: 20px;
+    width: 80%;
+    max-width: 1000px;
+    margin: 50px auto;
+    flex-grow: 1;
+}
+
+.form-container h4 {
+    margin-bottom: 20px;
+}
+
+.form-container button {
+    margin-top: 50px;
+}
+
+.preloader-wrapper {
+    position: absolute;
+    left: 50%;
+    top: 30%;
+}
+
+#optimiser-btns {
+    margin-top: 22px;
+}
+
+#optimiser-btns .btn-floating {
+    margin-left: 5px;
+}
+
+#agent-option-btns {
+    margin-top: 10px;
+}
+
+#agent-option-btns .btn-floating {
+    margin-left: 10px;
+}
+
+#import-modal form {
+    margin: 80px 50px;
+}
+
+#import-modal .modal-footer, #leaderboard-modal .modal-footer {
+    margin-bottom: 20px;
+}
+
+#import-modal .modal-footer .btn, #leaderboard-modal .modal-footer .btn {
+    margin: 0 auto;
+}
+
+#leaderboard-modal .progress {
+    width: 70%;
+    margin-left: 15%;
+    margin-top: 25px;
+}
+
+.description .flow-text {
+    font-size: 20px;
+}
+
+.description-item {
+    margin-bottom: 5px;
+}
+
+.description-item h6 {
+    font-size: 18px;
+    font-weight: 300;
+}
+
+.description-item strong {
+    font-weight: 400!important;
+}
+
+@media (min-width: 1300px) {
+
+    .page-container {
+        padding-left: 5%;
+        padding-right: 5%;
+        max-width: 1600px;
+    }
+}
+
+
