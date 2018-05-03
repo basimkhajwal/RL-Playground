@@ -92,11 +92,13 @@ object NumericInputHandler {
   def wrapDouble(intVar: Var[Int]): Var[Double] = {
     val doubleVar = Var[Double](intVar.get)
 
+    // Forward binding
     Binding {
       val intVal = intVar.bind
       doubleVar := intVal
     } watch()
 
+    // Backward binding
     Binding {
       val doubleVal = doubleVar.bind
       intVar := doubleVal.toInt

@@ -7,6 +7,12 @@ import rlp._
 
 import scala.scalajs.js
 
+/**
+  * A select handler with the underlying data-type
+  * of materialize tabs
+  *
+  * @param items
+  */
 class TabSelectHandler(val items: Seq[String]) {
 
   private val selectedIdx: Var[Int] = Var(0)
@@ -15,6 +21,10 @@ class TabSelectHandler(val items: Seq[String]) {
 
   def selectedIndex: Binding[Int] = selectedIdx
 
+  /**
+    * Callback from materialize.js when a new tab is selected
+    * @param input The JS object (dynamic type cast needed to extract data)
+    */
   private def tabChanged(input: js.Dynamic): Unit = {
     val id = input.asInstanceOf[js.Array[js.Dynamic]](0).id.asInstanceOf[String]
     selectedIdx := tabIDs.indexOf(id)
@@ -25,6 +35,7 @@ class TabSelectHandler(val items: Seq[String]) {
 
     initScript(id) { () =>
 
+      // Register the callback and the options
       val callback: js.Function1[js.Dynamic,Unit] = { x => tabChanged(x) }
       val tabOptions = js.Dynamic.literal("onShow" -> callback)
 
@@ -32,6 +43,8 @@ class TabSelectHandler(val items: Seq[String]) {
     }
 
     <div>
+
+      <!-- Tabs object itself -->
       <ul id={id} class="tabs tab-select">
         {
           for ((item, tabID) <- Constants(items.zip(tabIDs) :_*)) yield {

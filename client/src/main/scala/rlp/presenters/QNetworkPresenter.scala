@@ -16,7 +16,7 @@ import upickle.Js
   *
   * @param environment The environment for this agent presenter
   * @param numActions
-  * @param actionMap
+  * @param actionMap Map indexes (0 .. numActions-1) to an action type
   * @param params The parameters for the agent
   * @tparam S The environment state type
   * @tparam A The action type
