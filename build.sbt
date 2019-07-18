@@ -1,20 +1,3 @@
-lazy val server = (project in file("server")).settings(commonSettings).settings(
-  scalaJSProjects := Seq(client),
-  pipelineStages in Assets := Seq(scalaJSDev),
-  pipelineStages := Seq(digest, gzip),
-  // triggers scalaJSPipeline when using compile or continuous compilation
-  compile in Compile := ((compile in Compile) dependsOn scalaJSDev).value,
-  libraryDependencies ++= Seq(
-    "com.vmunier" %% "scalajs-scripts" % "1.1.1",
-    guice,
-    "mysql" % "mysql-connector-java" % "5.1.24",
-    "com.typesafe.play" %% "play-slick" % "3.0.0"
-  ),
-  // Compile the project before generating Eclipse files, so that generated .scala or .class files for views and routes are present
-  EclipseKeys.preTasks := Seq(compile in Compile)
-).enablePlugins(PlayScala).
-  dependsOn(sharedJvm)
-
 lazy val client = (project in file("client")).settings(commonSettings).settings(
   scalaJSUseMainModuleInitializer := true,
   libraryDependencies ++= Seq(
@@ -23,7 +6,7 @@ lazy val client = (project in file("client")).settings(commonSettings).settings(
     "com.lihaoyi" %%% "upickle" % "0.5.1"
   ),
   addCompilerPlugin("org.scalamacros" % "paradise" % "2.1.0" cross CrossVersion.full),
-).enablePlugins(ScalaJSPlugin, ScalaJSWeb).
+).enablePlugins(ScalaJSPlugin).
   dependsOn(sharedJs)
 
 lazy val shared = (crossProject.crossType(CrossType.Pure) in file("shared")).settings(commonSettings).settings(
@@ -44,5 +27,5 @@ lazy val commonSettings = Seq(
   organization := "basimkhajwal"
 )
 
-// loads the server project at sbt startup
-onLoad in Global := (onLoad in Global).value andThen {s: State => "project server" :: s}
+// loads the client project at sbt startup
+onLoad in Global := (onLoad in Global).value andThen {s: State => "project client" :: s}

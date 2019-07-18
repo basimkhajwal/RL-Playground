@@ -1,11 +1,15 @@
 package rlp.agent.test
 
-import rlp.agent.{MappedAgent, QNetworkAgent}
+import rlp.agent.QTableAgent.QStateSpace
+import rlp.agent.{MappedAgent, QNetworkAgent, QTableAgent}
 import rlp.ai.ActivationFunction.Linear
 import rlp.ai.NeuralNetwork
 import rlp.ai.optimizers.Adam
 import rlp.environment.{NaivePongAgent, Pong}
 import rlp.util.Point2D
+
+import scala.collection.mutable.ArrayBuffer
+import scalax.chart.module.XYChartFactories.XYLineChart
 
 /**
   * Pong integration test
@@ -21,50 +25,52 @@ object PongTest {
     agent.network.initialiseWeights()
     agent.optimiser = new Adam(agent.network, 0.001)
 
-    val mapped = new MappedAgent[Array[Double],Int,AgentState,Action](
-      agent,
-      state => Array(2 * state.ballPos.x / SCREEN_WIDTH - 1, 2 * state.ballPos.y / SCREEN_HEIGHT - 1, 2 * state.currentPaddle / SCREEN_HEIGHT - 1),
-      action => if (action == 0) UpAction else DownAction
+    //val mapped = new MappedAgent[Array[Double],Int,AgentState,Action](
+    //  agent,
+    //  state => Array(2 * state.ballPos.x / SCREEN_WIDTH - 1, 2 * state.ballPos.y / SCREEN_HEIGHT - 1, 2 * state.currentPaddle / SCREEN_HEIGHT - 1),
+    //  action => if (action == 0) UpAction else DownAction
+    //)
+
+    val (qTable, mapped) = QTableAgent.build[Pong.AgentState, Pong.Action](
+      3,
+      (action:Int) => if (action == 0) UpAction else if (action == 1) DownAction else NoAction,
+      List(
+        QStateSpace.boxed[Pong.AgentState](0, SCREEN_WIDTH, 20, _.ballPos.x),
+        QStateSpace.boxed[Pong.AgentState](0, SCREEN_HEIGHT, 20, _.ballPos.y),
+        QStateSpace.boxed[Pong.AgentState](0, SCREEN_HEIGHT, 20, _.currentPaddle)
+      )
     )
 
-    val pong = new Pong(mapped, mapped.clone())
-    val naive = new NaivePongAgent
+    val pong = new Pong(mapped, new NaivePongAgent)
 
     var totalSteps = 0
-    val logSize = 500
+    val logSize = 10000
+    val numSteps = 10000000
 
-    for (i <- 0 until 50000) {
+    qTable.explorationEpsilon = 0.5
+    qTable.learningRate = 0.2
+    val epsilonDecay = math.pow(0.01 / qTable.explorationEpsilon, 1.0 / numSteps)
+    val learningDecay = math.pow(0.07 / qTable.learningRate, 1.0 / numSteps)
+
+    val resultBuffer = ArrayBuffer[(Int,Double)]()
+
+    for (i <- 0 until numSteps) {
       var steps = 0
       while (steps < 1500 && !pong.step()) steps += 1
       pong.reset()
 
+      qTable.explorationEpsilon *= epsilonDecay
+      qTable.learningRate *= learningDecay
+
       totalSteps += steps
 
       if (i % logSize == logSize-1) {
-
-        mapped.setTrainEnabled(false)
-        agent.explorationEpsilon = 0
-
-        var correct = 0
-        for (_ <- 0 until 1000) {
-          val test = AgentState(
-            Point2D(math.random() * SCREEN_WIDTH, math.random() * SCREEN_HEIGHT),
-            Point2D.fromPolar(math.random()*2*math.Pi, 1), math.random(), math.random())
-
-          if (naive.act(test) == mapped.act(test)) correct += 1
-        }
-
-        agent.explorationEpsilon = 0.1
-        mapped.setTrainEnabled(true)
-
-        println()
-        println((i+1) + ":")
-        println(agent.network.weights(0).toString.replace("\n", " "))
-        println(s"Optimal actions: $correct / 1000")
-        println(s"Avg. episode size: ${totalSteps/(logSize * 1.0)}")
-
+        println(s"${i+1} - avg. episode size: ${totalSteps/(logSize * 1.0)}")
+        resultBuffer += ((i, totalSteps*1.0/logSize))
         totalSteps = 0
       }
     }
+
+    XYLineChart(resultBuffer).show("Episode size over time")
   }
 }

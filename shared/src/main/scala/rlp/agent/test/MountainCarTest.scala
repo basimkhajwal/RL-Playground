@@ -21,8 +21,8 @@ object MountainCarTest {
 
     val env = new MountainCar(agent)
 
-    for (e <- 0 until 90) yield {
-      println(e)
+    for (e <- 0 until 10000) yield {
+      //println(e)
       var length = 0
       while (!env.step() && length <= 600) {
         length += 1
@@ -37,12 +37,13 @@ object MountainCarTest {
 
     val (qTable, agentA) = QTableAgent.build[State, Action](3, (x:Int) => if (x == 0) LeftAction else if (x == 1) NoAction else RightAction,
       QStateSpace.combination(
-        QStateSpace.boxed[State](-0.07, 0.07, 50, _.v),
-        QStateSpace.boxed[State](-1.2, 0.6, 50, _.x),
+        QStateSpace.boxed[State](-0.07, 0.07, 100, _.v),
+        QStateSpace.boxed[State](-1.2, 0.6, 100, _.x),
       )
     )
 
-    qTable.explorationEpsilon = 0.05
+    qTable.explorationEpsilon = 1
+    qTable.learningRate = 0.5
 
     val network = new NeuralNetwork(Array(2, 5, 3), Array(ReLU, Linear))
     val qNetwork = new QNetworkAgent(network, 100)
@@ -62,8 +63,34 @@ object MountainCarTest {
       )
     )
 
-    XYLineChart(runAgent(agentA)).show("Q Table")
-    XYLineChart(runAgent(agentB)).show("Q Network")
+    val numSteps = 20000
+
+    val targetEpsilon = 0.01
+    val targetLearningRate = 0.1
+
+    val epsilonDecay = Math.pow(targetEpsilon / qTable.explorationEpsilon, 1.0 / numSteps)
+    val learningDecay = Math.pow(targetLearningRate / qTable.learningRate, 1.0 / numSteps)
+
+    val env = new MountainCar(agentA)
+    val data =
+      for (e <- 0 until numSteps) yield {
+
+        if (e % 100 == 0) println(e)
+
+        var length = 0
+        while (!env.step() && length <= 1000) {
+          length += 1
+        }
+        env.reset()
+
+        qTable.explorationEpsilon *= epsilonDecay
+        qTable.learningRate *= learningDecay
+
+        (e, length)
+      }
+
+    XYLineChart(data).show("Q Table")
+   // XYLineChart(runAgent(agentB)).show("Q Network")
 
     /*
     val env = new MountainCar(agentB)
