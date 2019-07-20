@@ -50,21 +50,6 @@ class MountainCarPage extends GamePage[MountainCar.State, MountainCar.MountainCa
     )
   )
 
-  private val gameEnvironment: MountainCar = new MountainCar(new UserAgent())
-
-  @dom
-  override lazy val gameOptions: Binding[Div] = {
-    <div>
-      <br/>
-      <br/>
-      <h5 class="center-align">Controls</h5>
-      <br/>
-      <h6 class="center-align"><strong>Left arrow / A</strong> - Apply engine left</h6>
-      <h6 class="center-align"><strong>Right arrow / D</strong> - Apply engine right</h6>
-      <br/>
-    </div>
-  }
-
   override protected def createEnvironment(model: AgentPresenter[MountainCarAgent]): Environment[State] = {
     new MountainCar(model.agent)
   }
@@ -82,15 +67,7 @@ class MountainCarPage extends GamePage[MountainCar.State, MountainCar.MountainCa
     ctx.fillStyle = "white"
     ctx.fillRect(MIN_X, MIN_Y, MAX_X, MAX_Y)
 
-    if (!renderTraining.get) {
-
-      if (gameEnvironment.step()) {
-        gameEnvironment.reset()
-      }
-      renderState(ctx, gameEnvironment.getState())
-
-    } else if (trainingEnvironment != null) {
-
+    if (trainingEnvironment != null) {
       renderState(ctx, trainingEnvironment.getState())
     }
 
@@ -156,22 +133,5 @@ class MountainCarPage extends GamePage[MountainCar.State, MountainCar.MountainCa
     }
 
     totalSteps / testRuns
-  }
-
-  /**
-    * User mountain car agent that moves left or right depending
-    * on which key is pressed
-    */
-  class UserAgent extends MountainCarAgent {
-
-    override def act(state: State): Action = {
-      if (keyboardHandler.isKeyDown("ArrowLeft")) {
-        LeftAction
-      } else if (keyboardHandler.isKeyDown("ArrowRight")) {
-        RightAction
-      } else {
-        NoAction
-      }
-    }
   }
 }

@@ -42,8 +42,6 @@ abstract class GamePage[S, A] extends Page {
   // The number of games between each performance entry
   protected val performanceEntryGap: Int = 100
 
-  protected val renderTraining: Var[Boolean] = Var(true)
-
   protected val presenters: Vars[AgentPresenter[A]] = Vars()
   private var presenter: AgentPresenter[A] = _
 
@@ -138,10 +136,6 @@ abstract class GamePage[S, A] extends Page {
     if (trainView.isTraining.get) trainView.pauseTraining()
   }
 
-  protected def toggleRenderTraining(): Unit = {
-    renderTraining := !renderTraining.get
-  }
-
   // Rescale the canvas element when the page is resized
   protected def pageResized(): Unit = {
     val container = getElem[Div]("canvas-container")
@@ -215,12 +209,7 @@ abstract class GamePage[S, A] extends Page {
       <div class="col s12">
         <div class="card">
           <div class="row vertical-stretch-row" id="game-row">
-            <div class="col s8">
-              { gameContainer.bind }
-            </div>
-            <div class="col s4 teal lighten-5">
-              { controlsSection.bind }
-            </div>
+            { gameContainer.bind }
           </div>
         </div>
       </div>
@@ -252,40 +241,6 @@ abstract class GamePage[S, A] extends Page {
         ""
       }
     </div>
-  }
-
-  /**
-    * The default control section with a render
-    * toggle and a title
-    */
-  @dom
-  protected lazy val controlsSection: Binding[Div] = {
-    <div id="control-section">
-      <div class="center-align">
-        <span class="card-title">Game Options</span>
-      </div>
-      <br />
-      <br />
-
-      <div class="switch center-align">
-        <label>
-          Render Training
-          <input type="checkbox" checked={!renderTraining.bind} onchange={ _:Event => toggleRenderTraining() } />
-          <span class="lever"></span>
-          Play Game
-        </label>
-      </div>
-
-      { gameOptions.bind }
-    </div>
-  }
-
-  /**
-    * Sub-section for more custom controls for each page
-    */
-  @dom
-  protected lazy val gameOptions: Binding[Div] = {
-    <div>Empty!</div>
   }
 
   /**

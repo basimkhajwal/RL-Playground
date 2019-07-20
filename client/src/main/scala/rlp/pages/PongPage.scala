@@ -1,17 +1,12 @@
 package rlp.pages
 
-import com.thoughtworks.binding.Binding.{BindingSeq, Constants}
-import rlp._
 import rlp.environment.{NaivePongAgent, Pong}
-import com.thoughtworks.binding.{Binding, dom}
 import org.scalajs.dom.CanvasRenderingContext2D
-import org.scalajs.dom.html.Div
 import rlp.agent.PolicyNetworkAgent.PolicyNetworkSpace
 import rlp.agent.QNetworkAgent.QNetworkSpace
 import rlp.agent.QTableAgent.QStateSpace
 import rlp.environment.Pong.PongAgent
 import rlp.presenters._
-import rlp.ui.SelectHandler
 
 /**
   * Game page for the pong environment
@@ -30,21 +25,6 @@ class PongPage extends GamePage[Pong.State, PongAgent] {
 
   override val actionDescription: String = "Paddle Up, Paddle Down"
   override val rewardDescription: String = "+1 for winning episode, -1 for losing episode"
-
-  private var gameEnvironment: Pong = _
-
-  // Binding to the agents that the user can select from
-  private val agentNames: BindingSeq[String] = {
-    val defaultNames = Constants("Rule-based computer", "Player (W/S)", "Player (Up/Down)")
-    for {
-      seq <- Constants(defaultNames, presenters.map(_.toString))
-      x <- seq
-    } yield x
-  }
-
-  // Two select handlers, one for each agent
-  val leftAgentSelect = new SelectHandler("Player 1", agentNames, renderTraining)
-  val rightAgentSelect = new SelectHandler("Player 2", agentNames, renderTraining)
 
   override val performanceEntryGap: Int = 200
 
@@ -114,36 +94,11 @@ class PongPage extends GamePage[Pong.State, PongAgent] {
     new Pong(model.agent, model.agent.clone())
   }
 
-  /**
-    * Create an agent based on the index chosen by the select
-    * @param idx
-    * @return
-    */
-  private def createAgent(idx: Int): PongAgent = idx match {
-    case 0 => new NaivePongAgent
-    case 1 => new PongUserAgent("w", "s")
-    case 2 => new PongUserAgent("ArrowUp", "ArrowDown")
-    case _ => presenters.get(idx - 3).agent.clone()
-  }
-
-  private def createGameEnvironment(leftAgentIdx: Int, rightAgentIdx: Int): Unit = {
-    val leftAgent = createAgent(leftAgentIdx)
-    val rightAgent = createAgent(rightAgentIdx)
-
-    gameEnvironment = new Pong(leftAgent, rightAgent)
-  }
-
   override protected def render(ctx: CanvasRenderingContext2D): Unit = {
-
-    if (renderTraining.get) {
-      if (trainingEnvironment == null) {
-        ctx.clearRect(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT)
-      } else {
-        renderState(ctx, trainingEnvironment.getState())
-      }
+    if (trainingEnvironment == null) {
+      ctx.clearRect(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT)
     } else {
-      if (gameEnvironment.step()) gameEnvironment.reset()
-      renderState(ctx, gameEnvironment.getState())
+      renderState(ctx, trainingEnvironment.getState())
     }
   }
 
@@ -171,39 +126,4 @@ class PongPage extends GamePage[Pong.State, PongAgent] {
 
     ctx.restore()
   }
-
-  @dom
-  override lazy val gameOptions: Binding[Div] = {
-    <div>
-      <br/>
-      { leftAgentSelect.handler.bind }
-      <br/>
-      { rightAgentSelect.handler.bind }
-
-      {
-        createGameEnvironment(leftAgentSelect.selectedIndex.bind, rightAgentSelect.selectedIndex.bind)
-        ""
-      }
-    </div>
-  }
-
-  /**
-    * A user agent that moves up/down
-    * depending on the keys pressed
-    *
-    * @param upKey The key code of the up key
-    * @param downKey The key code of the down key
-    */
-  class PongUserAgent(val upKey: String, val downKey: String) extends PongAgent {
-
-    override def act(state: AgentState): Action = {
-      val up = keyboardHandler.isKeyDown(upKey)
-      val down = keyboardHandler.isKeyDown(downKey)
-
-      if (up && !down) UpAction
-      else if (down && !up) DownAction
-      else NoAction
-    }
-  }
-
 }

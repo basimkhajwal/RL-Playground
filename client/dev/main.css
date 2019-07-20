@@ -35,10 +35,6 @@
     margin: 0 auto;
 }
 
-#control-section {
-    padding: 30px;
-}
-
 .distribute-container {
     padding: 20px 10%;
     display: flex;
@@ -251,7 +247,7 @@ body {
 }
 
 .description .flow-text {
-    font-size: 20px;
+    font-size: 10px;
 }
 
 .description-item {

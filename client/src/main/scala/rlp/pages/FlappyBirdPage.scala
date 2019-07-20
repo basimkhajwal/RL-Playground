@@ -57,46 +57,11 @@ class FlappyBirdPage extends GamePage[FlappyBird.State, FlappyBirdAgent] {
     )
   )
 
-  private val gameEnvironment: FlappyBird = new FlappyBird(new UserAgent())
-
-  private var wasSpacePressed: Boolean = false
-
-  private var initialShow: Boolean = true
-
-  override def show(): Unit = {
-    super.show()
-
-    if (initialShow) {
-
-      // Register click listener for space key on the game
-      keyboardHandler.registerClickListener { key:String =>
-        if (key == " ") {
-          wasSpacePressed = true
-        }
-      }
-
-      initialShow = false
-    }
-  }
-
-  @dom
-  override lazy val gameOptions: Binding[Div] = {
-    <div>
-      <br/>
-      <br/>
-      <h5 class="center-align">Controls</h5>
-      <br/>
-      <h6 class="center-align"><strong>Space</strong> - launch bird</h6>
-      <br/>
-    </div>
-  }
-
   override protected def createEnvironment(model: AgentPresenter[FlappyBirdAgent]): Environment[State] = {
     new FlappyBird(model.agent)
   }
 
   override protected def render(ctx: CanvasRenderingContext2D): Unit = {
-
     ctx.save()
 
     // Transform the coordinate system
@@ -106,16 +71,7 @@ class FlappyBirdPage extends GamePage[FlappyBird.State, FlappyBirdAgent] {
     ctx.fillStyle = "lightblue"
     ctx.fillRect(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT)
 
-    // Render either the game or the training environment
-    if (!renderTraining.get) {
-
-      if (gameEnvironment.step()) {
-        gameEnvironment.reset()
-      }
-      renderState(ctx, gameEnvironment.getState())
-
-    } else if (trainingEnvironment != null) {
-
+    if (trainingEnvironment != null) {
       renderState(ctx, trainingEnvironment.getState())
     }
 
@@ -169,21 +125,5 @@ class FlappyBirdPage extends GamePage[FlappyBird.State, FlappyBirdAgent] {
     }
 
     totalDistance / testRuns
-  }
-
-  /**
-    * User agent which acts whenever the user
-    * presses space
-    */
-  class UserAgent extends FlappyBirdAgent {
-
-    override def act(state: AgentState): Action = {
-      if (wasSpacePressed) {
-        wasSpacePressed = false
-        JumpAction
-      } else {
-        NoAction
-      }
-    }
   }
 }
