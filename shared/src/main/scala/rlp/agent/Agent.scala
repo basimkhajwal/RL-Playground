@@ -1,6 +1,6 @@
 package rlp.agent
 
-import upickle.Js
+import ujson.Js
 
 /**
   * Representation of a reinforcement learning agent

@@ -1,5 +1,5 @@
 package rlp.agent
-import upickle.Js
+import ujson.Js
 
 /**
   * Utility wrapper to handle mapping

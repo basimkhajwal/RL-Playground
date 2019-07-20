@@ -2,7 +2,7 @@ package rlp.ai
 
 import rlp.math.Matrix
 import rlp.storage.Storable
-import upickle.Js
+import ujson.Js
 
 import scala.util.Random
 

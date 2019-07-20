@@ -9,7 +9,7 @@ import rlp._
 import rlp.agent.PolicyNetworkAgent.PolicyNetworkSpace
 import rlp.ai.optimizers.NetworkOptimizer
 import rlp.ui.NumericInputHandler
-import upickle.Js
+import ujson.Js
 
 /**
   * The presenter for the PolicyNetworkAgent

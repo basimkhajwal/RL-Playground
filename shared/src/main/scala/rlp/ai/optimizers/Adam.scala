@@ -3,7 +3,7 @@ package rlp.ai.optimizers
 import rlp.ai.NeuralNetwork
 import rlp.math.Matrix
 import rlp.storage.Storable
-import upickle.Js
+import ujson.Js
 
 class Adam(
   network: NeuralNetwork,

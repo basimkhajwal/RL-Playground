@@ -5,7 +5,7 @@ import com.thoughtworks.binding.Binding.Vars
 import org.scalajs.dom.{Event, html}
 import org.scalajs.dom.html.Div
 import rlp._
-import upickle.Js
+import ujson.Js
 
 /**
   * Represents a selector for parameters to an agent builder with user interface built of check boxes

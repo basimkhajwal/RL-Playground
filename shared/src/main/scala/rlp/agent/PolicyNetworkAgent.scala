@@ -3,7 +3,7 @@ package rlp.agent
 import rlp.ai.NeuralNetwork
 import rlp.ai.optimizers.{NetworkOptimizer, SGDMomentum}
 import rlp.math.{Distribution, Matrix}
-import upickle.Js
+import ujson.Js
 
 import scala.collection.mutable.ArrayBuffer
 

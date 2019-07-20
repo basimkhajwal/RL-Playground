@@ -1,6 +1,6 @@
 package rlp.agent
 import rlp.storage.Storable
-import upickle.Js
+import ujson.Js
 
 class QTableAgent(
   val numStates: Int, val numActions: Int,

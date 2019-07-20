@@ -1,6 +1,6 @@
 package rlp.storage
 
-import upickle.Js
+import ujson.Js
 
 /**
   * Storable interface for classes

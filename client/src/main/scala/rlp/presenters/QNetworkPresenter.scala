@@ -9,7 +9,7 @@ import rlp.ai.NeuralNetwork
 import rlp._
 import rlp.ai.optimizers.NetworkOptimizer
 import rlp.ui.NumericInputHandler
-import upickle.Js
+import ujson.Js
 
 /**
   * The presenter for the QNetworkAgent

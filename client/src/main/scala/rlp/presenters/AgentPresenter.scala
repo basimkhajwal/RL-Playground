@@ -5,7 +5,7 @@ import com.thoughtworks.binding.Binding.{BindingSeq, Constant, Var}
 import org.scalajs.dom.raw.HTMLElement
 import rlp._
 import rlp.utils.HistoryBuffer
-import upickle.{Js, json}
+import ujson.Js
 
 /**
   * A class which represents how a particular agent in an environment
@@ -157,9 +157,9 @@ abstract class AgentPresenter[A](val environmentName: String, val agentName: Str
     historyBuffer.historyStep := agentStore.performanceStep
 
     // Load build, build agent then load train preferences
-    loadBuild(json.read(agentStore.buildData))
+    loadBuild(ujson.read(agentStore.buildData))
     agent
-    loadAgent(json.read(agentStore.agentData))
+    loadAgent(ujson.read(agentStore.agentData))
   }
 
   /**
@@ -176,8 +176,8 @@ abstract class AgentPresenter[A](val environmentName: String, val agentName: Str
       gamesPlayed.get,
       historyBuffer.historyStep.get,
       historyBuffer.history.get,
-      json.write(storeBuild()),
-      json.write(storeAgent())
+      ujson.write(storeBuild()),
+      ujson.write(storeAgent())
     )
   }
 

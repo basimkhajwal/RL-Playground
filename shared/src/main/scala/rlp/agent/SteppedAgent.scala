@@ -1,5 +1,5 @@
 package rlp.agent
-import upickle.Js
+import ujson.Js
 
 /**
   * Convenient abstraction on top of a regular Agent

@@ -9,7 +9,7 @@ import rlp.ai.{ActivationFunction, NeuralNetwork}
 import rlp.ai.optimizers.{Adam, NetworkOptimizer, RMSProp, SGDMomentum}
 import rlp._
 import rlp.ui.{NumericInputHandler, SelectHandler}
-import upickle.Js
+import ujson.Js
 
 import scala.scalajs.js
 

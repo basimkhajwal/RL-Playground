@@ -3,7 +3,7 @@ package rlp.agent
 import rlp.ai.NeuralNetwork
 import rlp.ai.optimizers.{Adam, NetworkOptimizer, SGDMomentum}
 import rlp.math.Matrix
-import upickle.Js
+import ujson.Js
 import upickle.default._
 
 import scala.reflect.ClassTag
@@ -117,7 +117,7 @@ class QNetworkAgent(
     network.initialiseWeights()
   }
 
-  override def load(data: Js.Value): Unit = {
+  override def load(data: ujson.Value): Unit = {
     val keyMap = data.obj
 
     network.load(keyMap("network"))
@@ -129,7 +129,7 @@ class QNetworkAgent(
     updateStepInterval = keyMap("updateStepInterval").num.toInt
 
     stepCount = keyMap("stepCount").num.toInt
-    val replayData = readJs[Seq[Replay]](keyMap("replayBuffer")).toArray
+    val replayData = read[Seq[Replay]](keyMap("replayBuffer")).toArray
     for (i <- replayBuffer.indices) replayBuffer(i) = replayData(i)
   }
 

@@ -7,7 +7,7 @@ import rlp._
 import rlp.agent.{Agent, QTableAgent}
 import rlp.agent.QTableAgent.QStateSpace
 import rlp.ui.NumericInputHandler
-import upickle.Js
+import ujson.Js
 
 /**
   * The presenter for the QTableAgent

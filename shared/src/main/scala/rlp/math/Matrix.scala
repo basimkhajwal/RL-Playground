@@ -1,7 +1,7 @@
 package rlp.math
 
 import rlp.storage.Storable
-import upickle.Js
+import ujson.Js
 
 /**
   * Storing and applying matrix operations to the data supplied
