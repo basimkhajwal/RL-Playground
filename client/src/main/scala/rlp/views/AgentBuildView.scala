@@ -106,17 +106,6 @@ class AgentBuildView[A](
     js.Dynamic.global.$("#builder-modal").modal("close")
   }
 
-  private def clonePresenter(presenter: AgentPresenter[A]): Unit = {
-
-    val builderIdx = builders.indexWhere(_._1 equals presenter.agentName)
-    builderSelect.selectedIndex := builderIdx
-
-    val newPresenter = presenterCache.get.find(_.agentName equals presenter.agentName).get
-    newPresenter.cloneBuildFrom(presenter)
-
-    onNameChange()
-  }
-
   @dom
   private lazy val innerContent: Binding[Div] = {
     <div class="row">
@@ -124,25 +113,7 @@ class AgentBuildView[A](
         <span class="card-title center-align" onclick={_:Event => onClose()}>Create Agent</span>
       </div>
 
-      <div class="col s3 offset-s1">
-        <a class={"dropdown-button btn-flat" + (if (agents.bind.isEmpty) " disabled" else "")}
-           href="#"
-           data:data-activates="clone-dropdown" data:data-constrainwidth="false">
-          <i class="material-icons left">arrow_drop_down_circle</i>Clone Existing
-        </a>
-
-        <ul id="clone-dropdown" class="dropdown-content">
-          {
-            for (agent <- agents) yield {
-              <li>
-                <a href="#" onclick={_:Event => clonePresenter(agent)}>{agent.toString}</a>
-              </li>
-            }
-          }
-        </ul>
-      </div>
-
-      <div class="col s1">
+      <div class="col s1 offset-s4">
         <span class="card-title right" id="close-button" onclick={_:Event => onClose()}>
           <i class="material-icons">close</i>
         </span>
