@@ -51,7 +51,7 @@ abstract class GamePage[S, A] extends Page {
   lazy val comparisonView = new AgentComparisonView(presenters, performanceEntryGap)
 
   protected val aspectRatio: Double = 3.0/4
-  protected val targetGameWidth = 800
+  protected val targetGameWidth = 600
 
   private var canvas: Canvas = _
   private var ctx: CanvasRenderingContext2D = _
@@ -205,11 +205,15 @@ abstract class GamePage[S, A] extends Page {
         </div>
       </div>
 
-      <!-- Game preview with controls -->
       <div class="col s12">
         <div class="card">
           <div class="row vertical-stretch-row" id="game-row">
-            { gameContainer.bind }
+            <div class="col s6">
+              { gameContainer.bind }
+            </div>
+            <div class="col s6">
+              { comparisonView.content.bind }
+            </div>
           </div>
         </div>
       </div>
@@ -223,11 +227,6 @@ abstract class GamePage[S, A] extends Page {
 
           { buildView.content.bind }
         </div>
-      </div>
-
-      <!-- Graph comparison -->
-      <div class="col s12">
-        { comparisonView.content.bind }
       </div>
 
       {

@@ -79,10 +79,10 @@ class AgentComparisonView[A](
       pageResized()
     }
 
-    <div class="card" id="agent-comparison">
+    <div id="agent-comparison">
       <div class="row">
-        <span class="card-title col s12 center-align grey lighten-3">Agent Comparison</span>
-        <div class="col s10 offset-s1">
+        <span id="comparison-title" class="col s12">Agent Comparison</span>
+        <div class="col s12">
           { graph.bind }
         </div>
       </div>
