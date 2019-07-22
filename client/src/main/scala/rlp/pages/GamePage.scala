@@ -183,6 +183,7 @@ abstract class GamePage[S, A] extends Page {
     <div class="row page-container">
 
       <!-- Description of this page -->
+      <!--
       <div class="col s12">
         <div class="description card-panel">
           <span class="flow-text">{gameDescription}</span>
@@ -203,6 +204,10 @@ abstract class GamePage[S, A] extends Page {
             }
           }
         </div>
+      </div>-->
+
+      <div class="col s12">
+        { trainView.trainingHeader.bind }
       </div>
 
       <div class="col s12">

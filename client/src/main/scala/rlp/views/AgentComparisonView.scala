@@ -80,12 +80,7 @@ class AgentComparisonView[A](
     }
 
     <div id="agent-comparison">
-      <div class="row">
-        <span id="comparison-title" class="col s12">Agent Comparison</span>
-        <div class="col s12">
-          { graph.bind }
-        </div>
-      </div>
+      { graph.bind }
     </div>
   }
 }

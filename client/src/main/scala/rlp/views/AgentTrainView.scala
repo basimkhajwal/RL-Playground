@@ -96,43 +96,46 @@ class AgentTrainView[A](
   }
 
   @dom
+  lazy val trainingHeader: Binding[Div] = {
+    <div id="agent-training-header">
+      <!-- Title -->
+      <div class="col s12 center-align">
+        <span class="card-title">Agent Training</span>
+      </div>
+
+      <!-- Top area controls -->
+      <div class="row col s12 vertical-stretch-row">
+
+        <div class="col s3 offset-s1">
+          { agentSelect.handler.bind }
+        </div>
+
+        <div id="modal-btns" class="col s2 valign-wrapper">
+
+          <!-- Add new model button -->
+          <a class="btn-floating waves-effect waves-light modal-trigger tooltipped red"
+             href="#builder-modal" id="add-agent-btn" data:data-tooltip="New Agent">
+            <i class="material-icons">add</i>
+          </a>
+
+          <!-- Upload model from file button -->
+          <a class="btn-floating waves-effect waves-light modal-trigger tooltipped red lighten-2"
+             href="#import-modal" id="import-agent-btn" data:data-tooltip="Import Agent">
+            <i class="material-icons">file_upload</i>
+          </a>
+        </div>
+
+        <div class="col s3 valign-wrapper" id="training-btns-container">
+          { trainingButtons.bind }
+        </div>
+      </div>
+    </div>
+  }
+
+  @dom
   lazy val content: Binding[Div] = {
 
     <div class="row" id="agent-trainer">
-
-      <div class="row grey col s12 lighten-3" id="agent-training-header">
-        <!-- Title -->
-        <div class="col s12 center-align">
-          <span class="card-title">Agent Training</span>
-        </div>
-
-        <!-- Top area controls -->
-        <div class="row col s12 vertical-stretch-row">
-
-          <div class="col s3 offset-s1">
-            { agentSelect.handler.bind }
-          </div>
-
-          <div id="modal-btns" class="col s2 valign-wrapper">
-
-            <!-- Add new model button -->
-            <a class="btn-floating waves-effect waves-light modal-trigger tooltipped red"
-               href="#builder-modal" id="add-agent-btn" data:data-tooltip="New Agent">
-              <i class="material-icons">add</i>
-            </a>
-
-            <!-- Upload model from file button -->
-            <a class="btn-floating waves-effect waves-light modal-trigger tooltipped red lighten-2"
-               href="#import-modal" id="import-agent-btn" data:data-tooltip="Import Agent">
-              <i class="material-icons">file_upload</i>
-            </a>
-          </div>
-
-          <div class="col s3 valign-wrapper" id="training-btns-container">
-            { trainingButtons.bind }
-          </div>
-        </div>
-      </div>
 
       <!-- Generic agent edit pane, same for all agents -->
       <div class="col s12 grey lighten-4 row" id="agent-info">
