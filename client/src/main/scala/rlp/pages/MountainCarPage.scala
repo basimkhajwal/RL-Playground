@@ -56,6 +56,11 @@ class MountainCarPage extends GamePage[MountainCar.State, MountainCar.MountainCa
 
   override protected def render(ctx: CanvasRenderingContext2D): Unit = {
 
+    if (trainingEnvironment == null) {
+      renderDefault(ctx)
+      return
+    }
+
     ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height)
 
     ctx.save()
@@ -67,9 +72,7 @@ class MountainCarPage extends GamePage[MountainCar.State, MountainCar.MountainCa
     ctx.fillStyle = "white"
     ctx.fillRect(MIN_X, MIN_Y, MAX_X, MAX_Y)
 
-    if (trainingEnvironment != null) {
-      renderState(ctx, trainingEnvironment.getState())
-    }
+    renderState(ctx, trainingEnvironment.getState())
 
     ctx.restore()
   }

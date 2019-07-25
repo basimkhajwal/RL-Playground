@@ -62,6 +62,12 @@ class FlappyBirdPage extends GamePage[FlappyBird.State, FlappyBirdAgent] {
   }
 
   override protected def render(ctx: CanvasRenderingContext2D): Unit = {
+
+    if (trainingEnvironment == null) {
+      renderDefault(ctx)
+      return
+    }
+
     ctx.save()
 
     // Transform the coordinate system
@@ -71,9 +77,7 @@ class FlappyBirdPage extends GamePage[FlappyBird.State, FlappyBirdAgent] {
     ctx.fillStyle = "lightblue"
     ctx.fillRect(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT)
 
-    if (trainingEnvironment != null) {
-      renderState(ctx, trainingEnvironment.getState())
-    }
+    renderState(ctx, trainingEnvironment.getState())
 
     ctx.restore()
   }

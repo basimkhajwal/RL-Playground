@@ -59,46 +59,48 @@ class PuckWorldPage extends GamePage[PuckWorld.State, PuckWorld.PuckAgent]{
 
   override protected def render(ctx: CanvasRenderingContext2D): Unit = {
 
+    if (trainingEnvironment == null) {
+      renderDefault(ctx)
+      return
+    }
+
     ctx.save()
     ctx.scale(ctx.canvas.width / SCREEN_WIDTH, ctx.canvas.height / SCREEN_HEIGHT)
 
     ctx.fillStyle = "white"
     ctx.fillRect(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT)
 
-    if (trainingEnvironment != null) {
+    val state = trainingEnvironment.getState()
 
-      val state = trainingEnvironment.getState()
+    ctx.strokeStyle = "black"
+    ctx.globalAlpha = 0.5
 
-      ctx.strokeStyle = "black"
-      ctx.globalAlpha = 0.5
+    // Render each puck as a circle, coloured and with a particular radius
 
-      // Render each puck as a circle, coloured and with a particular radius
+    ctx.fillStyle = "#cccccc"
+    ctx.beginPath()
+    ctx.arc(state.px, state.py, PUCK_RADIUS, 0, 2*math.Pi)
+    ctx.fill()
+    ctx.stroke()
 
-      ctx.fillStyle = "#cccccc"
-      ctx.beginPath()
-      ctx.arc(state.px, state.py, PUCK_RADIUS, 0, 2*math.Pi)
-      ctx.fill()
-      ctx.stroke()
+    ctx.fillStyle = "#11aa22"
+    ctx.beginPath()
+    ctx.arc(state.gx, state.gy, TARGET_RADIUS, 0, 2*math.Pi)
+    ctx.fill()
+    ctx.stroke()
 
-      ctx.fillStyle = "#11aa22"
-      ctx.beginPath()
-      ctx.arc(state.gx, state.gy, TARGET_RADIUS, 0, 2*math.Pi)
-      ctx.fill()
-      ctx.stroke()
+    ctx.fillStyle = "#aa1122"
+    ctx.beginPath()
+    ctx.arc(state.rx, state.ry, TARGET_RADIUS, 0, 2*math.Pi)
+    ctx.fill()
+    ctx.stroke()
 
-      ctx.fillStyle = "#aa1122"
-      ctx.beginPath()
-      ctx.arc(state.rx, state.ry, TARGET_RADIUS, 0, 2*math.Pi)
-      ctx.fill()
-      ctx.stroke()
-
-      ctx.fillStyle = "#aa0000"
-      ctx.globalAlpha = 0.05
-      ctx.beginPath()
-      ctx.arc(state.rx, state.ry, BAD_RADIUS, 0, 2*math.Pi)
-      ctx.fill()
-      ctx.stroke()
-    }
+    ctx.fillStyle = "#aa0000"
+    ctx.globalAlpha = 0.05
+    ctx.beginPath()
+    ctx.arc(state.rx, state.ry, BAD_RADIUS, 0, 2*math.Pi)
+    ctx.fill()
+    ctx.stroke()
 
     ctx.restore()
   }

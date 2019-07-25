@@ -48,13 +48,20 @@ class AgentComparisonView[A](
 
     // Layout preferences for the graph
     val layout: js.Object = js.Dynamic.literal(
-      "xaxis" -> js.Dynamic.literal("title" -> "Games Played", "zeroline" -> true),
+      "xaxis" -> js.Dynamic.literal("title" -> "Games Played", "zeroline" -> true, "y" -> 0.05),
       "yaxis" -> js.Dynamic.literal("title" -> "Performance", "zeroline" -> true),
-      "showlegend" -> true
+      "showlegend" -> true,
+      "legend" -> js.Dynamic.literal("orientation" -> "h"),
+      "title" -> js.Dynamic.literal("text" -> "Agent Comparison")
+    )
+
+    // Options
+    val options: js.Object = js.Dynamic.literal(
+      "displayModeBar" -> false
     )
 
     // Generate the graph itself through plotly.js
-    js.Dynamic.global.Plotly.newPlot(plotDiv, items.bind.toJSArray, layout)
+    js.Dynamic.global.Plotly.newPlot(plotDiv, items.bind.toJSArray, layout, options)
 
     plotDiv
   }

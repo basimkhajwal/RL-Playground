@@ -138,11 +138,13 @@ abstract class GamePage[S, A] extends Page {
 
   // Rescale the canvas element when the page is resized
   protected def pageResized(): Unit = {
-    val container = getElem[Div]("canvas-container")
+    val container = getElem[Div]("canvas-column")
     val width = Math.min(targetGameWidth, container.offsetWidth - 50)
 
     canvas.width = width.toInt
     canvas.height = (aspectRatio * width).toInt
+    canvas.style.width = width.toInt.toString
+    canvas.style.height = (aspectRatio * width).toInt.toString
   }
 
   /**
@@ -172,6 +174,16 @@ abstract class GamePage[S, A] extends Page {
       trainingEnvironment.reset()
       episodeLength = 0
     }
+  }
+
+  protected def renderDefault(ctx: CanvasRenderingContext2D): Unit = {
+    val width = ctx.canvas.width
+    val height = ctx.canvas.height
+    ctx.clearRect(0, 0, width, height)
+    ctx.textAlign = "center"
+    ctx.font = "20px Roboto"
+    ctx.fillText("Preview will appear here once training starts",
+      width/2, height/2, width/2)
   }
 
   /**
@@ -213,7 +225,7 @@ abstract class GamePage[S, A] extends Page {
       <div class="col s12">
         <div class="card">
           <div class="row vertical-stretch-row" id="game-row">
-            <div class="col s6">
+            <div id="canvas-column" class="col s6 center-align valign-wrapper">
               { gameContainer.bind }
             </div>
             <div class="col s6">
@@ -258,7 +270,7 @@ abstract class GamePage[S, A] extends Page {
       </canvas>
     ctx = canvas.getContext("2d").asInstanceOf[CanvasRenderingContext2D]
 
-    <div id="canvas-container" class="center-align valign-wrapper">
+    <div id="canvas-container">
       { canvas }
     </div>
   }

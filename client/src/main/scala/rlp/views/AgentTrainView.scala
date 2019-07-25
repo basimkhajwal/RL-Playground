@@ -98,11 +98,6 @@ class AgentTrainView[A](
   @dom
   lazy val trainingHeader: Binding[Div] = {
     <div id="agent-training-header">
-      <!-- Title -->
-      <div class="col s12 center-align">
-        <span class="card-title">Agent Training</span>
-      </div>
-
       <!-- Top area controls -->
       <div class="row col s12 vertical-stretch-row">
 
@@ -139,6 +134,10 @@ class AgentTrainView[A](
 
       <!-- Generic agent edit pane, same for all agents -->
       <div class="col s12 grey lighten-4 row" id="agent-info">
+        <!-- Title -->
+        <div class="col s12 center-align">
+          <span class="card-title" style="margin-bottom: 15px">Agent Hyperparameters</span>
+        </div>
         {
           selectedAgent.bind match {
             case Some(agent) => agentEditPane(agent).bind
@@ -152,7 +151,11 @@ class AgentTrainView[A](
         {
           selectedAgent.bind match {
             case Some(agent) => agent.agentViewer.bind
-            case None => <!-- -->
+            case None => {
+              <p class="center-align">
+                Create an agent above to edit hyper-parameters.
+              </p>
+            }
           }
         }
       </div>
@@ -253,6 +256,7 @@ class AgentTrainView[A](
     initScript("agent-option-btns") { () => js.Dynamic.global.$(".tooltipped").tooltip() }
 
     <div class="row col s10 offset-s1">
+
       <div class="input-field col s3">
         <input id="agent-name-train" class="validate" type="text"
                value={agent.name.bind} onchange={_:Event => onNameChange()} required={true}/>
@@ -491,8 +495,9 @@ class AgentTrainView[A](
       <div class="valign-wrapper">
 
         <!-- Reset button -->
-        <a class= {buttonStyle + "btn-medium orange"}
-           onclick={ _:Event => resetTraining() }>
+        <a class= {buttonStyle + "btn-medium orange tooltipped"}
+           onclick={ _:Event => resetTraining() }
+           data:data-tooltip="Reset agent">
           <i class="material-icons">replay</i>
         </a>
 

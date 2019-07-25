@@ -96,7 +96,7 @@ class PongPage extends GamePage[Pong.State, PongAgent] {
 
   override protected def render(ctx: CanvasRenderingContext2D): Unit = {
     if (trainingEnvironment == null) {
-      ctx.clearRect(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT)
+      renderDefault(ctx)
     } else {
       renderState(ctx, trainingEnvironment.getState())
     }
