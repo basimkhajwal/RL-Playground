@@ -16,10 +16,10 @@ object Client {
 
   // The pages available to select from
   val pages: List[Page] = List(
-    new PongPage(),
-    new PuckWorldPage(),
     new FlappyBirdPage(),
-    new MountainCarPage()
+    new MountainCarPage(),
+    new PongPage(),
+    new PuckWorldPage()
   )
 
   /**
